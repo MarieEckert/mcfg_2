@@ -6,13 +6,21 @@
 
 typedef enum mcfg_err_t {
   MCFG_OK,
+  MCFG_INVALID_PARSER_STATE,
   MCFG_SYNTAX_ERROR,
   MCFG_OS_ERROR_MASK = 0xf000
 } mcfg_err_t;
 
 typedef enum mcfg_field_type_t {
   STRING,
-  LIST
+  LIST,
+  BOOL,
+  I8,
+  U8,
+  I16,
+  U16,
+  I32,
+  U32,
 } mcfg_field_type_t;
 
 typedef struct mcfg_field_t {
@@ -37,6 +45,9 @@ typedef struct mcfg_sector_t {
 typedef struct mcfg_file_t {
   size_t sector_count;
   mcfg_sector_t *sectors;
+
+  size_t dynfield_count;
+  mcfg_field_t *dynfields;
 } mcfg_file_t;
 
 typedef struct mcfg_parser_ctxt_t {
