@@ -1,3 +1,6 @@
 #include <stdio.h>
 
-#include <mcfg.h>
+#include "mcfg.h"
+
+int main() {
+}

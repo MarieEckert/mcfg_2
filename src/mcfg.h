@@ -1,6 +1,14 @@
 #ifndef MCFG_H
 #define MCFG_H
 
+#include <stddef.h>
+
+typedef enum mcfg_err_t {
+  MCFG_OK,
+  MCFG_SYNTAX_ERROR,
+  MCFG_OS_ERROR_MASK = 0xf000
+} mcfg_err_t;
+
 typedef enum mcfg_field_type_t {
   STRING,
   LIST
@@ -29,5 +37,13 @@ typedef struct mcfg_file_t {
   size_t sector_count;
   mcfg_sector_t *sectors;
 } mcfg_file_t;
+
+char *mcfg_err_string(mcfg_err_t err);
+
+mcfg_err_t mcfg_parse_line(char *line, size_t len, mcfg_file_t *file);
+
+mcfg_err_t mcfg_parse(char *input, size_t size, mcfg_file_t *file);
+
+mcfg_err_t mcfg_parse_file(char *path, mcfg_file_t *out);
 
 #endif // ifndef MCFG_H
