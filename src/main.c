@@ -10,8 +10,9 @@ int main() {
   mcfg_parser_ctxt_t *ctxt;
   mcfg_err_t ret = mcfg_parse_file_ctxto(filepath, file, &ctxt);
   if (ret != MCFG_OK) {
-    printf("mcfg parsing failed: %s (%d)\n", mcfg_err_string(ret), ret);
-    printf("in file \"%s\" on line %d\n", filepath, ctxt->linenum);
+    fprintf(stderr, "mcfg parsing failed: %s (%d)\n", mcfg_err_string(ret),
+            ret);
+    fprintf(stderr, "in file \"%s\" on line %d\n", filepath, ctxt->linenum);
     goto cleanup;
   }
 

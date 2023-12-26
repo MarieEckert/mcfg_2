@@ -137,8 +137,8 @@ mcfg_err_t mcfg_parse_line(char *line, mcfg_parser_ctxt_t *ctxt) {
   return MCFG_INVALID_PARSER_STATE;
 }
 
-mcfg_err_t mcfg_parse_file_ctxto(char *path, mcfg_file_t *file, 
-                           mcfg_parser_ctxt_t **ctxt_out) {
+mcfg_err_t mcfg_parse_file_ctxto(char *path, mcfg_file_t *file,
+                                 mcfg_parser_ctxt_t **ctxt_out) {
   FILE *in_file;
   char *line = NULL;
   size_t len = 0;
@@ -163,7 +163,7 @@ mcfg_err_t mcfg_parse_file_ctxto(char *path, mcfg_file_t *file,
   in_file = fopen(path, "r");
   if (in_file == NULL)
     return MCFG_OS_ERROR_MASK | errno;
-  
+
   mcfg_err_t result = MCFG_OK;
   while ((read = getline(&line, &len, in_file)) != -1) {
     ctxt.linenum++;
