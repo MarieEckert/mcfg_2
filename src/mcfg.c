@@ -33,8 +33,6 @@ struct _mcfg_token_id {
   mcfg_token_t value;
 };
 
-const size_t EXISTING_TOKEN_COUNT = 13;
-
 const struct _mcfg_token_id TOKEN_IDS[] = {
   {.name = "sector", .value = TOKEN_SECTOR},
   {.name = "section", .value = TOKEN_SECTION},
@@ -51,6 +49,8 @@ const struct _mcfg_token_id TOKEN_IDS[] = {
   {.name = "i32", .value = TOKEN_I32},
   {.name = "u32", .value = TOKEN_U32},
 };
+const size_t EXISTING_TOKEN_COUNT = 
+    sizeof(TOKEN_IDS) / sizeof(struct _mcfg_token_id);
 
 mcfg_token_t mcfg_get_token(char *in, uint16_t index) {
   mcfg_token_t tok = TOKEN_INVALID;
