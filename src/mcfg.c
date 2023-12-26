@@ -146,19 +146,20 @@ mcfg_err_t mcfg_parse_file_ctxto(char *path, mcfg_file_t *file,
   in_file = fopen(path, "r");
   if (in_file == NULL)
     return MCFG_OS_ERROR_MASK | errno;
-
+  
+  mcfg_err_t result = MCFG_OK;
   while ((read = getline(&line, &len, in_file)) != -1) {
     ctxt.linenum++;
-    mcfg_err_t result = mcfg_parse_line(line, &ctxt);
+    result = mcfg_parse_line(line, &ctxt);
     if (result != MCFG_OK)
-      return result;
+      break;
   }
 
   fclose(in_file);
   if (line)
     free(line);
 
-  return MCFG_OK;
+  return result;
 }
 
 mcfg_err_t mcfg_parse_file(char *path, mcfg_file_t *file) {
