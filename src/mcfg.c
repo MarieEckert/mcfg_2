@@ -25,6 +25,10 @@ char *mcfg_err_string(mcfg_err_t err) {
     return "Syntax Error";
   case MCFG_INVALID_KEYWORD:
     return "Invalid Keyword/Token";
+  case MCFG_END_IN_NOWHERE:
+    return "Usage of \"end\" keyword in nowhere";
+  case MCFG_STRUCTURE_ERROR:
+    return "Invalid structure of input";
   default:
     return "invalid error code";
   }
@@ -66,26 +70,41 @@ uint8_t string_empty(char *in) {
   return 0;
 }
 
-mcfg_token_t mcfg_get_token(char *in, uint16_t index) {
+char *mcfg_get_token_raw(char *in, uint16_t index) {
   if (string_empty(in) == 0)
-    return TOKEN_EMPTY;
-  mcfg_token_t tok = TOKEN_INVALID;
+    return strdup("");
 
-  in = strdup(in);
+  char *ret = strdup(in);
   char *string_tok_ptr;
-  char *string_tok = strtok_r(in, " ", &string_tok_ptr);
+  char *string_tok = strtok_r(ret, " ", &string_tok_ptr);
 
   uint16_t current_index = 0;
   while (string_tok != NULL) {
-    if (current_index == 0)
+    if (current_index == index)
       break;
+
+    string_tok = strtok_r(NULL, " ", &string_tok_ptr);
   }
 
-  if (string_tok == NULL)
+  if (string_tok == NULL) {
+    free(ret);
+    return strdup("");
+  }
+
+  return ret;
+}
+
+mcfg_token_t mcfg_get_token(char *in, uint16_t index) {
+  mcfg_token_t tok = TOKEN_INVALID;
+  in = mcfg_get_token_raw(in, index);
+  
+  if (string_empty(in) == 0) {
+    tok = TOKEN_EMPTY;
     goto mcfg_get_token_exit;
+  }
 
   for (size_t ix = 0; ix < EXISTING_TOKEN_COUNT; ix++) {
-    if (strcmp(string_tok, TOKEN_IDS[ix].name) == 0) {
+    if (strcmp(in, TOKEN_IDS[ix].name) == 0) {
       tok = TOKEN_IDS[ix].value;
       break;
     }
@@ -103,6 +122,12 @@ mcfg_err_t _parse_outside_sector(char *line, mcfg_parser_ctxt_t *ctxt) {
 
   if (tok == TOKEN_EMPTY)
     return MCFG_OK;
+
+  if (tok == TOKEN_END)
+    return MCFG_END_IN_NOWHERE;
+
+  if (tok != TOKEN_SECTOR)
+    return MCFG_STRUCTURE_ERROR;
 
   return MCFG_OK;
 }
