@@ -17,14 +17,14 @@ char *mcfg_err_string(mcfg_err_t err) {
     return strerror(~MCFG_OS_ERROR_MASK & err);
 
   switch (err) {
-    case MCFG_OK:
-      return "Everything is OK :)";
-    case MCFG_INVALID_PARSER_STATE:
-      return "Invalid Parser State.";
-    case MCFG_SYNTAX_ERROR:
-      return "Syntax Error";
-    default:
-      return "invalid error code"; 
+  case MCFG_OK:
+    return "Everything is OK :)";
+  case MCFG_INVALID_PARSER_STATE:
+    return "Invalid Parser State.";
+  case MCFG_SYNTAX_ERROR:
+    return "Syntax Error";
+  default:
+    return "invalid error code";
   }
 }
 
@@ -34,22 +34,22 @@ struct _mcfg_token_id {
 };
 
 const struct _mcfg_token_id TOKEN_IDS[] = {
-  {.name = "sector", .value = TOKEN_SECTOR},
-  {.name = "section", .value = TOKEN_SECTION},
-  {.name = "end", .value = TOKEN_END},
-  {.name = ";", .value = TOKEN_COMMENT},
-  {.name = "comment", .value = TOKEN_COMMENT},
-  {.name = "str", .value = TOKEN_STR},
-  {.name = "list", .value = TOKEN_LIST},
-  {.name = "bool", .value = TOKEN_BOOL},
-  {.name = "i8", .value = TOKEN_I8},
-  {.name = "u8", .value = TOKEN_U8},
-  {.name = "i16", .value = TOKEN_I16},
-  {.name = "u16", .value = TOKEN_U16},
-  {.name = "i32", .value = TOKEN_I32},
-  {.name = "u32", .value = TOKEN_U32},
+    {.name = "sector", .value = TOKEN_SECTOR},
+    {.name = "section", .value = TOKEN_SECTION},
+    {.name = "end", .value = TOKEN_END},
+    {.name = ";", .value = TOKEN_COMMENT},
+    {.name = "comment", .value = TOKEN_COMMENT},
+    {.name = "str", .value = TOKEN_STR},
+    {.name = "list", .value = TOKEN_LIST},
+    {.name = "bool", .value = TOKEN_BOOL},
+    {.name = "i8", .value = TOKEN_I8},
+    {.name = "u8", .value = TOKEN_U8},
+    {.name = "i16", .value = TOKEN_I16},
+    {.name = "u16", .value = TOKEN_U16},
+    {.name = "i32", .value = TOKEN_I32},
+    {.name = "u32", .value = TOKEN_U32},
 };
-const size_t EXISTING_TOKEN_COUNT = 
+const size_t EXISTING_TOKEN_COUNT =
     sizeof(TOKEN_IDS) / sizeof(struct _mcfg_token_id);
 
 mcfg_token_t mcfg_get_token(char *in, uint16_t index) {
@@ -100,7 +100,7 @@ mcfg_err_t _parse_field(char *line, mcfg_parser_ctxt_t *ctxt) {
 mcfg_err_t mcfg_parse_line(char *line, mcfg_parser_ctxt_t *ctxt) {
   if (ctxt->target_file == NULL)
     return MCFG_INVALID_PARSER_STATE;
-  
+
   if (ctxt->target_sector == NULL)
     return _parse_outside_sector(line, ctxt);
 
