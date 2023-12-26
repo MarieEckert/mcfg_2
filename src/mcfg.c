@@ -28,7 +28,60 @@ char *mcfg_err_string(mcfg_err_t err) {
   }
 }
 
+struct _mcfg_token_id {
+  char *name;
+  mcfg_token_t value;
+};
+
+const size_t EXISTING_TOKEN_COUNT = 13;
+
+const struct _mcfg_token_id TOKEN_IDS[] = {
+  {.name = "sector", .value = TOKEN_SECTOR},
+  {.name = "section", .value = TOKEN_SECTION},
+  {.name = "end", .value = TOKEN_END},
+  {.name = ";", .value = TOKEN_COMMENT},
+  {.name = "comment", .value = TOKEN_COMMENT},
+  {.name = "str", .value = TOKEN_STR},
+  {.name = "list", .value = TOKEN_LIST},
+  {.name = "bool", .value = TOKEN_BOOL},
+  {.name = "i8", .value = TOKEN_I8},
+  {.name = "u8", .value = TOKEN_U8},
+  {.name = "i16", .value = TOKEN_I16},
+  {.name = "u16", .value = TOKEN_U16},
+  {.name = "i32", .value = TOKEN_I32},
+  {.name = "u32", .value = TOKEN_U32},
+};
+
+mcfg_token_t mcfg_get_token(char *in, uint16_t index) {
+  mcfg_token_t tok = TOKEN_INVALID;
+
+  in = strdup(in);
+  char *string_tok_ptr;
+  char *string_tok = strtok_r(in, " ", &string_tok_ptr);
+
+  uint16_t current_index = 0;
+  while (string_tok != NULL) {
+    if (current_index == 0)
+      break;
+  }
+
+  if (string_tok == NULL)
+    goto mcfg_get_token_exit;
+
+  for (size_t ix = 0; ix < EXISTING_TOKEN_COUNT; ix++) {
+    if (strcmp(string_tok, TOKEN_IDS[ix].name) == 0) {
+      tok = TOKEN_IDS[ix].value;
+      break;
+    }
+  }
+
+mcfg_get_token_exit:
+  free(in);
+  return tok;
+}
+
 mcfg_err_t _parse_outside_sector(char *line, mcfg_parser_ctxt_t *ctxt) {
+  mcfg_token_t tok = mcfg_get_token(line, 0);
   return MCFG_OK;
 }
 

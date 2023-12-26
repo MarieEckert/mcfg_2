@@ -12,15 +12,15 @@ typedef enum mcfg_err_t {
 } mcfg_err_t;
 
 typedef enum mcfg_field_type_t {
-  STRING,
-  LIST,
-  BOOL,
-  I8,
-  U8,
-  I16,
-  U16,
-  I32,
-  U32,
+  TYPE_STRING,
+  TYPE_LIST,
+  TYPE_BOOL,
+  TYPE_I8,
+  TYPE_U8,
+  TYPE_I16,
+  TYPE_U16,
+  TYPE_I32,
+  TYPE_U32,
 } mcfg_field_type_t;
 
 typedef struct mcfg_field_t {
@@ -60,7 +60,26 @@ typedef struct mcfg_parser_ctxt_t {
   char *file_path;
 } mcfg_parser_ctxt_t;
 
+typedef enum mcfg_token_t {
+  TOKEN_INVALID = -1,
+  TOKEN_SECTOR,
+  TOKEN_SECTION,
+  TOKEN_END,
+  TOKEN_COMMENT,
+  TOKEN_STR,
+  TOKEN_LIST,
+  TOKEN_BOOL,
+  TOKEN_I8,
+  TOKEN_U8,
+  TOKEN_I16,
+  TOKEN_U16,
+  TOKEN_I32,
+  TOKEN_U32,
+} mcfg_token_t;
+
 char *mcfg_err_string(mcfg_err_t err);
+
+mcfg_token_t mcfg_get_token(char *in, uint16_t index);
 
 mcfg_err_t mcfg_parse_line(char *line, mcfg_parser_ctxt_t *ctxt);
 
