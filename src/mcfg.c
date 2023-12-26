@@ -23,6 +23,8 @@ char *mcfg_err_string(mcfg_err_t err) {
     return "Invalid Parser State.";
   case MCFG_SYNTAX_ERROR:
     return "Syntax Error";
+  case MCFG_INVALID_KEYWORD:
+    return "Invalid Keyword/Token";
   default:
     return "invalid error code";
   }
@@ -82,6 +84,9 @@ mcfg_get_token_exit:
 
 mcfg_err_t _parse_outside_sector(char *line, mcfg_parser_ctxt_t *ctxt) {
   mcfg_token_t tok = mcfg_get_token(line, 0);
+  if (tok == TOKEN_INVALID)
+    return MCFG_INVALID_KEYWORD;
+
   return MCFG_OK;
 }
 
@@ -115,7 +120,8 @@ mcfg_err_t mcfg_parse_line(char *line, mcfg_parser_ctxt_t *ctxt) {
   return MCFG_INVALID_PARSER_STATE;
 }
 
-mcfg_err_t mcfg_parse_file(char *path, mcfg_file_t *file) {
+mcfg_err_t mcfg_parse_file_ctxto(char *path, mcfg_file_t *file, 
+                           mcfg_parser_ctxt_t **ctxt_out) {
   FILE *in_file;
   char *line = NULL;
   size_t len = 0;
@@ -132,6 +138,9 @@ mcfg_err_t mcfg_parse_file(char *path, mcfg_file_t *file) {
       .linenum = 0,
       .file_path = path,
   };
+
+  if (ctxt_out != NULL)
+    *ctxt_out = &ctxt;
 
   errno = 0;
   in_file = fopen(path, "r");
@@ -150,6 +159,10 @@ mcfg_err_t mcfg_parse_file(char *path, mcfg_file_t *file) {
     free(line);
 
   return MCFG_OK;
+}
+
+mcfg_err_t mcfg_parse_file(char *path, mcfg_file_t *file) {
+  return mcfg_parse_file_ctxto(path, file, NULL);
 }
 
 void mcfg_free_field(mcfg_field_t *field) {}

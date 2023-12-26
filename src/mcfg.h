@@ -8,6 +8,7 @@ typedef enum mcfg_err_t {
   MCFG_OK,
   MCFG_INVALID_PARSER_STATE,
   MCFG_SYNTAX_ERROR,
+  MCFG_INVALID_KEYWORD,
   MCFG_OS_ERROR_MASK = 0xf000
 } mcfg_err_t;
 
@@ -83,6 +84,8 @@ mcfg_token_t mcfg_get_token(char *in, uint16_t index);
 
 mcfg_err_t mcfg_parse_line(char *line, mcfg_parser_ctxt_t *ctxt);
 
+mcfg_err_t mcfg_parse_file_ctxto(char *path, mcfg_file_t *file, 
+                           mcfg_parser_ctxt_t **ctxt_out);
 mcfg_err_t mcfg_parse_file(char *path, mcfg_file_t *file);
 
 void mcfg_free_field(mcfg_field_t *field);
