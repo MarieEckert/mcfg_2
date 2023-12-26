@@ -54,7 +54,21 @@ const struct _mcfg_token_id TOKEN_IDS[] = {
 const size_t EXISTING_TOKEN_COUNT =
     sizeof(TOKEN_IDS) / sizeof(struct _mcfg_token_id);
 
+uint8_t string_empty(char *in) {
+  if (in == NULL || in[0] == 0)
+    return 0;
+
+  size_t len = strlen(in);
+  for (size_t i = 0; i < len; i++)
+    if (in[i] > ' ')
+      return 1;
+
+  return 0;
+}
+
 mcfg_token_t mcfg_get_token(char *in, uint16_t index) {
+  if (string_empty(in) == 0)
+    return TOKEN_EMPTY;
   mcfg_token_t tok = TOKEN_INVALID;
 
   in = strdup(in);
@@ -86,6 +100,9 @@ mcfg_err_t _parse_outside_sector(char *line, mcfg_parser_ctxt_t *ctxt) {
   mcfg_token_t tok = mcfg_get_token(line, 0);
   if (tok == TOKEN_INVALID)
     return MCFG_INVALID_KEYWORD;
+
+  if (tok == TOKEN_EMPTY)
+    return MCFG_OK;
 
   return MCFG_OK;
 }

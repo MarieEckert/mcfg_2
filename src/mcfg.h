@@ -76,6 +76,7 @@ typedef enum mcfg_token_t {
   TOKEN_U16,
   TOKEN_I32,
   TOKEN_U32,
+  TOKEN_EMPTY,
 } mcfg_token_t;
 
 char *mcfg_err_string(mcfg_err_t err);
