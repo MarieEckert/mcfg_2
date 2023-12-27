@@ -91,6 +91,8 @@ mcfg_err_t mcfg_parse_file_ctxto(char *path, mcfg_file_t *file,
                                  mcfg_parser_ctxt_t **ctxt_out);
 mcfg_err_t mcfg_parse_file(char *path, mcfg_file_t *file);
 
+mcfg_err_t mcfg_add_section(mcfg_file_t *file, char *name);
+
 void mcfg_free_field(mcfg_field_t *field);
 
 void mcfg_free_section(mcfg_section_t *section);

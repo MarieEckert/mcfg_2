@@ -133,8 +133,16 @@ mcfg_err_t _parse_outside_sector(char *line, mcfg_parser_ctxt_t *ctxt) {
     return MCFG_STRUCTURE_ERROR;
 
   char *name = mcfg_get_token_raw(line, 1);
+  mcfg_err_t ret = mcfg_add_section(ctxt->target_file, name);
+  
+  if (ret != MCFG_OK) {
+    free(name);
+    return ret;
+  }
 
-  free(name);
+  ctxt->target_sector = 
+    &ctxt->target_file->sectors[ctxt->target_file->sector_count - 1];
+
   return MCFG_OK;
 }
 
@@ -212,6 +220,20 @@ mcfg_err_t mcfg_parse_file_ctxto(char *path, mcfg_file_t *file,
 
 mcfg_err_t mcfg_parse_file(char *path, mcfg_file_t *file) {
   return mcfg_parse_file_ctxto(path, file, NULL);
+}
+
+mcfg_err_t mcfg_add_section(mcfg_file_t *file, char *name) {
+  size_t ix = file->sector_count++;
+
+  if (file->sector_count == 1) {
+    file->sectors = malloc(sizeof(mcfg_sector_t));
+  } else {
+    file->sectors = realloc(file->sectors, 
+                            sizeof(mcfg_sector_t) * file->sector_count);
+  }
+
+  file->sectors[ix].name = name;
+  return MCFG_OK;
 }
 
 void mcfg_free_field(mcfg_field_t *field) {}
