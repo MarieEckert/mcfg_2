@@ -74,24 +74,27 @@ char *mcfg_get_token_raw(char *in, uint16_t index) {
   if (string_empty(in) == 0)
     return strdup("");
 
-  char *ret = strdup(in);
-  char *string_tok_ptr;
-  char *string_tok = strtok_r(ret, " ", &string_tok_ptr);
+  char *string_tok_ptr = NULL;
+  char *indup = strdup(in);
+  char *ret = strtok_r(indup, " ", &string_tok_ptr);
 
   uint16_t current_index = 0;
-  while (string_tok != NULL) {
+  while (ret != NULL) {
     if (current_index == index)
       break;
 
-    string_tok = strtok_r(NULL, " ", &string_tok_ptr);
+    ret = strtok_r(NULL, " ", &string_tok_ptr);
+    current_index++;
   }
 
-  if (string_tok == NULL) {
+  if (ret == NULL) {
     free(ret);
     return strdup("");
   }
 
-  return ret;
+  char *aret = strdup(ret);
+  free(indup);
+  return aret;
 }
 
 mcfg_token_t mcfg_get_token(char *in, uint16_t index) {
@@ -120,7 +123,7 @@ mcfg_err_t _parse_outside_sector(char *line, mcfg_parser_ctxt_t *ctxt) {
   if (tok == TOKEN_INVALID)
     return MCFG_INVALID_KEYWORD;
 
-  if (tok == TOKEN_EMPTY)
+  if (tok == TOKEN_EMPTY || tok == TOKEN_COMMENT)
     return MCFG_OK;
 
   if (tok == TOKEN_END)
@@ -129,6 +132,9 @@ mcfg_err_t _parse_outside_sector(char *line, mcfg_parser_ctxt_t *ctxt) {
   if (tok != TOKEN_SECTOR)
     return MCFG_STRUCTURE_ERROR;
 
+  char *name = mcfg_get_token_raw(line, 1);
+
+  free(name);
   return MCFG_OK;
 }
 
