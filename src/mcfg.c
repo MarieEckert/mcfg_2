@@ -100,7 +100,7 @@ char *mcfg_get_token_raw(char *in, uint16_t index) {
 mcfg_token_t mcfg_get_token(char *in, uint16_t index) {
   mcfg_token_t tok = TOKEN_INVALID;
   in = mcfg_get_token_raw(in, index);
-  
+
   if (string_empty(in) == 0) {
     tok = TOKEN_EMPTY;
     goto mcfg_get_token_exit;
@@ -133,15 +133,15 @@ mcfg_err_t _parse_outside_sector(char *line, mcfg_parser_ctxt_t *ctxt) {
     return MCFG_STRUCTURE_ERROR;
 
   char *name = mcfg_get_token_raw(line, 1);
-  mcfg_err_t ret = mcfg_add_section(ctxt->target_file, name);
-  
+  mcfg_err_t ret = mcfg_add_sector(ctxt->target_file, name);
+
   if (ret != MCFG_OK) {
     free(name);
     return ret;
   }
 
-  ctxt->target_sector = 
-    &ctxt->target_file->sectors[ctxt->target_file->sector_count - 1];
+  ctxt->target_sector =
+      &ctxt->target_file->sectors[ctxt->target_file->sector_count - 1];
 
   return MCFG_OK;
 }
@@ -222,18 +222,41 @@ mcfg_err_t mcfg_parse_file(char *path, mcfg_file_t *file) {
   return mcfg_parse_file_ctxto(path, file, NULL);
 }
 
-mcfg_err_t mcfg_add_section(mcfg_file_t *file, char *name) {
+mcfg_err_t mcfg_add_sector(mcfg_file_t *file, char *name) {
   size_t ix = file->sector_count++;
 
   if (file->sector_count == 1) {
     file->sectors = malloc(sizeof(mcfg_sector_t));
   } else {
-    file->sectors = realloc(file->sectors, 
-                            sizeof(mcfg_sector_t) * file->sector_count);
+    if (mcfg_get_sector(file, name) != NULL)
+      return MCFG_DUPLICATE_SECTOR;
+    file->sectors =
+        realloc(file->sectors, sizeof(mcfg_sector_t) * file->sector_count);
   }
 
   file->sectors[ix].name = name;
   return MCFG_OK;
+}
+
+mcfg_err_t mcfg_add_section(mcfg_file_t *file, char *sector, char *name) {
+  return MCFG_OK;
+}
+
+mcfg_err_t mcfg_add_field(mcfg_section_t *section, 
+                          mcfg_field_type_t type, char *name, void *data) {
+  return MCFG_OK;
+}
+
+mcfg_sector_t *mcfg_get_sector(mcfg_file_t *file, char *name) {
+  return NULL;
+}
+
+mcfg_section_t *mcfg_get_section(mcfg_file_t *file, char *path) {
+  return NULL;
+}
+
+mcfg_field_t *mcfg_get_field(mcfg_file_t *file, char *path) {
+  return NULL;
 }
 
 void mcfg_free_field(mcfg_field_t *field) {}
