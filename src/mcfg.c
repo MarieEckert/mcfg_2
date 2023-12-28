@@ -101,6 +101,9 @@ mcfg_token_t mcfg_get_token(char *in, uint16_t index) {
   mcfg_token_t tok = TOKEN_INVALID;
   in = mcfg_get_token_raw(in, index);
 
+  if (in[strlen(in) - 1] == '\n')
+    in[strlen(in) -1] = 0;
+
   if (string_empty(in) == 0) {
     tok = TOKEN_EMPTY;
     goto mcfg_get_token_exit;
@@ -120,6 +123,7 @@ mcfg_get_token_exit:
 
 mcfg_err_t _parse_outside_sector(char *line, mcfg_parser_ctxt_t *ctxt) {
   mcfg_token_t tok = mcfg_get_token(line, 0);
+  fprintf(stderr, "%s %d\n", __FUNCTION__, tok);
   if (tok == TOKEN_INVALID)
     return MCFG_INVALID_KEYWORD;
 
@@ -147,6 +151,19 @@ mcfg_err_t _parse_outside_sector(char *line, mcfg_parser_ctxt_t *ctxt) {
 }
 
 mcfg_err_t _parse_sector(char *line, mcfg_parser_ctxt_t *ctxt) {
+  mcfg_token_t tok = mcfg_get_token(line, 0);
+  fprintf(stderr, "%s %d\n", __FUNCTION__, tok);
+  if (tok == TOKEN_INVALID)
+    return MCFG_INVALID_KEYWORD;
+
+  if (tok == TOKEN_EMPTY || tok == TOKEN_COMMENT)
+    return MCFG_OK;
+
+  if (tok == TOKEN_END) {
+    ctxt->target_sector = NULL;
+    return MCFG_OK;
+  }
+
   return MCFG_OK;
 }
 
@@ -159,6 +176,7 @@ mcfg_err_t _parse_field(char *line, mcfg_parser_ctxt_t *ctxt) {
 }
 
 mcfg_err_t mcfg_parse_line(char *line, mcfg_parser_ctxt_t *ctxt) {
+  printf("%03d> %s", ctxt->linenum, line);
   if (ctxt->target_file == NULL)
     return MCFG_INVALID_PARSER_STATE;
 
