@@ -4,17 +4,18 @@
 #include <stddef.h>
 #include <stdint.h>
 
-typedef enum mcfg_err_t {
+typedef enum mcfg_err {
   MCFG_OK,
   MCFG_INVALID_PARSER_STATE,
   MCFG_SYNTAX_ERROR,
   MCFG_INVALID_KEYWORD,
   MCFG_END_IN_NOWHERE,
   MCFG_STRUCTURE_ERROR,
+  MCFG_DUPLICATE_SECTOR,
   MCFG_OS_ERROR_MASK = 0xf000
 } mcfg_err_t;
 
-typedef enum mcfg_field_type_t {
+typedef enum mcfg_field_type {
   TYPE_STRING,
   TYPE_LIST,
   TYPE_BOOL,
@@ -26,26 +27,26 @@ typedef enum mcfg_field_type_t {
   TYPE_U32,
 } mcfg_field_type_t;
 
-typedef struct mcfg_field_t {
+typedef struct mcfg_field {
   char *name;
   mcfg_field_type_t type;
   void *data;
   size_t length;
 } mcfg_field_t;
 
-typedef struct mcfg_section_t {
+typedef struct mcfg_section {
   char *name;
   size_t field_count;
   mcfg_field_t *fields;
 } mcfg_section_t;
 
-typedef struct mcfg_sector_t {
+typedef struct mcfg_sector {
   char *name;
   size_t section_count;
   mcfg_section_t *sections;
 } mcfg_sector_t;
 
-typedef struct mcfg_file_t {
+typedef struct mcfg_file {
   size_t sector_count;
   mcfg_sector_t *sectors;
 
@@ -53,7 +54,7 @@ typedef struct mcfg_file_t {
   mcfg_field_t *dynfields;
 } mcfg_file_t;
 
-typedef struct mcfg_parser_ctxt_t {
+typedef struct mcfg_parser_ctxt {
   mcfg_file_t *target_file;
   mcfg_sector_t *target_sector;
   mcfg_section_t *target_section;
@@ -63,7 +64,7 @@ typedef struct mcfg_parser_ctxt_t {
   char *file_path;
 } mcfg_parser_ctxt_t;
 
-typedef enum mcfg_token_t {
+typedef enum mcfg_token {
   TOKEN_INVALID = -1,
   TOKEN_SECTOR,
   TOKEN_SECTION,
@@ -91,7 +92,18 @@ mcfg_err_t mcfg_parse_file_ctxto(char *path, mcfg_file_t *file,
                                  mcfg_parser_ctxt_t **ctxt_out);
 mcfg_err_t mcfg_parse_file(char *path, mcfg_file_t *file);
 
-mcfg_err_t mcfg_add_section(mcfg_file_t *file, char *name);
+mcfg_err_t mcfg_add_sector(mcfg_file_t *file, char *name);
+
+mcfg_err_t mcfg_add_section(mcfg_file_t *file, char *sector, char *name);
+
+mcfg_err_t mcfg_add_field(mcfg_section_t *section, 
+                          mcfg_field_type_t type, char *name, void *data);
+
+mcfg_sector_t *mcfg_get_sector(mcfg_file_t *file, char *name);
+
+mcfg_section_t *mcfg_get_section(mcfg_file_t *file, char *path);
+
+mcfg_field_t *mcfg_get_field(mcfg_file_t *file, char *path);
 
 void mcfg_free_field(mcfg_field_t *field);
 
