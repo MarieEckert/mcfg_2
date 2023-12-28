@@ -3,7 +3,7 @@
 
 #include "mcfg.h"
 
-int main() {
+int main(int argc, char **argv) {
   char *filepath = "doc/example.mb";
 
   mcfg_file_t *file = malloc(sizeof(mcfg_file_t));
@@ -16,6 +16,7 @@ int main() {
     goto cleanup;
   }
 
+  fprintf(stderr, "parsed you a mcfg file!\n");
 cleanup:
   free(file);
   return 0;
