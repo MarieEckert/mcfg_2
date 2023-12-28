@@ -18,3 +18,8 @@ sector .config
 
     str comp_cmd '$(compiler) $(mode_flags) $(std_flags) out/$(file).o src/$(file).c'
     str finalize_cmd '$(compiler) $(mode_flags) -o $(binname) out/$(files).o $(depends/libs)'
+
+sector .scripts
+  lines prepare:
+#!/bin/sh
+mb -n -v
