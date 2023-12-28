@@ -94,7 +94,7 @@ mcfg_err_t mcfg_parse_file(char *path, mcfg_file_t *file);
 
 mcfg_err_t mcfg_add_sector(mcfg_file_t *file, char *name);
 
-mcfg_err_t mcfg_add_section(mcfg_file_t *file, char *sector, char *name);
+mcfg_err_t mcfg_add_section(mcfg_sector_t *sector, char *name);
 
 mcfg_err_t mcfg_add_field(mcfg_section_t *section, 
                           mcfg_field_type_t type, char *name, void *data);

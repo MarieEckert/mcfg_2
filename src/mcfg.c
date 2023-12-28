@@ -70,6 +70,11 @@ uint8_t string_empty(char *in) {
   return 0;
 }
 
+void remove_newline(char *in) {
+  if (in[strlen(in) - 1] == '\n')
+    in[strlen(in) - 1] = 0;
+}
+
 char *mcfg_get_token_raw(char *in, uint16_t index) {
   if (string_empty(in) == 0)
     return strdup("");
@@ -101,8 +106,7 @@ mcfg_token_t mcfg_get_token(char *in, uint16_t index) {
   mcfg_token_t tok = TOKEN_INVALID;
   in = mcfg_get_token_raw(in, index);
 
-  if (in[strlen(in) - 1] == '\n')
-    in[strlen(in) -1] = 0;
+  remove_newline(in);
 
   if (string_empty(in) == 0) {
     tok = TOKEN_EMPTY;
@@ -152,7 +156,7 @@ mcfg_err_t _parse_outside_sector(char *line, mcfg_parser_ctxt_t *ctxt) {
 
 mcfg_err_t _parse_sector(char *line, mcfg_parser_ctxt_t *ctxt) {
   mcfg_token_t tok = mcfg_get_token(line, 0);
-  fprintf(stderr, "%s %d\n", __FUNCTION__, tok);
+
   if (tok == TOKEN_INVALID)
     return MCFG_INVALID_KEYWORD;
 
@@ -163,6 +167,20 @@ mcfg_err_t _parse_sector(char *line, mcfg_parser_ctxt_t *ctxt) {
     ctxt->target_sector = NULL;
     return MCFG_OK;
   }
+
+  if (tok != TOKEN_SECTION)   
+    return MCFG_STRUCTURE_ERROR;
+
+  char *name = mcfg_get_token_raw(line, 1);
+  mcfg_err_t ret = mcfg_add_section(ctxt->target_sector, name);
+  
+  if (ret != MCFG_OK) {
+    free(name);
+    return ret;
+  }
+
+  ctxt->target_section = 
+    &ctxt->target_sector->sections[ctxt->target_sector->section_count - 1];
 
   return MCFG_OK;
 }
@@ -176,7 +194,6 @@ mcfg_err_t _parse_field(char *line, mcfg_parser_ctxt_t *ctxt) {
 }
 
 mcfg_err_t mcfg_parse_line(char *line, mcfg_parser_ctxt_t *ctxt) {
-  printf("%03d> %s", ctxt->linenum, line);
   if (ctxt->target_file == NULL)
     return MCFG_INVALID_PARSER_STATE;
 
@@ -256,7 +273,7 @@ mcfg_err_t mcfg_add_sector(mcfg_file_t *file, char *name) {
   return MCFG_OK;
 }
 
-mcfg_err_t mcfg_add_section(mcfg_file_t *file, char *sector, char *name) {
+mcfg_err_t mcfg_add_section(mcfg_sector_t *sector, char *name){
   return MCFG_OK;
 }
 
