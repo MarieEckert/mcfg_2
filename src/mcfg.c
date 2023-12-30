@@ -61,15 +61,11 @@ struct _mcfg_type_id {
 };
 
 const struct _mcfg_type_id TYPE_IDS[] = {
-  {.name="str", .value=TYPE_STRING},
-  {.name="list", .value=TYPE_LIST},
-  {.name="bool", .value=TYPE_BOOL},
-  {.name="i8", .value=TYPE_I8},
-  {.name="u8", .value=TYPE_U8},
-  {.name="i16", .value=TYPE_I16},
-  {.name="u16", .value=TYPE_U16},
-  {.name="i32", .value=TYPE_I32},
-  {.name="u32", .value=TYPE_U32},
+    {.name = "str", .value = TYPE_STRING}, {.name = "list", .value = TYPE_LIST},
+    {.name = "bool", .value = TYPE_BOOL},  {.name = "i8", .value = TYPE_I8},
+    {.name = "u8", .value = TYPE_U8},      {.name = "i16", .value = TYPE_I16},
+    {.name = "u16", .value = TYPE_U16},    {.name = "i32", .value = TYPE_I32},
+    {.name = "u32", .value = TYPE_U32},
 };
 const size_t EXISTING_TYPE_COUNT =
     sizeof(TYPE_IDS) / sizeof(struct _mcfg_type_id);
@@ -172,7 +168,7 @@ mcfg_get_token_exit:
 
 mcfg_err_t _parse_outside_sector(char *line, mcfg_parser_ctxt_t *ctxt) {
   mcfg_token_t tok = mcfg_get_token(line, 0);
-  
+
   if (tok == TOKEN_INVALID)
     return MCFG_INVALID_KEYWORD;
 
@@ -213,19 +209,19 @@ mcfg_err_t _parse_sector(char *line, mcfg_parser_ctxt_t *ctxt) {
     return MCFG_OK;
   }
 
-  if (tok != TOKEN_SECTION)   
+  if (tok != TOKEN_SECTION)
     return MCFG_STRUCTURE_ERROR;
 
   char *name = mcfg_get_token_raw(line, 1);
   mcfg_err_t ret = mcfg_add_section(ctxt->target_sector, name);
-  
+
   if (ret != MCFG_OK) {
     free(name);
     return ret;
   }
 
-  ctxt->target_section = 
-    &ctxt->target_sector->sections[ctxt->target_sector->section_count - 1];
+  ctxt->target_section =
+      &ctxt->target_sector->sections[ctxt->target_sector->section_count - 1];
 
   return MCFG_OK;
 }
@@ -244,7 +240,7 @@ mcfg_err_t _parse_section(char *line, mcfg_parser_ctxt_t *ctxt) {
     return MCFG_OK;
   }
 
-  if (tok < TOKEN_STR)   
+  if (tok < TOKEN_STR)
     return MCFG_STRUCTURE_ERROR;
 
   mcfg_field_type_t type = mcfg_str_to_type(mcfg_get_token_raw(line, 1));
@@ -337,7 +333,7 @@ mcfg_err_t mcfg_add_sector(mcfg_file_t *file, char *name) {
   return MCFG_OK;
 }
 
-mcfg_err_t mcfg_add_section(mcfg_sector_t *sector, char *name){
+mcfg_err_t mcfg_add_section(mcfg_sector_t *sector, char *name) {
   size_t ix = sector->section_count++;
 
   if (sector->section_count == 1) {
@@ -345,16 +341,16 @@ mcfg_err_t mcfg_add_section(mcfg_sector_t *sector, char *name){
   } else {
     if (mcfg_get_section(sector, name) != NULL)
       return MCFG_DUPLICATE_SECTION;
-    sector->sections =
-        realloc(sector->sections, sizeof(mcfg_section_t) * sector->section_count);
+    sector->sections = realloc(sector->sections,
+                               sizeof(mcfg_section_t) * sector->section_count);
   }
 
   sector->sections[ix].name = name;
   return MCFG_OK;
 }
 
-mcfg_err_t mcfg_add_field(mcfg_section_t *section, 
-                          mcfg_field_type_t type, char *name, void *data) {
+mcfg_err_t mcfg_add_field(mcfg_section_t *section, mcfg_field_type_t type,
+                          char *name, void *data) {
   return MCFG_OK;
 }
 
