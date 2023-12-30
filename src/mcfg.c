@@ -12,6 +12,26 @@
 #include <stdlib.h>
 #include <string.h>
 
+void *malloc_or_die(size_t size) {
+  void *ptr = malloc(size);
+  if (ptr == NULL) {
+    fprintf(stderr, "malloc_or_die decided to fix its kms. (size = %zu)\n", size);
+    abort();
+  }
+
+  return ptr;
+}
+
+void *realloc_or_die(void *org, size_t size) {
+  void *ptr = realloc(org, size);
+  if (ptr == NULL) {
+    fprintf(stderr, "realloc_or_die decided to fix its kms. (size = %zu)\n", size);
+    abort();
+  }
+
+  return ptr;
+}
+
 uint8_t string_empty(char *in) {
   if (in == NULL || in[0] == 0)
     return 0;
@@ -25,6 +45,9 @@ uint8_t string_empty(char *in) {
 }
 
 void remove_newline(char *in) {
+  if (in == NULL || strlen(in) == 0)
+    return;
+
   if (in[strlen(in) - 1] == '\n')
     in[strlen(in) - 1] = 0;
 }
@@ -212,6 +235,9 @@ mcfg_err_t _parse_sector(char *line, mcfg_parser_ctxt_t *ctxt) {
   if (tok != TOKEN_SECTION)
     return MCFG_STRUCTURE_ERROR;
 
+  if (ctxt->target_sector == NULL)
+    return MCFG_STRUCTURE_ERROR;
+
   char *name = mcfg_get_token_raw(line, 1);
   mcfg_err_t ret = mcfg_add_section(ctxt->target_sector, name);
 
@@ -318,34 +344,44 @@ mcfg_err_t mcfg_parse_file(char *path, mcfg_file_t *file) {
 }
 
 mcfg_err_t mcfg_add_sector(mcfg_file_t *file, char *name) {
-  size_t ix = file->sector_count++;
+  if (file == NULL) {
+    return MCFG_NULLPTR;
+  }
+  size_t ix = file->sector_count;
 
-  if (file->sector_count == 1) {
-    file->sectors = malloc(sizeof(mcfg_sector_t));
+  if (file->sector_count == 0) {
+    file->sectors = malloc_or_die(sizeof(*file->sectors));
   } else {
     if (mcfg_get_sector(file, name) != NULL)
       return MCFG_DUPLICATE_SECTOR;
     file->sectors =
-        realloc(file->sectors, sizeof(mcfg_sector_t) * file->sector_count);
+        realloc_or_die(file->sectors, sizeof(mcfg_sector_t) * (file->sector_count+1));
   }
-
+  
   file->sectors[ix].name = name;
+  file->sectors[ix].section_count = 0;
+  file->sector_count++;
   return MCFG_OK;
 }
 
 mcfg_err_t mcfg_add_section(mcfg_sector_t *sector, char *name) {
-  size_t ix = sector->section_count++;
+  if (sector == NULL) {
+    return MCFG_NULLPTR;
+  }
+  size_t ix = sector->section_count;
 
-  if (sector->section_count == 1) {
-    sector->sections = malloc(sizeof(mcfg_section_t));
+  if (sector->section_count == 0) {
+    sector->sections = malloc_or_die(sizeof(*sector->sections));
   } else {
     if (mcfg_get_section(sector, name) != NULL)
       return MCFG_DUPLICATE_SECTION;
-    sector->sections = realloc(sector->sections,
-                               sizeof(mcfg_section_t) * sector->section_count);
+    sector->sections = realloc_or_die(sector->sections,
+                               sizeof(mcfg_section_t) * (sector->section_count+1));
   }
 
   sector->sections[ix].name = name;
+  sector->sections[ix].field_count = 0;
+  sector->section_count++;
   return MCFG_OK;
 }
 
