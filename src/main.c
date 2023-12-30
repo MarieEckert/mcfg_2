@@ -18,6 +18,6 @@ int main(int argc, char **argv) {
 
   fprintf(stderr, "parsed you a mcfg file!\n");
 cleanup:
-  free(file);
+  mcfg_free_file(file);
   return 0;
 }

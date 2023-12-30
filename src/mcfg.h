@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 typedef enum mcfg_err {
+  MCFG_TODO = -1,
   MCFG_OK,
   MCFG_INVALID_PARSER_STATE,
   MCFG_SYNTAX_ERROR,
