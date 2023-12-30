@@ -4,6 +4,13 @@
 // Copyright (c) 2023, Marie Eckert
 // Licensend under the BSD 3-Clause License.
 //------------------------------------------------------------------------------
+// TODO:
+// - Fix double frees with mcfg_free_* functions
+// - Parse Field-Declarations
+//    - Number-Types (u/ints, bool)
+//    - Single line strings
+//    - multi line strings
+//------------------------------------------------------------------------------
 
 #include "mcfg.h"
 
@@ -489,13 +496,17 @@ void mcfg_free_field(mcfg_field_t *field) {
   if (field == NULL)
     return;
 
+  printf("*field = %p\n", (void*) field);
   if (field->name != NULL)
     free(field->name);
+  printf("> freed name @%p\n", (void*) field->name);
 
   if (field->data != NULL)
     free(field->data);
+  printf("> freed data @%p\n", (void*) field->data);
 
   free(field);
+  printf("> freed field @%p\n", (void*) field);
 }
 
 void mcfg_free_section(mcfg_section_t *section) {
@@ -506,6 +517,7 @@ void mcfg_free_section(mcfg_section_t *section) {
     for (size_t ix = 0; ix < section->field_count; ix++)
       mcfg_free_field(&section->fields[ix]);
 
+  printf("*section = %p\n", (void*) section);
   if (section->name != NULL)
     free(section->name);
 
@@ -520,16 +532,20 @@ void mcfg_free_sector(mcfg_sector_t *sector) {
     for (size_t ix = 0; ix < sector->section_count; ix++)
       mcfg_free_section(&sector->sections[ix]);
 
+  printf("*sector = %p\n", (void*) sector);
   if (sector->name != NULL)
     free(sector->name);
+  printf("> freed name @%p\n", sector->name);
 
   free(sector);
+  printf("> freed sector @%p\n", sector);
 }
 
 void mcfg_free_file(mcfg_file_t *file) {
   if (file == NULL)
     return;
 
+  printf("*file = %p\n", (void*) file);
   if (file->dynfield_count > 0 && file->dynfields != NULL)
     for (size_t ix = 0; ix < file->dynfield_count; ix++)
       mcfg_free_field(&file->dynfields[ix]);
@@ -538,5 +554,6 @@ void mcfg_free_file(mcfg_file_t *file) {
     for (size_t ix = 0; ix < file->sector_count; ix++)
       mcfg_free_sector(&file->sectors[ix]);
 
+  printf("> freed file @%p\n", (void*) file);
   free(file);
 }
