@@ -4,3 +4,4 @@ out/
 mcfg_test
 libmcfg.a
 *.swp
+*.log
