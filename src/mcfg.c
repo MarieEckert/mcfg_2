@@ -276,15 +276,22 @@ mcfg_err_t _parse_section(char *line, mcfg_parser_ctxt_t *ctxt) {
   free(strtype);
 
   char *name = mcfg_get_token_raw(line, 2);
-  void *data = NULL;
+  mcfg_data_parse_result_t data_result = mcfg_parse_field_data(type, line);
+  if (data_result.error != MCFG_OK)
+    return data_result.error;
 
-  mcfg_err_t ret = mcfg_add_field(ctxt->target_section, type, name, data);
+  mcfg_err_t ret = mcfg_add_field(ctxt->target_section, type, name, 
+                                  data_result.data);
   if (ret != MCFG_OK) {
     free(name);
-    if (data != NULL)
-      free(data);
+    if (data_result.data != NULL)
+      free(data_result.data);
     return ret;
   }
+
+  if (data_result.multiline == 0)
+    ctxt->target_field = 
+      &ctxt->target_section->fields[ctxt->target_section->field_count];
 
   return MCFG_OK;
 }

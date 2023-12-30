@@ -68,6 +68,13 @@ typedef struct mcfg_parser_ctxt {
   char *file_path;
 } mcfg_parser_ctxt_t;
 
+typedef struct mcfg_data_parse_result {
+  mcfg_err_t error;
+
+  int multiline;
+  void *data;
+} mcfg_data_parse_result_t;
+
 typedef enum mcfg_token {
   TOKEN_INVALID = -1,
   TOKEN_SECTOR,
@@ -91,6 +98,9 @@ char *mcfg_err_string(mcfg_err_t err);
 mcfg_field_type_t mcfg_str_to_type(char *strtype);
 
 mcfg_token_t mcfg_get_token(char *in, uint16_t index);
+
+mcfg_data_parse_result_t mcfg_parse_field_data(mcfg_field_type_t type,
+                                               char *str);
 
 mcfg_err_t mcfg_parse_line(char *line, mcfg_parser_ctxt_t *ctxt);
 
