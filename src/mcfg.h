@@ -5,8 +5,8 @@
 #include <stdint.h>
 
 typedef enum mcfg_err {
-  MCFG_TODO = -1,
   MCFG_OK,
+  MCFG_TODO,
   MCFG_INVALID_PARSER_STATE,
   MCFG_SYNTAX_ERROR,
   MCFG_INVALID_KEYWORD,
@@ -14,6 +14,7 @@ typedef enum mcfg_err {
   MCFG_STRUCTURE_ERROR,
   MCFG_DUPLICATE_SECTOR,
   MCFG_DUPLICATE_SECTION,
+  MCFG_DUPLICATE_FIELD,
   MCFG_NULLPTR,
   MCFG_OS_ERROR_MASK = 0xf000
 } mcfg_err_t;
@@ -35,7 +36,7 @@ typedef struct mcfg_field {
   char *name;
   mcfg_field_type_t type;
   void *data;
-  size_t length;
+  size_t size;
 } mcfg_field_t;
 
 typedef struct mcfg_section {
@@ -73,6 +74,7 @@ typedef struct mcfg_data_parse_result {
 
   int multiline;
   void *data;
+  size_t size;
 } mcfg_data_parse_result_t;
 
 typedef enum mcfg_token {
@@ -113,7 +115,7 @@ mcfg_err_t mcfg_add_sector(mcfg_file_t *file, char *name);
 mcfg_err_t mcfg_add_section(mcfg_sector_t *sector, char *name);
 
 mcfg_err_t mcfg_add_field(mcfg_section_t *section, mcfg_field_type_t type,
-                          char *name, void *data);
+                          char *name, void *data, size_t size);
 
 mcfg_sector_t *mcfg_get_sector(mcfg_file_t *file, char *name);
 

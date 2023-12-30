@@ -59,6 +59,8 @@ char *mcfg_err_string(mcfg_err_t err) {
     return strerror(~MCFG_OS_ERROR_MASK & err);
 
   switch (err) {
+  case MCFG_TODO:
+    return "TODO";
   case MCFG_OK:
     return "Everything is OK :)";
   case MCFG_INVALID_PARSER_STATE:
@@ -75,6 +77,8 @@ char *mcfg_err_string(mcfg_err_t err) {
     return "Duplicate Sector";
   case MCFG_DUPLICATE_SECTION:
     return "Duplicate Section";
+  case MCFG_NULLPTR:
+    return "NULL-Pointe";
   default:
     return "invalid error code";
   }
@@ -191,6 +195,18 @@ mcfg_get_token_exit:
   return tok;
 }
 
+mcfg_data_parse_result_t mcfg_parse_field_data(mcfg_field_type_t type,
+                                               char *str) {
+  mcfg_data_parse_result_t ret = {
+    .error = MCFG_OK,
+    .multiline = 1,
+    .data = NULL,
+    .size = 0,
+  };
+
+  return ret;
+}
+
 mcfg_err_t _parse_outside_sector(char *line, mcfg_parser_ctxt_t *ctxt) {
   mcfg_token_t tok = mcfg_get_token(line, 0);
 
@@ -281,7 +297,7 @@ mcfg_err_t _parse_section(char *line, mcfg_parser_ctxt_t *ctxt) {
     return data_result.error;
 
   mcfg_err_t ret = mcfg_add_field(ctxt->target_section, type, name, 
-                                  data_result.data);
+                                  data_result.data, data_result.size);
   if (ret != MCFG_OK) {
     free(name);
     if (data_result.data != NULL)
@@ -365,9 +381,9 @@ mcfg_err_t mcfg_parse_file(char *path, mcfg_file_t *file) {
 }
 
 mcfg_err_t mcfg_add_sector(mcfg_file_t *file, char *name) {
-  if (file == NULL) {
+  if (file == NULL)
     return MCFG_NULLPTR;
-  }
+
   size_t ix = file->sector_count;
 
   if (file->sector_count == 0) {
@@ -386,9 +402,9 @@ mcfg_err_t mcfg_add_sector(mcfg_file_t *file, char *name) {
 }
 
 mcfg_err_t mcfg_add_section(mcfg_sector_t *sector, char *name) {
-  if (sector == NULL) {
+  if (sector == NULL)
     return MCFG_NULLPTR;
-  }
+
   size_t ix = sector->section_count;
 
   if (sector->section_count == 0) {
@@ -407,8 +423,27 @@ mcfg_err_t mcfg_add_section(mcfg_sector_t *sector, char *name) {
 }
 
 mcfg_err_t mcfg_add_field(mcfg_section_t *section, mcfg_field_type_t type,
-                          char *name, void *data) {
-  return MCFG_TODO;
+                          char *name, void *data, size_t size) {
+  if (section == NULL)
+    return MCFG_NULLPTR;
+
+  size_t ix = section->field_count;
+
+  if (section->field_count == 0) {
+    section->fields = malloc_or_die(sizeof(*section->fields));
+  } else {
+    if (mcfg_get_field(section, name) != NULL)
+      return MCFG_DUPLICATE_FIELD;
+    section->fields = realloc_or_die(
+        section->fields, sizeof(mcfg_field_t) * (section->field_count + 1));
+  }
+
+  section->fields[ix].type = type;
+  section->fields[ix].name = name;
+  section->fields[ix].data = data;
+  section->fields[ix].size = size;
+  section->field_count++;
+  return MCFG_OK;
 }
 
 mcfg_sector_t *mcfg_get_sector(mcfg_file_t *file, char *name) {
