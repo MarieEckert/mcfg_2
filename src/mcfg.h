@@ -12,10 +12,12 @@ typedef enum mcfg_err {
   MCFG_END_IN_NOWHERE,
   MCFG_STRUCTURE_ERROR,
   MCFG_DUPLICATE_SECTOR,
+  MCFG_DUPLICATE_SECTION,
   MCFG_OS_ERROR_MASK = 0xf000
 } mcfg_err_t;
 
 typedef enum mcfg_field_type {
+  TYPE_INVALID,
   TYPE_STRING,
   TYPE_LIST,
   TYPE_BOOL,
@@ -84,6 +86,8 @@ typedef enum mcfg_token {
 
 char *mcfg_err_string(mcfg_err_t err);
 
+mcfg_field_type_t mcfg_str_to_type(char *strtype);
+
 mcfg_token_t mcfg_get_token(char *in, uint16_t index);
 
 mcfg_err_t mcfg_parse_line(char *line, mcfg_parser_ctxt_t *ctxt);
@@ -101,9 +105,9 @@ mcfg_err_t mcfg_add_field(mcfg_section_t *section,
 
 mcfg_sector_t *mcfg_get_sector(mcfg_file_t *file, char *name);
 
-mcfg_section_t *mcfg_get_section(mcfg_file_t *file, char *path);
+mcfg_section_t *mcfg_get_section(mcfg_sector_t *sector, char *name);
 
-mcfg_field_t *mcfg_get_field(mcfg_file_t *file, char *path);
+mcfg_field_t *mcfg_get_field(mcfg_section_t *section, char *name);
 
 void mcfg_free_field(mcfg_field_t *field);
 

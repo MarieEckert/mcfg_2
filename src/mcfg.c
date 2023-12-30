@@ -12,6 +12,23 @@
 #include <stdlib.h>
 #include <string.h>
 
+uint8_t string_empty(char *in) {
+  if (in == NULL || in[0] == 0)
+    return 0;
+
+  size_t len = strlen(in);
+  for (size_t i = 0; i < len; i++)
+    if (in[i] > ' ')
+      return 1;
+
+  return 0;
+}
+
+void remove_newline(char *in) {
+  if (in[strlen(in) - 1] == '\n')
+    in[strlen(in) - 1] = 0;
+}
+
 char *mcfg_err_string(mcfg_err_t err) {
   if ((err & MCFG_OS_ERROR_MASK) == MCFG_OS_ERROR_MASK)
     return strerror(~MCFG_OS_ERROR_MASK & err);
@@ -29,9 +46,54 @@ char *mcfg_err_string(mcfg_err_t err) {
     return "Usage of \"end\" keyword in nowhere";
   case MCFG_STRUCTURE_ERROR:
     return "Invalid structure of input";
+  case MCFG_DUPLICATE_SECTOR:
+    return "Duplicate Sector";
+  case MCFG_DUPLICATE_SECTION:
+    return "Duplicate Section";
   default:
     return "invalid error code";
   }
+}
+
+struct _mcfg_type_id {
+  char *name;
+  mcfg_field_type_t value;
+};
+
+const struct _mcfg_type_id TYPE_IDS[] = {
+  {.name="str", .value=TYPE_STRING},
+  {.name="list", .value=TYPE_LIST},
+  {.name="bool", .value=TYPE_BOOL},
+  {.name="i8", .value=TYPE_I8},
+  {.name="u8", .value=TYPE_U8},
+  {.name="i16", .value=TYPE_I16},
+  {.name="u16", .value=TYPE_U16},
+  {.name="i32", .value=TYPE_I32},
+  {.name="u32", .value=TYPE_U32},
+};
+const size_t EXISTING_TYPE_COUNT =
+    sizeof(TYPE_IDS) / sizeof(struct _mcfg_type_id);
+
+mcfg_field_type_t mcfg_str_to_type(char *strtype) {
+  mcfg_field_type_t ret = TYPE_INVALID;
+
+  strtype = strdup(strtype);
+  remove_newline(strtype);
+
+  if (string_empty(strtype) == 0) {
+    goto mcfg_get_token_exit;
+  }
+
+  for (size_t ix = 0; ix < EXISTING_TYPE_COUNT; ix++) {
+    if (strcmp(strtype, TYPE_IDS[ix].name) == 0) {
+      ret = TYPE_IDS[ix].value;
+      break;
+    }
+  }
+
+mcfg_get_token_exit:
+  free(strtype);
+  return ret;
 }
 
 struct _mcfg_token_id {
@@ -57,23 +119,6 @@ const struct _mcfg_token_id TOKEN_IDS[] = {
 };
 const size_t EXISTING_TOKEN_COUNT =
     sizeof(TOKEN_IDS) / sizeof(struct _mcfg_token_id);
-
-uint8_t string_empty(char *in) {
-  if (in == NULL || in[0] == 0)
-    return 0;
-
-  size_t len = strlen(in);
-  for (size_t i = 0; i < len; i++)
-    if (in[i] > ' ')
-      return 1;
-
-  return 0;
-}
-
-void remove_newline(char *in) {
-  if (in[strlen(in) - 1] == '\n')
-    in[strlen(in) - 1] = 0;
-}
 
 char *mcfg_get_token_raw(char *in, uint16_t index) {
   if (string_empty(in) == 0)
@@ -127,7 +172,7 @@ mcfg_get_token_exit:
 
 mcfg_err_t _parse_outside_sector(char *line, mcfg_parser_ctxt_t *ctxt) {
   mcfg_token_t tok = mcfg_get_token(line, 0);
-  fprintf(stderr, "%s %d\n", __FUNCTION__, tok);
+  
   if (tok == TOKEN_INVALID)
     return MCFG_INVALID_KEYWORD;
 
@@ -186,6 +231,25 @@ mcfg_err_t _parse_sector(char *line, mcfg_parser_ctxt_t *ctxt) {
 }
 
 mcfg_err_t _parse_section(char *line, mcfg_parser_ctxt_t *ctxt) {
+  mcfg_token_t tok = mcfg_get_token(line, 0);
+
+  if (tok == TOKEN_INVALID)
+    return MCFG_INVALID_KEYWORD;
+
+  if (tok == TOKEN_EMPTY || tok == TOKEN_COMMENT)
+    return MCFG_OK;
+
+  if (tok == TOKEN_END) {
+    ctxt->target_section = NULL;
+    return MCFG_OK;
+  }
+
+  if (tok < TOKEN_STR)   
+    return MCFG_STRUCTURE_ERROR;
+
+  mcfg_field_type_t type = mcfg_str_to_type(mcfg_get_token_raw(line, 1));
+  char *name = mcfg_get_token_raw(line, 2);
+
   return MCFG_OK;
 }
 
@@ -274,6 +338,18 @@ mcfg_err_t mcfg_add_sector(mcfg_file_t *file, char *name) {
 }
 
 mcfg_err_t mcfg_add_section(mcfg_sector_t *sector, char *name){
+  size_t ix = sector->section_count++;
+
+  if (sector->section_count == 1) {
+    sector->sections = malloc(sizeof(mcfg_section_t));
+  } else {
+    if (mcfg_get_section(sector, name) != NULL)
+      return MCFG_DUPLICATE_SECTION;
+    sector->sections =
+        realloc(sector->sections, sizeof(mcfg_section_t) * sector->section_count);
+  }
+
+  sector->sections[ix].name = name;
   return MCFG_OK;
 }
 
@@ -283,15 +359,42 @@ mcfg_err_t mcfg_add_field(mcfg_section_t *section,
 }
 
 mcfg_sector_t *mcfg_get_sector(mcfg_file_t *file, char *name) {
-  return NULL;
+  mcfg_sector_t *ret = NULL;
+
+  for (size_t ix = 0; ix < file->sector_count; ix++) {
+    if (strcmp(file->sectors[ix].name, name) == 0) {
+      ret = &file->sectors[ix];
+      break;
+    }
+  }
+
+  return ret;
 }
 
-mcfg_section_t *mcfg_get_section(mcfg_file_t *file, char *path) {
-  return NULL;
+mcfg_section_t *mcfg_get_section(mcfg_sector_t *sector, char *name) {
+  mcfg_section_t *ret = NULL;
+
+  for (size_t ix = 0; ix < sector->section_count; ix++) {
+    if (strcmp(sector->sections[ix].name, name) == 0) {
+      ret = &sector->sections[ix];
+      break;
+    }
+  }
+
+  return ret;
 }
 
-mcfg_field_t *mcfg_get_field(mcfg_file_t *file, char *path) {
-  return NULL;
+mcfg_field_t *mcfg_get_field(mcfg_section_t *section, char *name) {
+  mcfg_field_t *ret = NULL;
+
+  for (size_t ix = 0; ix < section->field_count; ix++) {
+    if (strcmp(section->fields[ix].name, name) == 0) {
+      ret = &section->fields[ix];
+      break;
+    }
+  }
+
+  return ret;
 }
 
 void mcfg_free_field(mcfg_field_t *field) {}
