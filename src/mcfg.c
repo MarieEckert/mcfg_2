@@ -7,25 +7,24 @@
 // TODO:
 // - Fix double frees with mcfg_free_* functions
 // - Parse Field-Declarations
-//    - Number-Types (u/ints, bool)
 //    - Single line strings
 //    - multi line strings
+//    - list types
 //------------------------------------------------------------------------------
 
 #include "mcfg.h"
 
 #include <errno.h>
+#include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 
 void *malloc_or_die(size_t size) {
   void *ptr = malloc(size);
   if (ptr == NULL) {
-    fprintf(stderr, "malloc_or_die decided to fix its kms. (size = %zu)\n",
-            size);
+    fprintf(stderr, "malloc_or_die failed. (size = %zu)\n", size);
     abort();
   }
 
@@ -35,8 +34,7 @@ void *malloc_or_die(size_t size) {
 void *realloc_or_die(void *org, size_t size) {
   void *ptr = realloc(org, size);
   if (ptr == NULL) {
-    fprintf(stderr, "realloc_or_die decided to fix its kms. (size = %zu)\n",
-            size);
+    fprintf(stderr, "realloc_or_die failed. (size = %zu)\n", size);
     abort();
   }
 
@@ -143,7 +141,7 @@ ssize_t mcfg_sizeof(mcfg_field_type_t type) {
   case TYPE_U32:
     return 4;
   default:
-    return -1; 
+    return -1;
   }
 }
 
@@ -296,11 +294,7 @@ mcfg_data_parse_result_t _parse_string_field(char *str) {
 
 mcfg_data_parse_result_t _parse_list_field(char *str) {
   mcfg_data_parse_result_t ret = {
-    .error = MCFG_OK,
-    .multiline = 1,
-    .data = NULL,
-    .size = 0
-  };
+      .error = MCFG_OK, .multiline = 1, .data = NULL, .size = 0};
 
   return ret;
 }
@@ -340,15 +334,14 @@ mcfg_data_parse_result_t mcfg_parse_field_data(mcfg_field_type_t type,
   }
 
   ret.data = malloc_or_die(ret.size);
-  
-  int64_t converted;
-  
+
+  int64_t converted = 0;
+
   if (type == TYPE_BOOL)
     converted = _strtobool(mcfg_get_token_raw(str, 2));
   else
     converted = strtol(mcfg_get_token_raw(str, 2), NULL, 10);
-  
-  
+
   if (!_integer_bounds_check(converted, type)) {
     ret.error = MCFG_INTEGER_OUT_OF_BOUNDS;
     goto mcfg_parse_field_data_ret;
