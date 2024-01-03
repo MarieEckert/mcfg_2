@@ -67,16 +67,16 @@ bool _integer_bounds_check(int64_t _int, mcfg_field_type_t type) {
   }
 }
 
-uint8_t string_empty(char *in) {
+bool string_empty(char *in) {
   if (in == NULL || in[0] == 0)
     return 0;
 
   size_t len = strlen(in);
   for (size_t i = 0; i < len; i++)
     if (in[i] > ' ')
-      return 1;
+      return false;
 
-  return 0;
+  return true;
 }
 
 void remove_newline(char *in) {
@@ -87,8 +87,8 @@ void remove_newline(char *in) {
     in[strlen(in) - 1] = 0;
 }
 
-uint8_t _strtobool(char *in) {
-  return 0;
+mcfg_boolean_t _strtobool(char *in) {
+  return false;
 }
 
 char *mcfg_err_string(mcfg_err_t err) {
@@ -200,7 +200,7 @@ const size_t EXISTING_TOKEN_COUNT =
     sizeof(TOKEN_IDS) / sizeof(struct _mcfg_token_id);
 
 size_t mcfg_get_token_count(char *in) {
-  if (string_empty(in) == 0)
+  if (string_empty(in))
     return 0;
 
   size_t count = 0;
@@ -218,7 +218,7 @@ size_t mcfg_get_token_count(char *in) {
 }
 
 char *mcfg_get_token_raw(char *in, uint16_t index) {
-  if (string_empty(in) == 0)
+  if (string_empty(in))
     return strdup("");
 
   char *string_tok_ptr = NULL;
@@ -250,7 +250,7 @@ mcfg_token_t mcfg_get_token(char *in, uint16_t index) {
 
   remove_newline(in);
 
-  if (string_empty(in) == 0) {
+  if (string_empty(in)) {
     tok = TOKEN_EMPTY;
     goto mcfg_get_token_exit;
   }
