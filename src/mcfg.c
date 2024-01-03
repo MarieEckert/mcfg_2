@@ -85,7 +85,7 @@ char *mcfg_err_string(mcfg_err_t err) {
   case MCFG_DUPLICATE_SECTION:
     return "Duplicate Section";
   case MCFG_NULLPTR:
-    return "NULL-Pointe";
+    return "NULL-Pointer";
   default:
     return "invalid error code";
   }
@@ -205,10 +205,10 @@ mcfg_get_token_exit:
 mcfg_data_parse_result_t mcfg_parse_field_data(mcfg_field_type_t type,
                                                char *str) {
   mcfg_data_parse_result_t ret = {
-    .error = MCFG_OK,
-    .multiline = 1,
-    .data = NULL,
-    .size = 0,
+      .error = MCFG_OK,
+      .multiline = 1,
+      .data = NULL,
+      .size = 0,
   };
 
   return ret;
@@ -303,7 +303,7 @@ mcfg_err_t _parse_section(char *line, mcfg_parser_ctxt_t *ctxt) {
   if (data_result.error != MCFG_OK)
     return data_result.error;
 
-  mcfg_err_t ret = mcfg_add_field(ctxt->target_section, type, name, 
+  mcfg_err_t ret = mcfg_add_field(ctxt->target_section, type, name,
                                   data_result.data, data_result.size);
   if (ret != MCFG_OK) {
     free(name);
@@ -313,8 +313,8 @@ mcfg_err_t _parse_section(char *line, mcfg_parser_ctxt_t *ctxt) {
   }
 
   if (data_result.multiline == 0)
-    ctxt->target_field = 
-      &ctxt->target_section->fields[ctxt->target_section->field_count];
+    ctxt->target_field =
+        &ctxt->target_section->fields[ctxt->target_section->field_count];
 
   return MCFG_OK;
 }
@@ -516,7 +516,6 @@ void mcfg_free_section(mcfg_section_t *section) {
 
   if (section->name != NULL)
     free(section->name);
-
 }
 
 void mcfg_free_sector(mcfg_sector_t *sector) {
