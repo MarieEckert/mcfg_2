@@ -152,6 +152,25 @@ const struct _mcfg_token_id TOKEN_IDS[] = {
 const size_t EXISTING_TOKEN_COUNT =
     sizeof(TOKEN_IDS) / sizeof(struct _mcfg_token_id);
 
+size_t mcfg_get_token_count(char *in) {
+  if (string_empty(in) == 0)
+    return 0;
+
+  size_t count = 0;
+  char *string_tok_ptr = NULL;
+  char *indup = strdup(in);
+  char *tok = strtok_r(indup, " ", &string_tok_ptr);
+
+
+  while (tok != NULL) {
+    count++;
+    tok = strtok_r(NULL, " ", &string_tok_ptr);
+  }
+
+  free(indup);
+  return count;
+}
+
 char *mcfg_get_token_raw(char *in, uint16_t index) {
   if (string_empty(in) == 0)
     return strdup("");
