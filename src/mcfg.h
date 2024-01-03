@@ -106,6 +106,10 @@ char *mcfg_err_string(mcfg_err_t err);
 
 mcfg_field_type_t mcfg_str_to_type(char *strtype);
 
+size_t mcfg_get_token_count(char *in);
+
+char *mcfg_get_token_raw(char *in, uint16_t index);
+
 mcfg_token_t mcfg_get_token(char *in, uint16_t index);
 
 mcfg_data_parse_result_t mcfg_parse_field_data(mcfg_field_type_t type,
