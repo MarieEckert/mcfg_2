@@ -31,7 +31,7 @@ typedef enum mcfg_err {
 } mcfg_err_t;
 
 typedef enum mcfg_field_type {
-  TYPE_INVALID,
+  TYPE_INVALID = -1,
   TYPE_STRING,
   TYPE_LIST,
   TYPE_BOOL,

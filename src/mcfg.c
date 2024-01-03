@@ -69,7 +69,7 @@ bool _integer_bounds_check(int64_t _int, mcfg_field_type_t type) {
 
 bool string_empty(char *in) {
   if (in == NULL || in[0] == 0)
-    return 0;
+    return true;
 
   size_t len = strlen(in);
   for (size_t i = 0; i < len; i++)
@@ -117,8 +117,14 @@ char *mcfg_err_string(mcfg_err_t err) {
     return "Duplicate Sector";
   case MCFG_DUPLICATE_SECTION:
     return "Duplicate Section";
+  case MCFG_DUPLICATE_FIELD:
+    return "Duplicate Field";
+  case MCFG_INVALID_TYPE:
+    return "Invalid Datatype";
   case MCFG_NULLPTR:
     return "NULL-Pointer";
+  case MCFG_INTEGER_OUT_OF_BOUNDS:
+    return "Integer value is out of bounds";
   default:
     return "invalid error code";
   }
@@ -162,7 +168,7 @@ mcfg_field_type_t mcfg_str_to_type(char *strtype) {
   strtype = strdup(strtype);
   remove_newline(strtype);
 
-  if (string_empty(strtype) == 0) {
+  if (string_empty(strtype)) {
     goto mcfg_get_token_exit;
   }
 
@@ -308,6 +314,11 @@ mcfg_data_parse_result_t mcfg_parse_field_data(mcfg_field_type_t type,
       .size = 0,
   };
 
+  if (type == TYPE_INVALID) {
+    ret.error = MCFG_INVALID_TYPE;
+    goto mcfg_parse_field_data_ret;
+  }
+
   size_t tok_count = mcfg_get_token_count(str);
   if (tok_count < 3) {
     ret.error = MCFG_SYNTAX_ERROR;
@@ -338,7 +349,7 @@ mcfg_data_parse_result_t mcfg_parse_field_data(mcfg_field_type_t type,
     converted = strtol(mcfg_get_token_raw(str, 2), NULL, 10);
   
   
-  if (_integer_bounds_check(converted, type) != 0) {
+  if (!_integer_bounds_check(converted, type)) {
     ret.error = MCFG_INTEGER_OUT_OF_BOUNDS;
     goto mcfg_parse_field_data_ret;
   }
