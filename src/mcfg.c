@@ -15,9 +15,11 @@
 #include "mcfg.h"
 
 #include <errno.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 void *malloc_or_die(size_t size) {
   void *ptr = malloc(size);
@@ -41,6 +43,30 @@ void *realloc_or_die(void *org, size_t size) {
   return ptr;
 }
 
+bool _integer_bounds_check(int64_t _int, mcfg_field_type_t type) {
+  if (mcfg_sizeof(type) <= 0)
+    return false;
+
+  switch (type) {
+  case TYPE_BOOL:
+    return _int >= BOOL_FALSE && _int <= BOOL_TRUE;
+  case TYPE_I8:
+    return _int >= INT8_MIN && _int <= INT8_MAX;
+  case TYPE_U8:
+    return _int >= 0 && _int <= UINT8_MAX;
+  case TYPE_I16:
+    return _int >= INT16_MIN && _int <= INT16_MAX;
+  case TYPE_U16:
+    return _int >= 0 && _int <= UINT16_MAX;
+  case TYPE_I32:
+    return _int >= INT32_MIN && _int <= INT32_MAX;
+  case TYPE_U32:
+    return _int >= 0 && _int <= UINT32_MAX;
+  default:
+    return false;
+  }
+}
+
 uint8_t string_empty(char *in) {
   if (in == NULL || in[0] == 0)
     return 0;
@@ -59,6 +85,10 @@ void remove_newline(char *in) {
 
   if (in[strlen(in) - 1] == '\n')
     in[strlen(in) - 1] = 0;
+}
+
+uint8_t _strtobool(char *in) {
+  return 0;
 }
 
 char *mcfg_err_string(mcfg_err_t err) {
@@ -297,6 +327,18 @@ mcfg_data_parse_result_t mcfg_parse_field_data(mcfg_field_type_t type,
 
   ret.data = malloc_or_die(ret.size);
   
+  int64_t converted;
+  
+  if (type == TYPE_BOOL)
+    converted = _strtobool(mcfg_get_token_raw(str, 2));
+  else
+    converted = strtol(mcfg_get_token_raw(str, 2), NULL, 10);
+  
+  
+  if (_integer_bounds_check(converted, type) != 0) {
+    ret.error = MCFG_INTEGER_OUT_OF_BOUNDS;
+    goto mcfg_parse_field_data_ret;
+  }
 
 mcfg_parse_field_data_ret:
   return ret;

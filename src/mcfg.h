@@ -11,8 +11,7 @@
 #include <sys/types.h>
 #include <stddef.h>
 #include <stdint.h>
-
-typedef uint8_t mcfg_boolean;
+#include <stdbool.h>
 
 typedef enum mcfg_err {
   MCFG_OK,
@@ -27,6 +26,7 @@ typedef enum mcfg_err {
   MCFG_DUPLICATE_FIELD,
   MCFG_INVALID_TYPE,
   MCFG_NULLPTR,
+  MCFG_INTEGER_OUT_OF_BOUNDS,
   MCFG_OS_ERROR_MASK = 0xf000
 } mcfg_err_t;
 
@@ -42,6 +42,11 @@ typedef enum mcfg_field_type {
   TYPE_I32,
   TYPE_U32,
 } mcfg_field_type_t;
+
+typedef enum mcfg_boolean {
+  BOOL_FALSE = 0,
+  BOOL_TRUE = 1,
+} mcfg_boolean_t;
 
 typedef struct mcfg_field {
   char *name;
