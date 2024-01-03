@@ -221,6 +221,24 @@ mcfg_get_token_exit:
   return tok;
 }
 
+// the first character (str + offset) is expected to be the opening quote
+// of the string
+mcfg_data_parse_result_t _parse_string_field(char *str) {
+  mcfg_data_parse_result_t ret = {
+      .error = MCFG_OK,
+      .multiline = 1,
+      .data = NULL,
+      .size = 0,
+  };
+
+  if (str[0] != '\'') {
+    ret.error = MCFG_SYNTAX_ERROR;
+    return ret;
+  }
+
+  return ret;
+}
+
 mcfg_data_parse_result_t mcfg_parse_field_data(mcfg_field_type_t type,
                                                char *str) {
   mcfg_data_parse_result_t ret = {
@@ -230,6 +248,17 @@ mcfg_data_parse_result_t mcfg_parse_field_data(mcfg_field_type_t type,
       .size = 0,
   };
 
+  size_t tok_count = mcfg_get_token_count(str);
+  if (tok_count < 3) {
+    ret.error = MCFG_SYNTAX_ERROR;
+    goto mcfg_parse_field_data_ret;
+  }
+
+  if (type == TYPE_STRING) {
+    return _parse_string_field(strchr(str, '\''));
+  }
+
+mcfg_parse_field_data_ret:
   return ret;
 }
 
@@ -313,7 +342,7 @@ mcfg_err_t _parse_section(char *line, mcfg_parser_ctxt_t *ctxt) {
   if (tok < TOKEN_STR)
     return MCFG_STRUCTURE_ERROR;
 
-  char *strtype = mcfg_get_token_raw(line, 1);
+  char *strtype = mcfg_get_token_raw(line, 0);
   mcfg_field_type_t type = mcfg_str_to_type(strtype);
   free(strtype);
 
@@ -437,7 +466,7 @@ mcfg_err_t mcfg_add_section(mcfg_sector_t *sector, char *name) {
     sector->sections = malloc_or_die(sizeof(*sector->sections));
   } else {
     if (mcfg_get_section(sector, name) != NULL)
-      return MCFG_DUPLICATE_SECTION;
+      return MCFG_DUPLICATE_FIELD;
     sector->sections = realloc_or_die(
         sector->sections, sizeof(mcfg_section_t) * (sector->section_count + 1));
   }
