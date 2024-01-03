@@ -8,8 +8,11 @@
 #ifndef MCFG_H
 #define MCFG_H
 
+#include <sys/types.h>
 #include <stddef.h>
 #include <stdint.h>
+
+typedef uint8_t mcfg_boolean;
 
 typedef enum mcfg_err {
   MCFG_OK,
@@ -22,6 +25,7 @@ typedef enum mcfg_err {
   MCFG_DUPLICATE_SECTOR,
   MCFG_DUPLICATE_SECTION,
   MCFG_DUPLICATE_FIELD,
+  MCFG_INVALID_TYPE,
   MCFG_NULLPTR,
   MCFG_OS_ERROR_MASK = 0xf000
 } mcfg_err_t;
@@ -114,6 +118,17 @@ typedef enum mcfg_token {
 // Inputs which match MCFG_OS_ERROR_MASK will return the return value of
 // strerror and require the return value to be freed after usage.
 char *mcfg_err_string(mcfg_err_t err);
+
+//------------------------------------------------------------------------------
+// Get the size for the given type in bytes.
+//
+// Params:
+// type The type to get the size of
+//
+// Returns:
+// -1 if the type is invalid or its size is dynamic. Otherwise a positive number
+// indicating the size of the datatype in bytes.
+ssize_t mcfg_sizeof(mcfg_field_type_t type);
 
 //------------------------------------------------------------------------------
 // Convert the input string to its matching mcfg_field_type enum.

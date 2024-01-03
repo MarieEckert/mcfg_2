@@ -91,6 +91,23 @@ char *mcfg_err_string(mcfg_err_t err) {
   }
 }
 
+ssize_t mcfg_sizeof(mcfg_field_type_t type) {
+  switch (type) {
+  case TYPE_BOOL:
+  case TYPE_I8:
+  case TYPE_U8:
+    return 1;
+  case TYPE_I16:
+  case TYPE_U16:
+    return 2;
+  case TYPE_I32:
+  case TYPE_U32:
+    return 4;
+  default:
+    return -1; 
+  }
+}
+
 struct _mcfg_type_id {
   char *name;
   mcfg_field_type_t value;
@@ -160,7 +177,6 @@ size_t mcfg_get_token_count(char *in) {
   char *string_tok_ptr = NULL;
   char *indup = strdup(in);
   char *tok = strtok_r(indup, " ", &string_tok_ptr);
-
 
   while (tok != NULL) {
     count++;
@@ -239,6 +255,17 @@ mcfg_data_parse_result_t _parse_string_field(char *str) {
   return ret;
 }
 
+mcfg_data_parse_result_t _parse_list_field(char *str) {
+  mcfg_data_parse_result_t ret = {
+    .error = MCFG_OK,
+    .multiline = 1,
+    .data = NULL,
+    .size = 0
+  };
+
+  return ret;
+}
+
 mcfg_data_parse_result_t mcfg_parse_field_data(mcfg_field_type_t type,
                                                char *str) {
   mcfg_data_parse_result_t ret = {
@@ -257,6 +284,19 @@ mcfg_data_parse_result_t mcfg_parse_field_data(mcfg_field_type_t type,
   if (type == TYPE_STRING) {
     return _parse_string_field(strchr(str, '\''));
   }
+
+  if (type == TYPE_LIST) {
+    return _parse_list_field(str);
+  }
+
+  ret.size = mcfg_sizeof(type);
+  if (ret.size <= 0) {
+    ret.error = MCFG_INVALID_TYPE;
+    goto mcfg_parse_field_data_ret;
+  }
+
+  ret.data = malloc_or_die(ret.size);
+  
 
 mcfg_parse_field_data_ret:
   return ret;
