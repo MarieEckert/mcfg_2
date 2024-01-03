@@ -14,7 +14,7 @@ sector config
 
         ; mcfg 2 has brought along a new list syntax, where each element is its own string
         ; and seperated by commas.
-        list targets 'all', 'clean', 'debug', 'release'
+        list str targets 'all', 'clean', 'debug', 'release'
         str default 'all'
     end
 end
@@ -24,7 +24,7 @@ end
 ; from the current target are accesible via %target%.
 sector targets
     section debug
-        list required_targets 'clean'
+        list str required_targets 'clean'
         
         str cflags '-ggdb'
 
@@ -39,16 +39,19 @@ sector c_rules
     section executable
         ; Compilation rules can list other compilation rules which they require
         ; These are executed in order.
-        list c_rules 'main'
-        list binname 'example'
+        list str c_rules 'main'
+        list str binname 'example'
 
-        list objs '$(/c_rules/main/obj)$(/c_rules/main/sources).o'
+        list str objs '$(/config/files/obj)$(/c_rules/main/sources).o'
 
-        ; exec_on specified which list holds the name for  the commands to be executed on
-        str exec_on 'binname'
+        str input_format '$(/config/files/obj)$(%element%).o'
+        str output_format '$(binname)'
+
+        ; exec_on specified which list holds the name for the commands to be executed on
+        str exec_on 'objs'
 
         ; exec_cmp_against specified which list of files to compare the input exec_cmp_against
-        str exec_cmp_against 'objs'
+        str exec_mode 'unify'
 
         ; The command which is specified in the exec field is executed for each member of
         ; the list specified in exec_on
@@ -58,7 +61,7 @@ sector c_rules
     end
 
     section main
-        list sources 'util', 'main'
+        list str sources 'util', 'main'
         str obj 'obj/'
         str src 'src/'
 
