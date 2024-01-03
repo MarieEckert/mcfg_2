@@ -102,27 +102,138 @@ typedef enum mcfg_token {
   TOKEN_EMPTY,
 } mcfg_token_t;
 
+//-----------------------------------------------------------------------------
+// Get the according string name/description for the input
+//
+// Params:
+// err The error enum value
+//
+// Returns:
+// Matching string name/description for input; "invalid error code" if no
+// matching string could be found.
+// Inputs which match MCFG_OS_ERROR_MASK will return the return value of
+// strerror and require the return value to be freed after usage.
 char *mcfg_err_string(mcfg_err_t err);
 
+//------------------------------------------------------------------------------
+// Convert the input string to its matching mcfg_field_type enum.
+//
+// Params:
+// strtype The string for which to find the matching mcfg_field_type enum
+//
+// Returns:
+// Matching mcfg_field_type enum. Returns TYPE_INVALID if no match could be
+// found.
 mcfg_field_type_t mcfg_str_to_type(char *strtype);
 
+//------------------------------------------------------------------------------
+// Gets the count of tokens in the input string
+//
+// Params:
+// in The string for which to count the tokens
+//
+// Returns:
+// The amount of tokens found in the string, space-seperated.
 size_t mcfg_get_token_count(char *in);
 
+//------------------------------------------------------------------------------
+// Gets the token at index from string in.
+//
+// Params:
+// in The string from which to get the token
+// index The 0-based index of the token to be grabbed.
+//
+// Returns:
+// The token at index. If the string is emtpy or the index invalid an empty
+// string is returned.
+// Every return value is allocated on the heap so it has to be freed.
 char *mcfg_get_token_raw(char *in, uint16_t index);
 
+//------------------------------------------------------------------------------
+// Gets the mcfg_token enum value for token at index from string in.
+//
+// Params:
+// in The string from which to get the token
+// index The 0-based index of the token to be grabbed.
+//
+// Returns:
+// The mcfg_token enum value for the token at index. Returns TOKEN_INVALID if
+// index is invalid, input string is empty/NULL or no valid token could be found
+// at index.
 mcfg_token_t mcfg_get_token(char *in, uint16_t index);
 
+//------------------------------------------------------------------------------
+// Parses a field-declaration.
+//
+// Params:
+// type The type of the field
+// str The entire line of the field declaration.
+//
+// Returns:
+// see declaration of struct mcfg_data_parse_result
 mcfg_data_parse_result_t mcfg_parse_field_data(mcfg_field_type_t type,
                                                char *str);
 
+//------------------------------------------------------------------------------
+// Parse a line of mcfg
+//
+// Params:
+// line The line to be parsed
+// ctxt The parser context in which the line is to be parsed
+//
+// Returns:
+// MCFG_OK if no errors occured, for other return values see the declaration of
+// mcfg_err_t.
 mcfg_err_t mcfg_parse_line(char *line, mcfg_parser_ctxt_t *ctxt);
 
+//------------------------------------------------------------------------------
+// Parse a file from disk
+//
+// Params:
+// path The path to the file
+// file The mcfg_file struct into which the file should be parsed
+// ctxt_out Location for the parser context to be put. Can be NULL
+//
+// Returns:
+// MCFG_OK if no errors occured, for other return values see the declaration of
+// mcfg_err_t.
 mcfg_err_t mcfg_parse_file_ctxto(char *path, mcfg_file_t *file,
                                  mcfg_parser_ctxt_t **ctxt_out);
+
+//------------------------------------------------------------------------------
+// Parse a file from disk
+//
+// Params:
+// path The path to the file
+// file The mcfg_file struct into which the file should be parsed
+//
+// Returns:
+// MCFG_OK if no errors occured, for other return values see the declaration of
+// mcfg_err_t.
 mcfg_err_t mcfg_parse_file(char *path, mcfg_file_t *file);
 
+//------------------------------------------------------------------------------
+// Add a sector to a file
+//
+// Params:
+// file The mcfg_file struct into which the sector should be added
+// name The name of the sector to be added
+//
+// Returns:
+// MCFG_OK if no errors occured, MCFG_DUPLICATE_SECTOR if a sector with given
+// name already exists in file.
 mcfg_err_t mcfg_add_sector(mcfg_file_t *file, char *name);
 
+//------------------------------------------------------------------------------
+// Add a section to a sector
+//
+// Params:
+// sector The mcfg_sector struct into which the section should be added
+// name The name of the section to be added
+//
+// Returns:
+// MCFG_OK if no errors occured, MCFG_DUPLICATE_SECTION if a section with given
+// name already exists in sector.
 mcfg_err_t mcfg_add_section(mcfg_sector_t *sector, char *name);
 
 mcfg_err_t mcfg_add_field(mcfg_section_t *section, mcfg_field_type_t type,
