@@ -236,21 +236,81 @@ mcfg_err_t mcfg_add_sector(mcfg_file_t *file, char *name);
 // name already exists in sector.
 mcfg_err_t mcfg_add_section(mcfg_sector_t *sector, char *name);
 
+//------------------------------------------------------------------------------
+// Add a field to a section
+//
+// Params:
+// section The mcfg_section struct into which the field should be added
+// type The datatype of the field which is to be added
+// name The name of the field which is to be added
+// data Pointer to the data of the field which is to be added
+// size The size of data in bytes
+//
+// Returns:
+// MCFG_OK if no errors occured, MCFG_DUPLICATE_FIELD if a field with given name
+// already exists in section.
 mcfg_err_t mcfg_add_field(mcfg_section_t *section, mcfg_field_type_t type,
                           char *name, void *data, size_t size);
 
+//------------------------------------------------------------------------------
+// Get the sector with name from file
+//
+// Params:
+// file The file from which the sector is to be grabbed
+// name The name of the sector
+//
+// Returns:
+// Pointer to the sector, NULL if no sector with given name could be found.
 mcfg_sector_t *mcfg_get_sector(mcfg_file_t *file, char *name);
 
+//------------------------------------------------------------------------------
+// Get the section with name from sector
+//
+// Params:
+// sector The sector from which the section is to be grabbed
+// name The name of the section
+//
+// Returns:
+// Pointer to the section, NULL if no section with given name could be found.
 mcfg_section_t *mcfg_get_section(mcfg_sector_t *sector, char *name);
 
+//------------------------------------------------------------------------------
+// Get the field with name from section
+//
+// Params:
+// section The section from which the field is to be grabbed
+// name The name of the field
+//
+// Returns:
+// Pointer to the field, NULL if no field with given name could be found.
 mcfg_field_t *mcfg_get_field(mcfg_section_t *section, char *name);
 
+//------------------------------------------------------------------------------
+// Free the contents of given field
+//
+// Params:
+// field The field of which the contents should be freed
 void mcfg_free_field(mcfg_field_t *field);
 
+//------------------------------------------------------------------------------
+// Free the contents of given section
+//
+// Params:
+// section The section of which the contents should be freed
 void mcfg_free_section(mcfg_section_t *section);
 
+//------------------------------------------------------------------------------
+// Free the contents of given sector
+//
+// Params:
+// sector The sector of which the contents should be freed
 void mcfg_free_sector(mcfg_sector_t *sector);
 
+//------------------------------------------------------------------------------
+// Free the given file
+//
+// Params:
+// file The file which should be freed.
 void mcfg_free_file(mcfg_file_t *file);
 
 #endif // ifndef MCFG_H
