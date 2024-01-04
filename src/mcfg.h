@@ -8,10 +8,10 @@
 #ifndef MCFG_H
 #define MCFG_H
 
-#include <sys/types.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stdbool.h>
+#include <sys/types.h>
 
 typedef enum mcfg_err {
   MCFG_OK,

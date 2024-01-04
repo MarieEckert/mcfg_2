@@ -7,8 +7,6 @@
 // TODO:
 // - Fix double frees with mcfg_free_* functions
 // - Parse Field-Declarations
-//    - Single line strings
-//    - multi line strings
 //    - list types
 //------------------------------------------------------------------------------
 
