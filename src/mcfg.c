@@ -308,7 +308,7 @@ mcfg_data_parse_result_t _parse_string_field(char *str) {
 
     wix++;
   }
-  ((char *) ret.data)[wix + 1] = 0;
+  ((char *)ret.data)[wix + 1] = 0;
 
   return ret;
 }
@@ -456,7 +456,8 @@ mcfg_err_t _parse_section(char *line, mcfg_parser_ctxt_t *ctxt) {
   mcfg_field_type_t type = mcfg_str_to_type(strtype);
   free(strtype);
 
-  char *name = mcfg_get_token_raw(line, 2);
+  uint16_t name_tok_offs = type == TYPE_LIST ? 1 : 0;
+  char *name = mcfg_get_token_raw(line, 1 + name_tok_offs);
   mcfg_data_parse_result_t data_result = mcfg_parse_field_data(type, line);
   if (data_result.error != MCFG_OK)
     return data_result.error;
@@ -472,7 +473,7 @@ mcfg_err_t _parse_section(char *line, mcfg_parser_ctxt_t *ctxt) {
 
   if (data_result.multiline)
     ctxt->target_field =
-        &ctxt->target_section->fields[ctxt->target_section->field_count];
+        &ctxt->target_section->fields[ctxt->target_section->field_count - 1];
 
   return MCFG_OK;
 }
@@ -482,25 +483,30 @@ mcfg_err_t _parse_field(char *line, mcfg_parser_ctxt_t *ctxt) {
     return MCFG_INVALID_PARSER_STATE;
 
   mcfg_field_t *field = ctxt->target_field;
+  printf("name = %s ; type = %d\n", field->name, field->type);
   if (field->type != TYPE_STRING && field->type != TYPE_LIST)
     return MCFG_INVALID_PARSER_STATE;
-
+  
+  mcfg_data_parse_result_t data_result;
   if (field->type == TYPE_STRING) {
-    mcfg_data_parse_result_t data_result = _parse_string_field(line);
+    data_result = _parse_string_field(line);
     if (data_result.error != MCFG_OK)
       return data_result.error;
 
-    size_t new_size = field->size + data_result.size;
+    size_t new_size = field->size + data_result.size - 1;
     char *new_str = malloc_or_die(new_size);
 
     // string field data is always expected to be NULL-terminated
     memcpy(new_str, field->data, field->size - 1);
     memcpy(new_str + field->size, data_result.data, data_result.size);
     free(field->data);
-    
+
     field->size = new_size;
-    field->data = (void*) new_str;
+    field->data = (void *)new_str;
   }
+
+  if (!data_result.multiline)
+    ctxt->target_field = NULL;
 
   return MCFG_OK;
 }
