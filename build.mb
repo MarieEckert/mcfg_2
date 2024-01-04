@@ -9,7 +9,7 @@ sector .config
     str libname   'libmcfg.a'
     str compiler  'clang'
 
-    list files 'mcfg'
+    list files 'mcfg:mcfg_util'
 
     str std_flags     '-Wall -pedantic $(depends/includes) -c -o'
     str debug_flags   '-ggdb'

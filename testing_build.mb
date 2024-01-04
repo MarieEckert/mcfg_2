@@ -4,7 +4,7 @@ sector .config
 
   fields depends:
     str includes '-Isrc'
-    str libs     '-L. -lmcfg'
+    str libs     '-lm -L. -lmcfg'
 
   fields mariebuild:
     str binname   'mcfg_test'
