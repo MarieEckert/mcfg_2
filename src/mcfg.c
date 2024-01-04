@@ -503,6 +503,7 @@ mcfg_err_t _parse_field(char *line, mcfg_parser_ctxt_t *ctxt) {
     memcpy(new_str, field->data, field->size - 1);
     memcpy(new_str + field->size - 1, data_result.data, data_result.size);
     free(field->data);
+    free(data_result.data);
 
     field->size = new_size;
     field->data = (void *)new_str;
