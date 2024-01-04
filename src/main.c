@@ -41,7 +41,8 @@ void print_file(mcfg_file_t *file) {
                file->sectors[i].sections[j].fields[k].type);
         printf("              size_t size = %zu\n",
                file->sectors[i].sections[j].fields[k].size);
-        char *data_str = mcfg_data_to_string(file->sectors[i].sections[j].fields[k]);
+        char *data_str =
+            mcfg_data_to_string(file->sectors[i].sections[j].fields[k]);
         printf("              void *data = %s\n", data_str);
         free(data_str);
         printf("            }\n");
