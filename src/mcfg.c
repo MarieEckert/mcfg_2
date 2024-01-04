@@ -64,7 +64,7 @@ bool _integer_bounds_check(int64_t _int, mcfg_field_type_t type) {
   }
 }
 
-bool string_empty(char *in) {
+bool is_string_empty(char *in) {
   if (in == NULL || in[0] == 0)
     return true;
 
@@ -85,7 +85,7 @@ void remove_newline(char *in) {
 }
 
 mcfg_boolean_t _strtobool(char *in) {
-  if (string_empty(in))
+  if (is_string_empty(in))
     return BOOL_FALSE;
 
   return strcmp(in, "true") == 0 ? BOOL_TRUE : BOOL_FALSE;
@@ -165,7 +165,7 @@ mcfg_field_type_t mcfg_str_to_type(char *strtype) {
   strtype = strdup(strtype);
   remove_newline(strtype);
 
-  if (string_empty(strtype)) {
+  if (is_string_empty(strtype)) {
     goto mcfg_get_token_exit;
   }
 
@@ -206,7 +206,7 @@ const size_t EXISTING_TOKEN_COUNT =
     sizeof(TOKEN_IDS) / sizeof(struct _mcfg_token_id);
 
 size_t mcfg_get_token_count(char *in) {
-  if (string_empty(in))
+  if (is_string_empty(in))
     return 0;
 
   size_t count = 0;
@@ -224,7 +224,7 @@ size_t mcfg_get_token_count(char *in) {
 }
 
 char *mcfg_get_token_raw(char *in, uint16_t index) {
-  if (string_empty(in))
+  if (is_string_empty(in))
     return strdup("");
 
   char *string_tok_ptr = NULL;
@@ -256,7 +256,7 @@ mcfg_token_t mcfg_get_token(char *in, uint16_t index) {
 
   remove_newline(in);
 
-  if (string_empty(in)) {
+  if (is_string_empty(in)) {
     tok = TOKEN_EMPTY;
     goto mcfg_get_token_exit;
   }
