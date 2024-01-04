@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include "mcfg.h"
+#include "mcfg_util.h"
 
 void print_file(mcfg_file_t *file) {
   printf("mcfg_file_t {\n");
@@ -12,7 +13,9 @@ void print_file(mcfg_file_t *file) {
     printf("      char *name = %s\n", file->dynfields[i].name);
     printf("      mcfg_field_type_t type = %d\n", file->dynfields[i].type);
     printf("      size_t size = %zu\n", file->dynfields[i].size);
-    printf("      void *data = %s\n", "?");
+    char *data_str = mcfg_data_to_string(file->dynfields[i]);
+    printf("      void *data = %s\n", data_str);
+    free(data_str);
     printf("    }\n");
   }
   printf("  ]\n");
@@ -38,7 +41,9 @@ void print_file(mcfg_file_t *file) {
                file->sectors[i].sections[j].fields[k].type);
         printf("              size_t size = %zu\n",
                file->sectors[i].sections[j].fields[k].size);
-        printf("              void *data = %s\n", "?");
+        char *data_str = mcfg_data_to_string(file->sectors[i].sections[j].fields[k]);
+        printf("              void *data = %s\n", data_str);
+        free(data_str);
         printf("            }\n");
       }
       printf("          ]\n");
