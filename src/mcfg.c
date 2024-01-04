@@ -305,7 +305,7 @@ mcfg_data_parse_result_t _parse_string_field(char *str) {
 
     wix++;
     ret.size++;
-    
+
     if (str[ix] == '\n') {
       ret.multiline = true;
       break;
@@ -489,7 +489,7 @@ mcfg_err_t _parse_field(char *line, mcfg_parser_ctxt_t *ctxt) {
   mcfg_field_t *field = ctxt->target_field;
   if (field->type != TYPE_STRING && field->type != TYPE_LIST)
     return MCFG_INVALID_PARSER_STATE;
-  
+
   mcfg_data_parse_result_t data_result;
   if (field->type == TYPE_STRING) {
     data_result = _parse_string_field(line);
