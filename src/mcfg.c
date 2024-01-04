@@ -584,6 +584,7 @@ mcfg_err_t mcfg_add_sector(mcfg_file_t *file, char *name) {
 
   size_t ix = file->sector_count;
 
+  remove_newline(name);
   if (file->sector_count == 0) {
     file->sectors = malloc_or_die(sizeof(*file->sectors));
   } else {
@@ -605,6 +606,7 @@ mcfg_err_t mcfg_add_section(mcfg_sector_t *sector, char *name) {
 
   size_t ix = sector->section_count;
 
+  remove_newline(name);
   if (sector->section_count == 0) {
     sector->sections = malloc_or_die(sizeof(*sector->sections));
   } else {
@@ -627,6 +629,7 @@ mcfg_err_t mcfg_add_field(mcfg_section_t *section, mcfg_field_type_t type,
 
   size_t ix = section->field_count;
 
+  remove_newline(name);
   if (section->field_count == 0) {
     section->fields = malloc_or_die(sizeof(*section->fields));
   } else {
