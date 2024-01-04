@@ -32,7 +32,8 @@ void *malloc_or_die(size_t size) {
 void *realloc_or_die(void *org, size_t size) {
   void *ptr = realloc(org, size);
   if (ptr == NULL) {
-    fprintf(stderr, "realloc_or_die failed. (size = %zu)\n", size);
+    fprintf(stderr, "realloc_or_die failed. (org = %p; size = %zu)\n", org,
+            size);
     abort();
   }
 
