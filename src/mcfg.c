@@ -279,7 +279,7 @@ mcfg_get_token_exit:
 mcfg_data_parse_result_t _parse_string_field(char *str) {
   mcfg_data_parse_result_t ret = {
       .error = MCFG_OK,
-      .multiline = 1,
+      .multiline = false,
       .data = NULL,
       .size = 0,
   };
@@ -289,12 +289,39 @@ mcfg_data_parse_result_t _parse_string_field(char *str) {
     return ret;
   }
 
+  ret.size = strlen(str);
+  ret.data = malloc(ret.size);
+
+  bool escaping = false;
+  size_t wix = 0;
+  for (size_t ix = 0; ix < strlen(str); ix++) {
+    if (str[ix] == '\'' && !escaping)
+      break;
+
+    if (str[ix] == '\n') {
+      ret.multiline = true;
+      break;
+    }
+
+    if (str[ix] == '\\' && !escaping) {
+      ret.size--;
+      escaping = true;
+      continue;
+    }
+
+    if (str[ix] == '\'' && escaping) {
+      ((char *)ret.data)[wix] = '\'';
+    }
+
+    wix++;
+  }
+
   return ret;
 }
 
 mcfg_data_parse_result_t _parse_list_field(char *str) {
   mcfg_data_parse_result_t ret = {
-      .error = MCFG_OK, .multiline = 1, .data = NULL, .size = 0};
+      .error = MCFG_OK, .multiline = false, .data = NULL, .size = 0};
 
   return ret;
 }
@@ -303,7 +330,7 @@ mcfg_data_parse_result_t mcfg_parse_field_data(mcfg_field_type_t type,
                                                char *str) {
   mcfg_data_parse_result_t ret = {
       .error = MCFG_OK,
-      .multiline = 1,
+      .multiline = false,
       .data = NULL,
       .size = 0,
   };
@@ -449,7 +476,7 @@ mcfg_err_t _parse_section(char *line, mcfg_parser_ctxt_t *ctxt) {
     return ret;
   }
 
-  if (data_result.multiline == 0)
+  if (data_result.multiline)
     ctxt->target_field =
         &ctxt->target_section->fields[ctxt->target_section->field_count];
 

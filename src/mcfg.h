@@ -55,6 +55,12 @@ typedef struct mcfg_field {
   size_t size;
 } mcfg_field_t;
 
+typedef struct mcfg_list {
+  mcfg_field_type_t type;
+  size_t field_count;
+  mcfg_field_t *fields;
+} mcfg_list_t;
+
 typedef struct mcfg_section {
   char *name;
   size_t field_count;
@@ -88,7 +94,7 @@ typedef struct mcfg_parser_ctxt {
 typedef struct mcfg_data_parse_result {
   mcfg_err_t error;
 
-  int multiline;
+  bool multiline;
   void *data;
   size_t size;
 } mcfg_data_parse_result_t;
