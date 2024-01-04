@@ -274,8 +274,6 @@ mcfg_get_token_exit:
   return tok;
 }
 
-// the first character (str + offset) is expected to be the opening quote
-// of the string
 mcfg_data_parse_result_t _parse_string_field(char *str) {
   mcfg_data_parse_result_t ret = {
       .error = MCFG_OK,
@@ -284,17 +282,12 @@ mcfg_data_parse_result_t _parse_string_field(char *str) {
       .size = 0,
   };
 
-  if (str[0] != '\'') {
-    ret.error = MCFG_SYNTAX_ERROR;
-    return ret;
-  }
-
   ret.size = strlen(str);
   ret.data = malloc(ret.size);
 
   bool escaping = false;
   size_t wix = 0;
-  for (size_t ix = 1; ix < strlen(str); ix++) {
+  for (size_t ix = 0; ix < strlen(str); ix++) {
     if (str[ix] == '\'' && !escaping)
       break;
 
@@ -315,6 +308,7 @@ mcfg_data_parse_result_t _parse_string_field(char *str) {
 
     wix++;
   }
+  ((char *) ret.data)[wix + 1] = 0;
 
   return ret;
 }
@@ -347,7 +341,7 @@ mcfg_data_parse_result_t mcfg_parse_field_data(mcfg_field_type_t type,
   }
 
   if (type == TYPE_STRING) {
-    return _parse_string_field(strchr(str, '\''));
+    return _parse_string_field(strchr(str, '\'') + 1);
   }
 
   if (type == TYPE_LIST) {
@@ -484,6 +478,30 @@ mcfg_err_t _parse_section(char *line, mcfg_parser_ctxt_t *ctxt) {
 }
 
 mcfg_err_t _parse_field(char *line, mcfg_parser_ctxt_t *ctxt) {
+  if (ctxt->target_field == NULL)
+    return MCFG_INVALID_PARSER_STATE;
+
+  mcfg_field_t *field = ctxt->target_field;
+  if (field->type != TYPE_STRING && field->type != TYPE_LIST)
+    return MCFG_INVALID_PARSER_STATE;
+
+  if (field->type == TYPE_STRING) {
+    mcfg_data_parse_result_t data_result = _parse_string_field(line);
+    if (data_result.error != MCFG_OK)
+      return data_result.error;
+
+    size_t new_size = field->size + data_result.size;
+    char *new_str = malloc_or_die(new_size);
+
+    // string field data is always expected to be NULL-terminated
+    memcpy(new_str, field->data, field->size - 1);
+    memcpy(new_str + field->size, data_result.data, data_result.size);
+    free(field->data);
+    
+    field->size = new_size;
+    field->data = (void*) new_str;
+  }
+
   return MCFG_OK;
 }
 
