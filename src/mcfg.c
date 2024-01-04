@@ -282,8 +282,13 @@ mcfg_data_parse_result_t _parse_string_field(char *str) {
       .size = 0,
   };
 
-  ret.size = strlen(str);
-  ret.data = malloc(ret.size);
+  ret.data = malloc_or_die(strlen(str) + 1);
+  if (strlen(str) == 0) {
+    ret.data = malloc_or_die(1);
+    ((char *)ret.data)[0] = 0;
+    ret.size = 1;
+    return ret;
+  }
 
   bool escaping = false;
   size_t wix = 0;
@@ -291,24 +296,23 @@ mcfg_data_parse_result_t _parse_string_field(char *str) {
     if (str[ix] == '\'' && !escaping)
       break;
 
-    if (str[ix] == '\n') {
-      ret.multiline = true;
-      break;
-    }
-
     if (str[ix] == '\\' && !escaping) {
-      ret.size--;
       escaping = true;
       continue;
     }
 
-    if (str[ix] == '\'' && escaping) {
-      ((char *)ret.data)[wix] = '\'';
-    }
+    ((char *)ret.data)[wix] = str[ix];
 
     wix++;
+    ret.size++;
+    
+    if (str[ix] == '\n') {
+      ret.multiline = true;
+      break;
+    }
   }
-  ((char *)ret.data)[wix + 1] = 0;
+  ((char *)ret.data)[wix] = 0;
+  ret.size++;
 
   return ret;
 }
@@ -483,7 +487,6 @@ mcfg_err_t _parse_field(char *line, mcfg_parser_ctxt_t *ctxt) {
     return MCFG_INVALID_PARSER_STATE;
 
   mcfg_field_t *field = ctxt->target_field;
-  printf("name = %s ; type = %d\n", field->name, field->type);
   if (field->type != TYPE_STRING && field->type != TYPE_LIST)
     return MCFG_INVALID_PARSER_STATE;
   
@@ -498,7 +501,7 @@ mcfg_err_t _parse_field(char *line, mcfg_parser_ctxt_t *ctxt) {
 
     // string field data is always expected to be NULL-terminated
     memcpy(new_str, field->data, field->size - 1);
-    memcpy(new_str + field->size, data_result.data, data_result.size);
+    memcpy(new_str + field->size - 1, data_result.data, data_result.size);
     free(field->data);
 
     field->size = new_size;
