@@ -294,7 +294,7 @@ mcfg_data_parse_result_t _parse_string_field(char *str) {
 
   bool escaping = false;
   size_t wix = 0;
-  for (size_t ix = 0; ix < strlen(str); ix++) {
+  for (size_t ix = 1; ix < strlen(str); ix++) {
     if (str[ix] == '\'' && !escaping)
       break;
 
