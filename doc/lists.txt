@@ -1,0 +1,31 @@
+lists are represented using the struct mcfg_list, they internally hold the type
+of the list and its member fields.
+
+================================================================================
+struct mcfg_list list_field {
+  enum mcfg_field_type type = 4 (TYPE_U8)
+  size_t field_count = 5
+  struct mcfg_field *fields = [
+    0 = 0xff
+    1 = 0xe8
+    // ...
+  ]
+}
+
+struct mcfg_file {
+  struct mcfg_sector *sectors = [
+    0 = {
+      struct mcfg_section *sections = [
+        0 = {
+          struct mcfg_field *fields = [
+            0 = {
+              char *name = test_list
+              enum mcfg_field_type type = 1 (TYPE_LIST)
+              void *data = (void*) &list_field
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

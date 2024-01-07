@@ -320,6 +320,30 @@ mcfg_data_parse_result_t _parse_list_field(char *str) {
   mcfg_data_parse_result_t ret = {
       .error = MCFG_OK, .multiline = false, .data = NULL, .size = 0};
 
+  // 0    1           2      3        4
+  // list [list_type] [name] [value], [value] ...
+  // minimum token count = 4
+
+  size_t tok_count = mcfg_get_token_count(str);
+  if (tok_count < 4) {
+    ret.error = MCFG_SYNTAX_ERROR;
+    return ret;
+  }
+
+  char *strtype = mcfg_get_token_raw(str, 1);
+  mcfg_field_type_t list_type = mcfg_str_to_type(strtype);
+  free(strtype);
+
+  if (list_type == TYPE_INVALID) {
+    ret.error = MCFG_INVALID_TYPE;
+    return ret;
+  }
+
+  size_t data_size = sizeof(mcfg_list_t);
+  mcfg_list_t *list = malloc(data_size);
+  ret.data = list;
+  ret.size = data_size;
+
   return ret;
 }
 
