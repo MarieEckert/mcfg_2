@@ -334,13 +334,28 @@ mcfg_data_parse_result_t _parse_list_field(char *str) {
   mcfg_field_type_t list_type = mcfg_str_to_type(strtype);
   free(strtype);
 
-  if (list_type == TYPE_INVALID) {
+  if (list_type == TYPE_INVALID || list_type == TYPE_LIST) {
     ret.error = MCFG_INVALID_TYPE;
     return ret;
   }
 
   size_t data_size = sizeof(mcfg_list_t);
   mcfg_list_t *list = malloc(data_size);
+ 
+//  for (size_t tok_ix = 3; tok_ix < tok_count; tok_ix++) {
+//
+//    if (list_type = TYPE_STRING) {
+//      printf("todo: impl string lists\n");
+////      data_result = _parse_string_field(
+//      continue;
+//    }
+//
+//    char *value = mcfg_get_token_raw(str, tok_ix);
+//    mcfg_data_parse_result_t data_result = _parse_number_type_field(value);
+//    printf("value %zu = %s\n", tok_ix - 3, value);
+//    free(value);
+//  }
+
   ret.data = list;
   ret.size = data_size;
 
