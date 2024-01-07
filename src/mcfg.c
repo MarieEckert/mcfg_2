@@ -5,7 +5,10 @@
 // Licensend under the BSD 3-Clause License.
 //------------------------------------------------------------------------------
 // TODO:
-// - Fix double frees with mcfg_free_* functions
+// - Add freeing function for list-fields
+// - de-duplicate code
+//    - data parsing
+// - Edge-Case Handling (checking for null-pointer, ...)
 // - Parse Field-Declarations
 //    - list types
 //------------------------------------------------------------------------------
