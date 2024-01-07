@@ -29,7 +29,7 @@ sector targets
         str cflags '-ggdb'
 
         ; Each target lists c_rules (or compilation rules) which are executed in order.
-        list c_rules 'executable'
+        list str c_rules 'executable'
     end
 end
 
