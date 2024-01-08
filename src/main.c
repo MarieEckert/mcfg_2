@@ -58,7 +58,7 @@ void print_file(mcfg_file_t *file) {
 }
 
 int main(int argc, char **argv) {
-  char *filepath = "doc/example.mb";
+  char *filepath = "doc/number_types.mcfg";
 
   mcfg_file_t *file = malloc(sizeof(mcfg_file_t));
   mcfg_parser_ctxt_t *ctxt;

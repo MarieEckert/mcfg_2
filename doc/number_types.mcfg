@@ -1,0 +1,17 @@
+sector test
+  section numbers
+    u8 u8_255 255
+    i8 i8_100 100
+    i8 i8_-122 -122
+
+    u32 u32_12312312 12312312
+    u16 u16_16000 16000
+    i16 i16_1000 1000
+    i32 i32_-123123 -123123
+  end
+
+  section bools
+    bool should_be_true true
+    bool should_be_false false
+  end
+end
