@@ -206,6 +206,29 @@ const struct _mcfg_token_id TOKEN_IDS[] = {
 const size_t EXISTING_TOKEN_COUNT =
     sizeof(TOKEN_IDS) / sizeof(struct _mcfg_token_id);
 
+size_t _token_position(char *in, uint16_t index) {
+  size_t pos = 0;
+
+  char *string_tok_ptr = NULL;
+  char *indup = strdup(in);
+  char *tok = strtok_r(indup, " ", &string_tok_ptr);
+
+  uint16_t current_index = 0;
+  while (tok != NULL) {
+    if (current_index == index)
+      break;
+
+    tok = strtok_r(NULL, " ", &string_tok_ptr);
+    current_index++;
+  }
+
+  if (tok != NULL)
+    pos = tok - indup;
+
+  free(indup);
+  return pos;
+}
+
 size_t mcfg_get_token_count(char *in) {
   if (is_string_empty(in))
     return 0;
@@ -349,23 +372,10 @@ _parse_number_type_field_ret:
   return ret;
 }
 
-mcfg_data_parse_result_t _parse_list_field(char *str) {
+mcfg_data_parse_result_t _parse_list_data(mcfg_field_type_t list_type,
+                                          char *str) {
   mcfg_data_parse_result_t ret = {
       .error = MCFG_OK, .multiline = false, .data = NULL, .size = 0};
-
-  // 0    1           2      3        4
-  // list [list_type] [name] [value], [value] ...
-  // minimum token count = 4
-
-  size_t tok_count = mcfg_get_token_count(str);
-  if (tok_count < 4) {
-    ret.error = MCFG_SYNTAX_ERROR;
-    return ret;
-  }
-
-  char *strtype = mcfg_get_token_raw(str, 1);
-  mcfg_field_type_t list_type = mcfg_str_to_type(strtype);
-  free(strtype);
 
   if (list_type == TYPE_INVALID || list_type == TYPE_LIST) {
     ret.error = MCFG_INVALID_TYPE;
@@ -377,8 +387,10 @@ mcfg_data_parse_result_t _parse_list_field(char *str) {
 
   bool list_end = false;
   bool line_end = false;
-  
-  size_t tok_ix = 3;
+
+  printf("%s\n", str);
+  size_t tok_count = mcfg_get_token_count(str);
+  size_t tok_ix = 0;
   for (; tok_ix < tok_count; tok_ix++) {
     if (list_type == TYPE_STRING) {
       printf("todo: impl string lists\n");
@@ -387,12 +399,13 @@ mcfg_data_parse_result_t _parse_list_field(char *str) {
     }
 
     char *value = mcfg_get_token_raw(str, tok_ix);
+    printf("value %zu/%zu = %s\n", tok_ix + 1, tok_count, value);
     line_end = value[strlen(value) - 1] == '\n';
     remove_newline(value);
     list_end = value[strlen(value) - 1] != ',';
     if (!list_end)
       value[strlen(value) - 1] = 0;
-    
+
     mcfg_data_parse_result_t data_result =
         _parse_number_type_field(list_type, value);
     free(value);
@@ -413,6 +426,30 @@ mcfg_data_parse_result_t _parse_list_field(char *str) {
 
   ret.data = list;
   ret.size = data_size;
+
+  return ret;
+}
+
+mcfg_data_parse_result_t _parse_list_field(char *str) {
+  mcfg_data_parse_result_t ret = {
+      .error = MCFG_OK, .multiline = false, .data = NULL, .size = 0};
+
+  // 0    1           2      3        4
+  // list [list_type] [name] [value], [value] ...
+  // minimum token count = 4
+
+  size_t tok_count = mcfg_get_token_count(str);
+  if (tok_count < 4) {
+    ret.error = MCFG_SYNTAX_ERROR;
+    return ret;
+  }
+
+  char *strtype = mcfg_get_token_raw(str, 1);
+  mcfg_field_type_t list_type = mcfg_str_to_type(strtype);
+  free(strtype);
+
+  size_t first_val_pos = _token_position(str, 3);
+  ret = _parse_list_data(list_type, str + first_val_pos);
 
   return ret;
 }
@@ -584,6 +621,10 @@ mcfg_err_t _parse_field(char *line, mcfg_parser_ctxt_t *ctxt) {
 
     field->size = new_size;
     field->data = (void *)new_str;
+    break;
+  }
+  case TYPE_LIST: {
+
     break;
   }
   default:
