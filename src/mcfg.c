@@ -5,7 +5,10 @@
 // Licensend under the BSD 3-Clause License.
 //------------------------------------------------------------------------------
 // TODO:
-// - Fix double frees with mcfg_free_* functions
+// - Add freeing function for list-fields
+// - de-duplicate code
+//    - data parsing
+// - Edge-Case Handling (checking for null-pointer, ...)
 // - Parse Field-Declarations
 //    - list types
 //------------------------------------------------------------------------------
@@ -319,6 +322,45 @@ mcfg_data_parse_result_t _parse_string_field(char *str) {
 mcfg_data_parse_result_t _parse_list_field(char *str) {
   mcfg_data_parse_result_t ret = {
       .error = MCFG_OK, .multiline = false, .data = NULL, .size = 0};
+
+  // 0    1           2      3        4
+  // list [list_type] [name] [value], [value] ...
+  // minimum token count = 4
+
+  size_t tok_count = mcfg_get_token_count(str);
+  if (tok_count < 4) {
+    ret.error = MCFG_SYNTAX_ERROR;
+    return ret;
+  }
+
+  char *strtype = mcfg_get_token_raw(str, 1);
+  mcfg_field_type_t list_type = mcfg_str_to_type(strtype);
+  free(strtype);
+
+  if (list_type == TYPE_INVALID || list_type == TYPE_LIST) {
+    ret.error = MCFG_INVALID_TYPE;
+    return ret;
+  }
+
+  size_t data_size = sizeof(mcfg_list_t);
+  mcfg_list_t *list = malloc(data_size);
+ 
+//  for (size_t tok_ix = 3; tok_ix < tok_count; tok_ix++) {
+//
+//    if (list_type = TYPE_STRING) {
+//      printf("todo: impl string lists\n");
+////      data_result = _parse_string_field(
+//      continue;
+//    }
+//
+//    char *value = mcfg_get_token_raw(str, tok_ix);
+//    mcfg_data_parse_result_t data_result = _parse_number_type_field(value);
+//    printf("value %zu = %s\n", tok_ix - 3, value);
+//    free(value);
+//  }
+
+  ret.data = list;
+  ret.size = data_size;
 
   return ret;
 }
