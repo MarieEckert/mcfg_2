@@ -319,6 +319,37 @@ mcfg_data_parse_result_t _parse_string_field(char *str) {
   return ret;
 }
 
+mcfg_data_parse_result_t _parse_number_type_field(mcfg_field_type_t type,
+                                                  char *str) {
+  mcfg_data_parse_result_t ret = {
+      .error = MCFG_OK, .multiline = false, .data = NULL, .size = 0};
+  
+  ret.size = mcfg_sizeof(type);
+  if (ret.size <= 0) {
+    ret.error = MCFG_INVALID_TYPE;
+    goto _parse_number_type_field_ret;
+  }
+
+  ret.data = malloc_or_die(ret.size);
+
+  int64_t converted = 0;
+
+  remove_newline(str);
+  if (type == TYPE_BOOL)
+    converted = _strtobool(str);
+  else
+    converted = strtol(str, NULL, 10);
+
+  printf("converted = %ld\n", converted);
+  if (!_integer_bounds_check(converted, type)) {
+    ret.error = MCFG_INTEGER_OUT_OF_BOUNDS;
+    goto _parse_number_type_field_ret;
+  }
+
+_parse_number_type_field_ret:
+  return ret;
+}
+
 mcfg_data_parse_result_t _parse_list_field(char *str) {
   mcfg_data_parse_result_t ret = {
       .error = MCFG_OK, .multiline = false, .data = NULL, .size = 0};
@@ -345,19 +376,24 @@ mcfg_data_parse_result_t _parse_list_field(char *str) {
   size_t data_size = sizeof(mcfg_list_t);
   mcfg_list_t *list = malloc(data_size);
  
-//  for (size_t tok_ix = 3; tok_ix < tok_count; tok_ix++) {
-//
-//    if (list_type = TYPE_STRING) {
-//      printf("todo: impl string lists\n");
-////      data_result = _parse_string_field(
-//      continue;
-//    }
-//
-//    char *value = mcfg_get_token_raw(str, tok_ix);
-//    mcfg_data_parse_result_t data_result = _parse_number_type_field(value);
-//    printf("value %zu = %s\n", tok_ix - 3, value);
-//    free(value);
-//  }
+  for (size_t tok_ix = 3; tok_ix < tok_count; tok_ix++) {
+    if (list_type == TYPE_STRING) {
+      printf("todo: impl string lists\n");
+//      data_result = _parse_string_field(
+      continue;
+    }
+
+    char *value = mcfg_get_token_raw(str, tok_ix);
+    mcfg_data_parse_result_t data_result = _parse_number_type_field(list_type,
+                                                                    value);
+    free(value);
+
+    // TODO: This might cause some problems down the line, check back later
+    if (data_result.error != MCFG_OK)
+      return ret;
+
+    printf("value %zu = %s\n", tok_ix - 3, value);
+  }
 
   ret.data = list;
   ret.size = data_size;
@@ -393,26 +429,9 @@ mcfg_data_parse_result_t mcfg_parse_field_data(mcfg_field_type_t type,
     return _parse_list_field(str);
   }
 
-  ret.size = mcfg_sizeof(type);
-  if (ret.size <= 0) {
-    ret.error = MCFG_INVALID_TYPE;
-    goto mcfg_parse_field_data_ret;
-  }
-
-  ret.data = malloc_or_die(ret.size);
-
-  int64_t converted = 0;
-
-  if (type == TYPE_BOOL)
-    converted = _strtobool(mcfg_get_token_raw(str, 2));
-  else
-    converted = strtol(mcfg_get_token_raw(str, 2), NULL, 10);
-
-  if (!_integer_bounds_check(converted, type)) {
-    ret.error = MCFG_INTEGER_OUT_OF_BOUNDS;
-    goto mcfg_parse_field_data_ret;
-  }
-
+  char *value = mcfg_get_token_raw(str, 2);
+  ret = _parse_number_type_field(type, value);
+  free(value);
 mcfg_parse_field_data_ret:
   return ret;
 }
