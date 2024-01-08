@@ -375,7 +375,11 @@ mcfg_data_parse_result_t _parse_list_field(char *str) {
   size_t data_size = sizeof(mcfg_list_t);
   mcfg_list_t *list = malloc(data_size);
 
-  for (size_t tok_ix = 3; tok_ix < tok_count; tok_ix++) {
+  bool list_end = false;
+  bool line_end = false;
+  
+  size_t tok_ix = 3;
+  for (; tok_ix < tok_count; tok_ix++) {
     if (list_type == TYPE_STRING) {
       printf("todo: impl string lists\n");
       //      data_result = _parse_string_field(
@@ -383,6 +387,12 @@ mcfg_data_parse_result_t _parse_list_field(char *str) {
     }
 
     char *value = mcfg_get_token_raw(str, tok_ix);
+    line_end = value[strlen(value) - 1] == '\n';
+    remove_newline(value);
+    list_end = value[strlen(value) - 1] != ',';
+    if (!list_end)
+      value[strlen(value) - 1] = 0;
+    
     mcfg_data_parse_result_t data_result =
         _parse_number_type_field(list_type, value);
     free(value);
@@ -391,8 +401,15 @@ mcfg_data_parse_result_t _parse_list_field(char *str) {
     if (data_result.error != MCFG_OK)
       return ret;
 
-    printf("value %zu = %s\n", tok_ix - 3, value);
+    if (list_end)
+      break;
   }
+
+  if (list_end && tok_ix < (tok_count - 1))
+    ret.error = MCFG_SYNTAX_ERROR;
+
+  if (!list_end && line_end)
+    ret.multiline = true;
 
   ret.data = list;
   ret.size = data_size;
@@ -550,7 +567,8 @@ mcfg_err_t _parse_field(char *line, mcfg_parser_ctxt_t *ctxt) {
     return MCFG_INVALID_PARSER_STATE;
 
   mcfg_data_parse_result_t data_result;
-  if (field->type == TYPE_STRING) {
+  switch (field->type) {
+  case TYPE_STRING: {
     data_result = _parse_string_field(line);
     if (data_result.error != MCFG_OK)
       return data_result.error;
@@ -566,6 +584,10 @@ mcfg_err_t _parse_field(char *line, mcfg_parser_ctxt_t *ctxt) {
 
     field->size = new_size;
     field->data = (void *)new_str;
+    break;
+  }
+  default:
+    return MCFG_INVALID_PARSER_STATE;
   }
 
   if (!data_result.multiline)
