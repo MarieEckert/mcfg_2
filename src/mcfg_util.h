@@ -51,7 +51,7 @@ int mcfg_data_as_int(mcfg_field_t field);
 //
 // Returns:
 // The value of the fields data represented as a boolean (mcfg_boolean_t). If
-// the type is not boolean or the data is a NULL-Pointer, 
+// the type is not boolean or the data is a NULL-Pointer,
 // false will be returned as default.
 mcfg_boolean_t mcfg_data_as_bool(mcfg_field_t field);
 

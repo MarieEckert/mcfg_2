@@ -6,8 +6,6 @@
 //------------------------------------------------------------------------------
 // TODO:
 // - Add freeing function for list-fields
-// - de-duplicate code
-//    - data parsing
 // - Edge-Case Handling (checking for null-pointer, ...)
 // - Parse Field-Declarations
 //    - list types
@@ -323,7 +321,7 @@ mcfg_data_parse_result_t _parse_number_type_field(mcfg_field_type_t type,
                                                   char *str) {
   mcfg_data_parse_result_t ret = {
       .error = MCFG_OK, .multiline = false, .data = NULL, .size = 0};
-  
+
   ret.size = mcfg_sizeof(type);
   if (ret.size <= 0) {
     ret.error = MCFG_INVALID_TYPE;
@@ -340,7 +338,6 @@ mcfg_data_parse_result_t _parse_number_type_field(mcfg_field_type_t type,
   else
     converted = strtol(str, NULL, 10);
 
-  printf("converted = %ld\n", converted);
   if (!_integer_bounds_check(converted, type)) {
     ret.error = MCFG_INTEGER_OUT_OF_BOUNDS;
     goto _parse_number_type_field_ret;
@@ -377,17 +374,17 @@ mcfg_data_parse_result_t _parse_list_field(char *str) {
 
   size_t data_size = sizeof(mcfg_list_t);
   mcfg_list_t *list = malloc(data_size);
- 
+
   for (size_t tok_ix = 3; tok_ix < tok_count; tok_ix++) {
     if (list_type == TYPE_STRING) {
       printf("todo: impl string lists\n");
-//      data_result = _parse_string_field(
+      //      data_result = _parse_string_field(
       continue;
     }
 
     char *value = mcfg_get_token_raw(str, tok_ix);
-    mcfg_data_parse_result_t data_result = _parse_number_type_field(list_type,
-                                                                    value);
+    mcfg_data_parse_result_t data_result =
+        _parse_number_type_field(list_type, value);
     free(value);
 
     // TODO: This might cause some problems down the line, check back later
