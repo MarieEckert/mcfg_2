@@ -1,0 +1,11 @@
+sector list_tests
+  section str_lists
+  end
+  section num_lists
+    list u8 u8_list 255, 127, 64, 32, 16, 8, 4, 2, 1, 0
+    list i8 i8_list_multiline -127, -64, -32, -16, -8, -4, -2, -1,
+                              0,
+                              1, 2, 4, 8, 16, 64, 127
+    list u32 u32_list 1000000, 100000, 10000, 1000, 100, 10, 1, 0
+  end
+end
