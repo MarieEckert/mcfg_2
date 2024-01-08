@@ -453,6 +453,7 @@ mcfg_data_parse_result_t _parse_list_field(char *str) {
 
   mcfg_list_t *list = malloc(sizeof(mcfg_list_t));
   list->type = list_type;
+  list->field_count = 0;
 
   size_t first_val_pos = _token_position(str, 3);
   ret = _parse_list_data(list, str + first_val_pos);
@@ -473,13 +474,13 @@ mcfg_data_parse_result_t mcfg_parse_field_data(mcfg_field_type_t type,
 
   if (type == TYPE_INVALID) {
     ret.error = MCFG_INVALID_TYPE;
-    goto mcfg_parse_field_data_ret;
+    return ret;
   }
 
   size_t tok_count = mcfg_get_token_count(str);
   if (tok_count < 3) {
     ret.error = MCFG_SYNTAX_ERROR;
-    goto mcfg_parse_field_data_ret;
+    return ret;
   }
 
   if (type == TYPE_STRING) {
@@ -493,7 +494,7 @@ mcfg_data_parse_result_t mcfg_parse_field_data(mcfg_field_type_t type,
   char *value = mcfg_get_token_raw(str, 2);
   ret = _parse_number_type_field(type, value);
   free(value);
-mcfg_parse_field_data_ret:
+
   return ret;
 }
 
