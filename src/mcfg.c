@@ -7,6 +7,7 @@
 // TODO:
 // - Add freeing function for list-fields
 // - Edge-Case Handling (checking for null-pointer, ...)
+// - fix multiline boolean lists throwing MCFG_INVALID_KEYWORD
 // - Parse Field-Declarations
 //    - list types
 //------------------------------------------------------------------------------
