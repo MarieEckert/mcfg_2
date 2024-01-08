@@ -279,6 +279,18 @@ mcfg_err_t mcfg_add_field(mcfg_section_t *section, mcfg_field_type_t type,
                           char *name, void *data, size_t size);
 
 //------------------------------------------------------------------------------
+// Add a field to a list
+//
+// Params:
+// list The mcfg_list to add the field to
+// size The size of the data of the new field
+// data Pointer to the data of the new field
+//
+// Returns:
+// MCFG_OK if no errors occured, MCFG_NULLPTR if list or data is NULL.
+mcfg_err_t mcfg_add_list_field(mcfg_list_t *list, size_t size, void *data);
+
+//------------------------------------------------------------------------------
 // Get the sector with name from file
 //
 // Params:

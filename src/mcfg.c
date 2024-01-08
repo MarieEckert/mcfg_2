@@ -410,9 +410,16 @@ mcfg_data_parse_result_t _parse_list_data(mcfg_list_t *list, char *str) {
     if (data_result.error != MCFG_OK)
       return ret;
 
+    ret.error = mcfg_add_list_field(list, data_result.size, data_result.data);
+    if (ret.error != MCFG_OK)
+      break;
+
     if (list_end)
       break;
   }
+
+  if (ret.error != MCFG_OK)
+    return ret;
 
   if (list_end && tok_ix < (tok_count - 1))
     ret.error = MCFG_SYNTAX_ERROR;
@@ -769,6 +776,30 @@ mcfg_err_t mcfg_add_field(mcfg_section_t *section, mcfg_field_type_t type,
   section->fields[ix].data = data;
   section->fields[ix].size = size;
   section->field_count++;
+  return MCFG_OK;
+}
+
+mcfg_err_t mcfg_add_list_field(mcfg_list_t *list, size_t size, void *data) {
+  if (list == NULL || data == NULL)
+    return MCFG_NULLPTR;
+
+  char *name = malloc((size_t)floor(log10((double)SIZE_MAX)));
+  sprintf(name, "%zu", list->field_count + 1);
+
+  size_t ix = list->field_count;
+
+  if (list->field_count == 0) {
+    list->fields = malloc_or_die(sizeof(*list->fields));
+  } else {
+    list->fields = realloc_or_die(list->fields, sizeof(mcfg_field_t) *
+                                                    (list->field_count + 1));
+  }
+
+  list->fields[ix].type = list->type;
+  list->fields[ix].name = name;
+  list->fields[ix].data = data;
+  list->fields[ix].size = size;
+  list->field_count++;
   return MCFG_OK;
 }
 
