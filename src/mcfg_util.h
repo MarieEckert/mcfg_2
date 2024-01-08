@@ -21,6 +21,16 @@
 char *mcfg_data_to_string(mcfg_field_t field);
 
 //------------------------------------------------------------------------------
+// Converts a list to its string representation
+//
+// Params:
+// list The list of which the data should be converted
+//
+// Returns:
+// Heap-Allocated string representation of the list's data.
+char *mcfg_list_as_string(mcfg_list_t list);
+
+//------------------------------------------------------------------------------
 // Get the data of the field as a string.
 //
 // Params:
