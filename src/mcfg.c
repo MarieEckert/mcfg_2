@@ -386,7 +386,6 @@ mcfg_data_parse_result_t _parse_list_data(mcfg_list_t *list, char *str) {
   bool list_end = false;
   bool line_end = false;
 
-  printf("%s\n", str);
   size_t tok_count = mcfg_get_token_count(str);
   size_t tok_ix = 0;
   for (; tok_ix < tok_count; tok_ix++) {
@@ -397,7 +396,6 @@ mcfg_data_parse_result_t _parse_list_data(mcfg_list_t *list, char *str) {
     }
 
     char *value = mcfg_get_token_raw(str, tok_ix);
-    printf("value %zu/%zu = %s\n", tok_ix + 1, tok_count, value);
     line_end = value[strlen(value) - 1] == '\n';
     remove_newline(value);
     list_end = value[strlen(value) - 1] != ',';
