@@ -346,6 +346,8 @@ mcfg_data_parse_result_t _parse_number_type_field(mcfg_field_type_t type,
     goto _parse_number_type_field_ret;
   }
 
+  memcpy(ret.data, &converted, ret.size);
+
 _parse_number_type_field_ret:
   return ret;
 }
