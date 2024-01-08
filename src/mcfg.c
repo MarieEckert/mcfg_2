@@ -372,18 +372,16 @@ _parse_number_type_field_ret:
   return ret;
 }
 
-mcfg_data_parse_result_t _parse_list_data(mcfg_field_type_t list_type,
-                                          char *str) {
+mcfg_data_parse_result_t _parse_list_data(mcfg_list_t *list, char *str) {
   mcfg_data_parse_result_t ret = {
       .error = MCFG_OK, .multiline = false, .data = NULL, .size = 0};
+
+  mcfg_field_type_t list_type = list->type;
 
   if (list_type == TYPE_INVALID || list_type == TYPE_LIST) {
     ret.error = MCFG_INVALID_TYPE;
     return ret;
   }
-
-  size_t data_size = sizeof(mcfg_list_t);
-  mcfg_list_t *list = malloc(data_size);
 
   bool list_end = false;
   bool line_end = false;
@@ -425,7 +423,7 @@ mcfg_data_parse_result_t _parse_list_data(mcfg_field_type_t list_type,
     ret.multiline = true;
 
   ret.data = list;
-  ret.size = data_size;
+  ret.size = sizeof(*list);
 
   return ret;
 }
@@ -448,8 +446,13 @@ mcfg_data_parse_result_t _parse_list_field(char *str) {
   mcfg_field_type_t list_type = mcfg_str_to_type(strtype);
   free(strtype);
 
+  mcfg_list_t *list = malloc(sizeof(mcfg_list_t));
+  list->type = list_type;
+
   size_t first_val_pos = _token_position(str, 3);
-  ret = _parse_list_data(list_type, str + first_val_pos);
+  ret = _parse_list_data(list, str + first_val_pos);
+  if (ret.error != MCFG_OK)
+    free(list);
 
   return ret;
 }
@@ -624,7 +627,8 @@ mcfg_err_t _parse_field(char *line, mcfg_parser_ctxt_t *ctxt) {
     break;
   }
   case TYPE_LIST: {
-
+    data_result = _parse_list_data((mcfg_list_t *)field->data,
+                                   line + _token_position(line, 0));
     break;
   }
   default:
