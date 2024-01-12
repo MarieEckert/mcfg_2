@@ -86,6 +86,17 @@ void remove_newline(char *in) {
     in[strlen(in) - 1] = 0;
 }
 
+bool has_newline(char *in) {
+  if (in == NULL || strlen(in) == 0)
+    return false;
+
+  for (size_t ix = 0; ix < strlen(in); ix++)
+    if (in[ix] == '\n')
+      return true;
+
+  return false;
+}
+
 mcfg_boolean_t _strtobool(char *in) {
   if (is_string_empty(in))
     return BOOL_FALSE;
@@ -397,9 +408,14 @@ mcfg_data_parse_result_t _parse_list_data(mcfg_list_t *list, char *str) {
     }
 
     char *value = mcfg_get_token_raw(str, tok_ix);
-    line_end = value[strlen(value) - 1] == '\n';
+
+    line_end = has_newline(value);
+    if (line_end && is_string_empty(value))
+      break;
+
     remove_newline(value);
     list_end = value[strlen(value) - 1] != ',';
+
     if (!list_end)
       value[strlen(value) - 1] = 0;
 
