@@ -6,10 +6,8 @@
 //------------------------------------------------------------------------------
 // TODO:
 // - Add freeing function for list-fields
+// - Parse lists with element type string
 // - Edge-Case Handling (checking for null-pointer, ...)
-// - fix multiline boolean lists throwing MCFG_INVALID_KEYWORD
-// - Parse Field-Declarations
-//    - list types
 //------------------------------------------------------------------------------
 
 #include "mcfg.h"
@@ -410,6 +408,8 @@ mcfg_data_parse_result_t _parse_list_data(mcfg_list_t *list, char *str) {
     char *value = mcfg_get_token_raw(str, tok_ix);
 
     line_end = has_newline(value);
+
+    // avoid interpreting trailing spaces at line end to be list elements
     if (line_end && is_string_empty(value))
       break;
 
