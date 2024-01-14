@@ -382,6 +382,22 @@ _parse_number_type_field_ret:
   return ret;
 }
 
+mcfg_data_parse_result_t _parse_str_list_data(mcfg_list_t *list, char *str) {
+  mcfg_data_parse_result_t ret = {
+      .error = MCFG_OK, .multiline = false, .data = NULL, .size = 0};
+
+  mcfg_field_type_t list_type = list->type;
+
+  if (list_type != TYPE_STRING) {
+    ret.error = MCFG_INVALID_PARSER_STATE;
+    return ret;
+  }
+
+
+
+  return ret;
+}
+
 mcfg_data_parse_result_t _parse_list_data(mcfg_list_t *list, char *str) {
   mcfg_data_parse_result_t ret = {
       .error = MCFG_OK, .multiline = false, .data = NULL, .size = 0};
@@ -393,35 +409,32 @@ mcfg_data_parse_result_t _parse_list_data(mcfg_list_t *list, char *str) {
     return ret;
   }
 
+  if (list_type == TYPE_STRING)
+    return _parse_str_list_data(list, str);
+
   bool list_end = false;
   bool line_end = false;
 
   size_t tok_count = mcfg_get_token_count(str);
   size_t tok_ix = 0;
   for (; tok_ix < tok_count; tok_ix++) {
-    if (list_type == TYPE_STRING) {
-      printf("todo: impl string lists\n");
-      //      data_result = _parse_string_field(
-      continue;
-    }
+    char *str_value = mcfg_get_token_raw(str, tok_ix);
 
-    char *value = mcfg_get_token_raw(str, tok_ix);
-
-    line_end = has_newline(value);
+    line_end = has_newline(str_value);
 
     // avoid interpreting trailing spaces at line end to be list elements
-    if (line_end && is_string_empty(value))
+    if (line_end && is_string_empty(str_value))
       break;
 
-    remove_newline(value);
-    list_end = value[strlen(value) - 1] != ',';
+    remove_newline(str_value);
+    list_end = str_value[strlen(str_value) - 1] != ',';
 
     if (!list_end)
-      value[strlen(value) - 1] = 0;
+      str_value[strlen(str_value) - 1] = 0;
 
     mcfg_data_parse_result_t data_result =
-        _parse_number_type_field(list_type, value);
-    free(value);
+        _parse_number_type_field(list_type, str_value);
+    free(str_value);
 
     // TODO: This might cause some problems down the line, check back later
     if (data_result.error != MCFG_OK)
