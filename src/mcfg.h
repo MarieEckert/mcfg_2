@@ -94,6 +94,8 @@ typedef struct mcfg_parser_ctxt {
 typedef struct mcfg_data_parse_result {
   mcfg_err_t error;
 
+  char *parse_end;
+
   bool multiline;
   void *data;
   size_t size;

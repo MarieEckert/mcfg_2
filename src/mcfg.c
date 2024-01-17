@@ -324,8 +324,9 @@ mcfg_data_parse_result_t _parse_string_field(char *str) {
   }
 
   bool escaping = false;
+  size_t ix = 0;
   size_t wix = 0;
-  for (size_t ix = 0; ix < strlen(str); ix++) {
+  for (; ix < strlen(str); ix++) {
     if (str[ix] == '\'' && !escaping)
       break;
 
@@ -346,6 +347,7 @@ mcfg_data_parse_result_t _parse_string_field(char *str) {
   }
   ((char *)ret.data)[wix] = 0;
   ret.size++;
+  ret.parse_end = str + ix;
 
   return ret;
 }
@@ -393,7 +395,19 @@ mcfg_data_parse_result_t _parse_str_list_data(mcfg_list_t *list, char *str) {
     return ret;
   }
 
+  mcfg_data_parse_result_t data_result =
+      _parse_string_field(strchr(str, '\'') + 1);
 
+  if (data_result.error != MCFG_OK) {
+    ret.error = data_result.error;
+    return ret;
+  }
+
+  ret.error = mcfg_add_list_field(list, data_result.size, data_result.data);
+  printf("REMAINDER: %s\n", ret.parse_end);
+
+  ret.data = list;
+  ret.size = sizeof(*list);
 
   return ret;
 }
