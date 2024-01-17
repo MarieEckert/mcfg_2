@@ -1,5 +1,6 @@
 sector list_tests
   section str_lists
+    list str str_list_single_line 'test', 'test aasd test'
   end
   section num_lists
     list u8 u8_list 255, 127, 64, 32, 16, 8, 4, 2, 1, 0
