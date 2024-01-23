@@ -400,8 +400,7 @@ mcfg_data_parse_result_t _parse_str_list_data(mcfg_list_t *list, char *str) {
   char *parse_start = strchr(str, '\'');
 
   while (parse_start != NULL && parse_start[0] != 0) {
-    mcfg_data_parse_result_t data_result =
-        _parse_string_field(parse_start + 1);
+    mcfg_data_parse_result_t data_result = _parse_string_field(parse_start + 1);
 
     if (data_result.error != MCFG_OK) {
       ret.error = data_result.error;
@@ -917,8 +916,8 @@ void mcfg_free_field(mcfg_field_t *field) {
 
   if (field->data != NULL) {
     if (field->type == TYPE_LIST)
-      mcfg_free_list((mcfg_list_t*)field->data);
-    
+      mcfg_free_list((mcfg_list_t *)field->data);
+
     free(field->data);
   }
 }
@@ -929,7 +928,7 @@ void mcfg_free_section(mcfg_section_t *section) {
 
   if (section->field_count > 0 && section->fields != NULL)
     for (size_t ix = 0; ix < section->field_count; ix++)
-        mcfg_free_field(&section->fields[ix]);
+      mcfg_free_field(&section->fields[ix]);
 
   if (section->fields != NULL)
     free(section->fields);
