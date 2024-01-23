@@ -394,9 +394,6 @@ mcfg_data_parse_result_t _parse_str_list_data(mcfg_list_t *list, char *str) {
     return ret;
   }
 
-  bool list_end = false;
-  bool line_end = false;
-
   char *parse_start = strchr(str, '\'');
 
   while (parse_start != NULL && parse_start[0] != 0) {
