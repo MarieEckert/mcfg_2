@@ -395,16 +395,24 @@ mcfg_data_parse_result_t _parse_str_list_data(mcfg_list_t *list, char *str) {
     return ret;
   }
 
-  mcfg_data_parse_result_t data_result =
-      _parse_string_field(strchr(str, '\'') + 1);
+  bool list_end = false;
+  bool line_end = false;
 
-  if (data_result.error != MCFG_OK) {
-    ret.error = data_result.error;
-    return ret;
+  char *parse_start = strchr(str, '\'');
+
+  while (parse_start != NULL && parse_start[0] != 0) {
+    mcfg_data_parse_result_t data_result =
+        _parse_string_field(parse_start + 1);
+
+    if (data_result.error != MCFG_OK) {
+      ret.error = data_result.error;
+      break;
+    }
+
+    ret.error = mcfg_add_list_field(list, data_result.size, data_result.data);
+    
+    parse_start = strchr(data_result.parse_end + 1, '\'');
   }
-
-  ret.error = mcfg_add_list_field(list, data_result.size, data_result.data);
-  printf("REMAINDER: %s\n", ret.parse_end);
 
   ret.data = list;
   ret.size = sizeof(*list);
