@@ -5,7 +5,6 @@
 // Licensend under the BSD 3-Clause License.
 //------------------------------------------------------------------------------
 // TODO:
-// - Add freeing function for list-fields
 // - Parse lists with element type string
 // - Edge-Case Handling (checking for null-pointer, ...)
 //------------------------------------------------------------------------------
@@ -410,7 +409,9 @@ mcfg_data_parse_result_t _parse_str_list_data(mcfg_list_t *list, char *str) {
     }
 
     ret.error = mcfg_add_list_field(list, data_result.size, data_result.data);
-    
+    if (ret.error != MCFG_OK)
+      break;
+
     parse_start = strchr(data_result.parse_end + 1, '\'');
   }
 
@@ -445,8 +446,10 @@ mcfg_data_parse_result_t _parse_list_data(mcfg_list_t *list, char *str) {
     line_end = has_newline(str_value);
 
     // avoid interpreting trailing spaces at line end to be list elements
-    if (line_end && is_string_empty(str_value))
+    if (line_end && is_string_empty(str_value)) {
+      free(str_value);
       break;
+    }
 
     remove_newline(str_value);
     list_end = str_value[strlen(str_value) - 1] != ',';
@@ -895,6 +898,16 @@ mcfg_field_t *mcfg_get_field(mcfg_section_t *section, char *name) {
   return ret;
 }
 
+void mcfg_free_list(mcfg_list_t *list) {
+  if (list == NULL)
+    return;
+
+  for (size_t ix = 0; ix < list->field_count; ix++)
+    mcfg_free_field(&list->fields[ix]);
+
+  free(list->fields);
+}
+
 void mcfg_free_field(mcfg_field_t *field) {
   if (field == NULL)
     return;
@@ -902,8 +915,12 @@ void mcfg_free_field(mcfg_field_t *field) {
   if (field->name != NULL)
     free(field->name);
 
-  if (field->data != NULL)
+  if (field->data != NULL) {
+    if (field->type == TYPE_LIST)
+      mcfg_free_list((mcfg_list_t*)field->data);
+    
     free(field->data);
+  }
 }
 
 void mcfg_free_section(mcfg_section_t *section) {
@@ -912,7 +929,7 @@ void mcfg_free_section(mcfg_section_t *section) {
 
   if (section->field_count > 0 && section->fields != NULL)
     for (size_t ix = 0; ix < section->field_count; ix++)
-      mcfg_free_field(&section->fields[ix]);
+        mcfg_free_field(&section->fields[ix]);
 
   if (section->fields != NULL)
     free(section->fields);

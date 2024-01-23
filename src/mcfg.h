@@ -326,6 +326,13 @@ mcfg_section_t *mcfg_get_section(mcfg_sector_t *sector, char *name);
 mcfg_field_t *mcfg_get_field(mcfg_section_t *section, char *name);
 
 //------------------------------------------------------------------------------
+// Free the contents of given list
+//
+// Params:
+// list The list of which the contents should be freed
+void mcfg_free_list(mcfg_list_t *list);
+
+//------------------------------------------------------------------------------
 // Free the contents of given field
 //
 // Params:
