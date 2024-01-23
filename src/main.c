@@ -58,6 +58,8 @@ void print_file(mcfg_file_t *file) {
 }
 
 int main(int argc, char **argv) {
+  fprintf(stderr, "Using MCFG/2 version " MCFG_2_VERSION "\n");
+
   char *filepath = "doc/lists.mcfg";
 
   mcfg_file_t *file = malloc(sizeof(mcfg_file_t));
