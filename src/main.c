@@ -60,7 +60,7 @@ void print_file(mcfg_file_t *file) {
 int main(int argc, char **argv) {
   fprintf(stderr, "Using MCFG/2 version " MCFG_2_VERSION "\n");
 
-  char *filepath = "doc/lists.mcfg";
+  char *filepath = "doc/embedding_test.mcfg";
 
   mcfg_file_t *file = malloc(sizeof(mcfg_file_t));
   mcfg_parser_ctxt_t *ctxt;
@@ -74,6 +74,7 @@ int main(int argc, char **argv) {
 
   fprintf(stderr, "parsed you a mcfg file!\n");
   print_file(file);
+  mcfg_format_field_embeds(file->sectors[2].sections[0].fields[0], *file);
 cleanup:
   mcfg_free_file(file);
   return 0;

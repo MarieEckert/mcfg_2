@@ -87,21 +87,27 @@ char *mcfg_data_as_string(mcfg_field_t field) {
   return NULL;
 }
 
-size_t _max(size_t a, size_t b) {
-  return a > b ? a : b;
-}
+size_t _max(size_t a, size_t b) { return a > b ? a : b; }
 
 // Helper function to resize
 void _append_char(char **dest, size_t wix, size_t *dest_size, char chr) {
+  if (dest == NULL || *dest == NULL) {
+    return;
+  }
+
   if (wix >= *dest_size) {
     size_t size_diff = wix - *dest_size;
     size_t new_size = _max(MCFG_EMBED_FORMAT_RESIZE_AMOUNT, size_diff);
 
     *dest = realloc_or_die(*dest, new_size);
     *dest_size = new_size;
+    fprintf(stderr, "RESIZE\n");
   }
 
-  *dest[wix] = chr;
+  // fprintf(stderr, "PING!\n");
+  // fprintf(stderr, "wix = %zu; dest_size = %zu ; dest = %p; *dest = %p\n",
+  // wix, *dest_size, dest, *dest);
+  (*dest)[wix] = chr;
 }
 
 char *mcfg_format_field_embeds(mcfg_field_t field, mcfg_file_t file) {
@@ -135,7 +141,7 @@ char *mcfg_format_field_embeds(mcfg_field_t field, mcfg_file_t file) {
         wix++;
       }
       escaping = !escaping;
-      continue;
+      break;
     case EMBED_PREFIX:
       if (!escaping) {
         building_embed_opening = true;
@@ -143,7 +149,7 @@ char *mcfg_format_field_embeds(mcfg_field_t field, mcfg_file_t file) {
         _append_char(&result, wix, &current_result_size, input[ix]);
         wix++;
       }
-      continue;
+      break;
     case EMBED_OPENING:
       if (building_embed_opening)
         building_embed_opening = false;
@@ -154,28 +160,29 @@ char *mcfg_format_field_embeds(mcfg_field_t field, mcfg_file_t file) {
         _append_char(&result, wix, &current_result_size, input[ix]);
         wix++;
       }
-      continue;
+      break;
     case EMBED_CLOSING:
       if (building_field_name) {
         building_field_name = false;
-        size_t _len = (ix - 1 ) - embedded_field_name_start;
-        embedded_field = malloc_or_die(_len);
+        size_t _len = ix - embedded_field_name_start;
+        embedded_field = malloc_or_die(_len + 1);
         memcpy(embedded_field, input + embedded_field_name_start, _len);
-        eprintf("MCFG_UTIL DEBUG: FIELD NAME = %s\n");
+        embedded_field[_len] = 0;
+        fprintf(stderr, "MCFG_UTIL DEBUG: FIELD NAME = %s\n", embedded_field);
         free(embedded_field);
         // TODO: Handle embedding
-        continue;
+        break;
       }
-    
+
       _append_char(&result, wix, &current_result_size, input[ix]);
       wix++;
-      continue;
+      break;
     default:
       if (!building_field_name) {
         _append_char(&result, wix, &current_result_size, input[ix]);
         wix++;
       }
-      continue;
+      break;
     }
   }
 

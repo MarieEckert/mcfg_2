@@ -11,7 +11,7 @@
 #include "mcfg.h"
 
 #ifndef MCFG_EMBED_FORMAT_RESIZE_AMOUNT
-  #define MCFG_EMBED_FORMAT_RESIZE_AMOUNT 16
+#define MCFG_EMBED_FORMAT_RESIZE_AMOUNT 16
 #endif
 
 //------------------------------------------------------------------------------
