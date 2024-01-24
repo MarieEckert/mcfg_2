@@ -14,6 +14,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+void *malloc_or_die(size_t size);
+void *realloc_or_die(void *org, size_t size);
+
 char *mcfg_data_to_string(mcfg_field_t field) {
   int64_t num = 0;
   switch (field.type) {
@@ -82,6 +85,101 @@ char *mcfg_data_as_string(mcfg_field_t field) {
   if (field.data != NULL && field.type == TYPE_STRING)
     return (char *)field.data;
   return NULL;
+}
+
+size_t _max(size_t a, size_t b) {
+  return a > b ? a : b;
+}
+
+// Helper function to resize
+void _append_char(char **dest, size_t wix, size_t *dest_size, char chr) {
+  if (wix >= *dest_size) {
+    size_t size_diff = wix - *dest_size;
+    size_t new_size = _max(MCFG_EMBED_FORMAT_RESIZE_AMOUNT, size_diff);
+
+    *dest = realloc_or_die(*dest, new_size);
+    *dest_size = new_size;
+  }
+
+  *dest[wix] = chr;
+}
+
+char *mcfg_format_field_embeds(mcfg_field_t field, mcfg_file_t file) {
+  if (field.data == NULL || field.type != TYPE_STRING)
+    return NULL;
+
+  const char EMBED_PREFIX = '$';
+  const char EMBED_OPENING = '(';
+  const char EMBED_CLOSING = ')';
+
+  char *input = mcfg_data_as_string(field);
+  size_t input_len = strlen(input);
+
+  char *result = malloc_or_die(input_len + 1);
+  size_t current_result_size = input_len + 1;
+
+  size_t wix = 0;
+  bool escaping = false;
+
+  bool building_embed_opening = false;
+  bool building_field_name = false;
+  char *embedded_field;
+  size_t embedded_field_name_start = 0;
+  size_t embedded_field_name_end = 0;
+
+  for (size_t ix = 0; ix < input_len; ix++) {
+    switch (input[ix]) {
+    case '\\':
+      if (escaping) {
+        _append_char(&result, wix, &current_result_size, input[ix]);
+        wix++;
+      }
+      escaping = !escaping;
+      continue;
+    case EMBED_PREFIX:
+      if (!escaping) {
+        building_embed_opening = true;
+      } else {
+        _append_char(&result, wix, &current_result_size, input[ix]);
+        wix++;
+      }
+      continue;
+    case EMBED_OPENING:
+      if (building_embed_opening)
+        building_embed_opening = false;
+      if (!escaping) {
+        building_field_name = true;
+        embedded_field_name_start = ix + 1;
+      } else {
+        _append_char(&result, wix, &current_result_size, input[ix]);
+        wix++;
+      }
+      continue;
+    case EMBED_CLOSING:
+      if (building_field_name) {
+        building_field_name = false;
+        size_t _len = (ix - 1 ) - embedded_field_name_start;
+        embedded_field = malloc_or_die(_len);
+        memcpy(embedded_field, input + embedded_field_name_start, _len);
+        eprintf("MCFG_UTIL DEBUG: FIELD NAME = %s\n");
+        free(embedded_field);
+        // TODO: Handle embedding
+        continue;
+      }
+    
+      _append_char(&result, wix, &current_result_size, input[ix]);
+      wix++;
+      continue;
+    default:
+      if (!building_field_name) {
+        _append_char(&result, wix, &current_result_size, input[ix]);
+        wix++;
+      }
+      continue;
+    }
+  }
+
+  return result;
 }
 
 int mcfg_data_as_int(mcfg_field_t field) {

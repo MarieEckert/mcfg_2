@@ -10,6 +10,10 @@
 
 #include "mcfg.h"
 
+#ifndef MCFG_EMBED_FORMAT_RESIZE_AMOUNT
+  #define MCFG_EMBED_FORMAT_RESIZE_AMOUNT 16
+#endif
+
 //------------------------------------------------------------------------------
 // Converts the data of the given field to a string representation
 //
@@ -40,6 +44,17 @@ char *mcfg_list_as_string(mcfg_list_t list);
 // A char-pointer to the data variable in the given field. If the field's type
 // is not TYPE_STRING a NULL-Pointer will be returned.
 char *mcfg_data_as_string(mcfg_field_t field);
+
+//------------------------------------------------------------------------------
+// Format the embeds of a string field.
+//
+// Params:
+// field The field of which the data should be formatted (has to be TYPE_STRING)
+// file The file from which to take the data for formatting
+//
+// Returns:
+// A new heap allocated string containing the formatted field.
+char *mcfg_format_field_embeds(mcfg_field_t field, mcfg_file_t file);
 
 //------------------------------------------------------------------------------
 // Get the data of the field as an int.
