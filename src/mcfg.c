@@ -333,6 +333,8 @@ mcfg_data_parse_result_t _parse_string_field(char *str) {
           ix + 1 < strlen(str) ? str[ix + 1] != '\'' : true;
       if (prev_char_not_quote && next_char_not_quote)
         break;
+      else if (!prev_char_not_quote)
+        continue;
     }
 
     ((char *)ret.data)[wix] = str[ix];
