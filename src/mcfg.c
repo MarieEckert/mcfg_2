@@ -326,12 +326,13 @@ mcfg_data_parse_result_t _parse_string_field(char *str) {
   size_t ix = 0;
   size_t wix = 0;
   for (; ix < strlen(str); ix++) {
-    if (str[ix] == '\'' && !escaping)
-      break;
-
-    if (str[ix] == '\\' && !escaping) {
-      escaping = true;
-      continue;
+    if (str[ix] == '\'') {
+      // Disgusting!
+      bool prev_char_not_quote = ix == 0 || str[ix - 1] != '\'';
+      bool next_char_not_quote =
+          ix + 1 < strlen(str) ? str[ix + 1] != '\'' : true;
+      if (prev_char_not_quote && next_char_not_quote)
+        break;
     }
 
     ((char *)ret.data)[wix] = str[ix];
