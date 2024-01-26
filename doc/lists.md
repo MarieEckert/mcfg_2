@@ -30,10 +30,11 @@ end
 ```
 
 ## Internals
-lists are represented using the type mcfg_list_t, they internally hold the type
+lists are represented using the type `mcfg_list_t`, they internally hold the type
 of the list and its member fields.
 
 ### Sample of parsed list
+```c
 struct mcfg_list list_field {
   enum mcfg_field_type type = 4 (TYPE_U8)
   size_t field_count = 5
@@ -61,3 +62,4 @@ struct mcfg_file {
     }
   ]
 }
+```
