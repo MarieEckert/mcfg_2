@@ -17,15 +17,18 @@
 void *malloc_or_die(size_t size);
 void *realloc_or_die(void *org, size_t size);
 
-mcfg_field_t *mcfg_get_field_by_path(mcfg_file_t *file, char *path) {
-  if (file == NULL || path == NULL)
-    return NULL;
+mcfg_path_t mcfg_parse_path(char *path) {
+  mcfg_path_t ret = {
+      .absolute = false, .sector = NULL, .section = NULL, .field = NULL};
+
+  if (path == NULL)
+    return ret;
 
   const char *path_seperator = "/";
 
   size_t element_count = 0;
   char **elements;
-  bool absolute = path[0] == path_seperator;
+  bool absolute = path[0] == path_seperator[0];
 
   char *strtok_saveptr;
   char *tok = strtok_r(path, path_seperator, &strtok_saveptr);
@@ -44,12 +47,20 @@ mcfg_field_t *mcfg_get_field_by_path(mcfg_file_t *file, char *path) {
     tok = strtok_r(NULL, path_seperator, &strtok_saveptr);
   }
 
-  if (absolute && element_count)
-    return NULL;
+  if (absolute && element_count == 0)
+    return ret;
 
-  if (element_count == 0 || element_count > 3)
-    return NULL;
+  ret.absolute = absolute;
+  ret.sector = elements[0];
+  if (element_count > 1)
+    ret.section = elements[1];
+  if (element_count > 2)
+    ret.field = elements[2];
 
+  return ret;
+}
+
+mcfg_field_t *mcfg_get_field_by_path(mcfg_file_t *file, mcfg_path_t path) {
   return NULL;
 }
 
@@ -205,8 +216,8 @@ char *mcfg_format_field_embeds(mcfg_field_t field, mcfg_file_t file) {
         memcpy(embedded_field, input + embedded_field_name_start, _len);
         embedded_field[_len] = 0;
         fprintf(stderr, "MCFG_UTIL DEBUG: FIELD NAME = %s\n", embedded_field);
-
-        mcfg_field_t *_field = mcfg_get_field_by_path(&file, embedded_field);
+        mcfg_path_t path = mcfg_parse_path(embedded_field);
+        mcfg_field_t *_field = mcfg_get_field_by_path(&file, path);
         char *formatted_contents = "?";
         if (_field == NULL)
           goto case_embed_closing_end;

@@ -14,6 +14,24 @@
 #define MCFG_EMBED_FORMAT_RESIZE_AMOUNT 16
 #endif
 
+typedef struct mcfg_path {
+  bool absolute;
+
+  char *sector;
+  char *section;
+  char *field;
+} mcfg_path_t;
+
+//------------------------------------------------------------------------------
+// Convert a string path into a mcfg_path struct
+//
+// Params:
+// path The path which should be converted
+//
+// Returns:
+// The path parsed into a mcfg_path struct
+mcfg_path_t mcfg_parse_path(char *path);
+
 //------------------------------------------------------------------------------
 // Gets a field by its path
 //
@@ -24,7 +42,7 @@
 // Returns:
 // Pointer to the field pointed to by path. If the field was not found NULL will
 // be returned.
-mcfg_field_t *mcfg_get_field_by_path(mcfg_file_t *file, char *path);
+mcfg_field_t *mcfg_get_field_by_path(mcfg_file_t *file, mcfg_path_t path);
 
 //------------------------------------------------------------------------------
 // Converts the data of the given field to a string representation
