@@ -18,6 +18,38 @@ void *malloc_or_die(size_t size);
 void *realloc_or_die(void *org, size_t size);
 
 mcfg_field_t *mcfg_get_field_by_path(mcfg_file_t *file, char *path) {
+  if (file == NULL || path == NULL)
+    return NULL;
+
+  const char *path_seperator = "/";
+
+  size_t element_count = 0;
+  char **elements;
+  bool absolute = path[0] == path_seperator;
+
+  char *strtok_saveptr;
+  char *tok = strtok_r(path, path_seperator, &strtok_saveptr);
+
+  while (tok != NULL) {
+    if (element_count == 0) {
+      elements = malloc_or_die(sizeof(char *));
+    } else {
+      elements = realloc_or_die(elements, sizeof(char *) * (element_count + 1));
+    }
+
+    elements[element_count] = malloc_or_die(strlen(tok) + 1);
+    strcpy(elements[element_count], tok);
+
+    element_count++;
+    tok = strtok_r(NULL, path_seperator, &strtok_saveptr);
+  }
+
+  if (absolute && element_count)
+    return NULL;
+
+  if (element_count == 0 || element_count > 3)
+    return NULL;
+
   return NULL;
 }
 
@@ -179,7 +211,7 @@ char *mcfg_format_field_embeds(mcfg_field_t field, mcfg_file_t file) {
         if (_field == NULL)
           goto case_embed_closing_end;
 
-case_embed_closing_end:
+      case_embed_closing_end:
         free(embedded_field);
         // TODO: Handle embedding
         break;
