@@ -15,6 +15,18 @@
 #endif
 
 //------------------------------------------------------------------------------
+// Gets a field by its path
+//
+// Params:
+// file The file in which the field lies
+// path The path to the field which should be grabbed
+//
+// Returns:
+// Pointer to the field pointed to by path. If the field was not found NULL will
+// be returned.
+mcfg_field_t *mcfg_get_field_by_path(mcfg_file_t *file, char *path);
+
+//------------------------------------------------------------------------------
 // Converts the data of the given field to a string representation
 //
 // Params:

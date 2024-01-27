@@ -17,6 +17,10 @@
 void *malloc_or_die(size_t size);
 void *realloc_or_die(void *org, size_t size);
 
+mcfg_field_t *mcfg_get_field_by_path(mcfg_file_t *file, char *path) {
+  return NULL;
+}
+
 char *mcfg_data_to_string(mcfg_field_t field) {
   int64_t num = 0;
   switch (field.type) {
@@ -169,6 +173,13 @@ char *mcfg_format_field_embeds(mcfg_field_t field, mcfg_file_t file) {
         memcpy(embedded_field, input + embedded_field_name_start, _len);
         embedded_field[_len] = 0;
         fprintf(stderr, "MCFG_UTIL DEBUG: FIELD NAME = %s\n", embedded_field);
+
+        mcfg_field_t *_field = mcfg_get_field_by_path(&file, embedded_field);
+        char *formatted_contents = "?";
+        if (_field == NULL)
+          goto case_embed_closing_end;
+
+case_embed_closing_end:
         free(embedded_field);
         // TODO: Handle embedding
         break;
