@@ -112,6 +112,8 @@ mcfg_list_t *mcfg_data_as_list(mcfg_field_t field);
 char *mcfg_format_field_embeds(mcfg_field_t field, mcfg_file_t file,
                                mcfg_path_t relativity);
 
+char *mcfg_format_field_embeds_str(char *input, mcfg_file_t file,
+                                   mcfg_path_t relativity);
 //------------------------------------------------------------------------------
 // Get the data of the field as an int.
 //

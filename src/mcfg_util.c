@@ -29,13 +29,25 @@ void _append_char(char **dest, size_t wix, size_t *dest_size, char chr) {
 
     *dest = realloc_or_die(*dest, new_size);
     *dest_size = new_size;
-    fprintf(stderr, "RESIZE\n");
   }
 
   // fprintf(stderr, "PING!\n");
   // fprintf(stderr, "wix = %zu; dest_size = %zu ; dest = %p; *dest = %p\n",
   // wix, *dest_size, dest, *dest);
   (*dest)[wix] = chr;
+}
+
+size_t _append_str(char **dest, size_t wix, size_t *dest_size, char *src) {
+  if (dest == NULL || *dest == NULL || src == NULL) {
+    return 0;
+  }
+
+  for (size_t ix = 0; ix < strlen(src); ix++) {
+    _append_char(dest, wix, dest_size, src[ix]);
+    wix++;
+  }
+
+  return wix;
 }
 
 // Copy src until delimiter char is hit
@@ -276,6 +288,11 @@ char *mcfg_format_field_embeds(mcfg_field_t field, mcfg_file_t file,
     return NULL;
 
   char *input = mcfg_data_as_string(field);
+  return mcfg_format_field_embeds_str(input, file, relativity);
+}
+
+char *mcfg_format_field_embeds_str(char *input, mcfg_file_t file,
+                                   mcfg_path_t relativity) {
   size_t input_len = strlen(input);
 
   char *result = malloc_or_die(input_len + 1);
@@ -338,18 +355,27 @@ char *mcfg_format_field_embeds(mcfg_field_t field, mcfg_file_t file,
           goto case_embed_closing_end;
 
         if (_field->type == TYPE_LIST) {
-          char *prefix = remove_newline(
-              _bstrcpy_until(input + embedded_field_name_start - 3, input, ' ')
-          );
+          char *prefix = remove_newline(_bstrcpy_until(
+              input + embedded_field_name_start - 3, input, ' '));
           char *postfix = remove_newline(_strcpy_until(input + ix + 1, ' '));
           formatted_contents =
               mcfg_format_list(*mcfg_data_as_list(*_field), prefix, postfix);
           fprintf(stderr, "MCFG_UTIL DEBUG: LIST PREFIX = %s\n", prefix);
           fprintf(stderr, "MCFG_UTIL DEBUG: LIST POSTFIX = %s\n", postfix);
+        } else {
+          formatted_contents = mcfg_data_to_string(*_field);
         }
+
+        fprintf(stderr, "MCFG_UTIL DEBUG: pre formatted_contents = %s\n",
+                formatted_contents);
+        formatted_contents =
+            mcfg_format_field_embeds_str(formatted_contents, file, relativity);
 
         fprintf(stderr, "MCFG_UTIL DEBUG: formatted_contents = %s\n",
                 formatted_contents);
+
+        wix +=
+            _append_str(&result, wix, &current_result_size, formatted_contents);
       case_embed_closing_end:
         free(embedded_field);
         // TODO: Handle embedding
@@ -367,6 +393,7 @@ char *mcfg_format_field_embeds(mcfg_field_t field, mcfg_file_t file,
       break;
     }
   }
+  _append_char(&result, wix, &current_result_size, 0);
 
   return result;
 }
