@@ -85,6 +85,17 @@ char *_bstrcpy_until(char *src, char *src_org, char delimiter) {
   return res;
 }
 
+char *_find_prev(char *src, char *src_org, char delimiter) {
+  int offs = 0;
+  while ((src - offs) > src_org) {
+    if ((src - offs)[0] == delimiter)
+      return src - offs;
+    offs++;
+  }
+
+  return src - offs;
+}
+
 // Helper function for path relativity
 mcfg_path_t _insert_path_elems(mcfg_path_t src, mcfg_path_t rel) {
   if (src.sector == NULL)
@@ -358,6 +369,9 @@ char *mcfg_format_field_embeds_str(char *input, mcfg_file_t file,
           char *postfix = remove_newline(_strcpy_until(input + ix + 1, ' '));
           formatted_contents =
               mcfg_format_list(*mcfg_data_as_list(*_field), prefix, postfix);
+
+          wix = _find_prev(input + ix, input, ' ') - input + 1;
+          ix = (size_t)(strchr(input + ix, ' ') - input) - 1;
 
           free(prefix);
           free(postfix);
