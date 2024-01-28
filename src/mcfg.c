@@ -1,5 +1,5 @@
 // mcfg.c ; marie config format parser implementation
-// implementation for mcfg version 2
+// implementation for MCFG/2
 //
 // Copyright (c) 2023, Marie Eckert
 // Licensend under the BSD 3-Clause License.

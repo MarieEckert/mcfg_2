@@ -1,5 +1,5 @@
 // mcfg_util ; marie config format utility implementation
-// for mcfg version 2
+// for MCFG/2
 //
 // Copyright (c) 2023, Marie Eckert
 // Licensend under the BSD 3-Clause License.
