@@ -8,17 +8,12 @@
 #include "mcfg_util.h"
 
 #include "mcfg.h"
+#include "mcfg_shared.h"
 
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-// From mcfg.c (to be refactored (?))
-void *malloc_or_die(size_t size);
-
-// From mcfg.c (to be refactored (?))
-void *realloc_or_die(void *org, size_t size);
 
 size_t _size_t_max(size_t a, size_t b) { return a > b ? a : b; }
 
@@ -222,7 +217,8 @@ char *mcfg_format_list(mcfg_list_t list, char *prefix, char *postfix) {
     strcpy(out + cpy_offs, seperator);
     cpy_offs += strlen(seperator);
     tmp = mcfg_data_to_string(list.fields[ix]);
-    out = realloc_or_die(out, strlen(out) + strlen(tmp) + sizeof(seperator) + 1);
+    out =
+        realloc_or_die(out, strlen(out) + strlen(tmp) + sizeof(seperator) + 1);
     strcpy(out + cpy_offs, tmp);
     cpy_offs = strlen(out);
     free(tmp);
@@ -252,7 +248,8 @@ char *mcfg_list_as_string(mcfg_list_t list) {
     strcpy(out + cpy_offs, seperator);
     cpy_offs += strlen(seperator);
     tmp = mcfg_data_to_string(list.fields[ix]);
-    out = realloc_or_die(out, strlen(out) + strlen(tmp) + sizeof(seperator) + 1);
+    out =
+        realloc_or_die(out, strlen(out) + strlen(tmp) + sizeof(seperator) + 1);
     strcpy(out + cpy_offs, tmp);
     cpy_offs = strlen(out);
     free(tmp);

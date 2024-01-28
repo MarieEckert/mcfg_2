@@ -11,6 +11,8 @@
 
 #include "mcfg.h"
 
+#include "mcfg_shared.h"
+
 #include <errno.h>
 #include <math.h>
 #include <stdint.h>
@@ -61,37 +63,6 @@ bool _integer_bounds_check(int64_t _int, mcfg_field_type_t type) {
   default:
     return false;
   }
-}
-
-bool is_string_empty(char *in) {
-  if (in == NULL || in[0] == 0)
-    return true;
-
-  size_t len = strlen(in);
-  for (size_t i = 0; i < len; i++)
-    if (in[i] > ' ')
-      return false;
-
-  return true;
-}
-
-void remove_newline(char *in) {
-  if (in == NULL || strlen(in) == 0)
-    return;
-
-  if (in[strlen(in) - 1] == '\n')
-    in[strlen(in) - 1] = 0;
-}
-
-bool has_newline(char *in) {
-  if (in == NULL || strlen(in) == 0)
-    return false;
-
-  for (size_t ix = 0; ix < strlen(in); ix++)
-    if (in[ix] == '\n')
-      return true;
-
-  return false;
 }
 
 mcfg_boolean_t _strtobool(char *in) {
