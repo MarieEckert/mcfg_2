@@ -31,9 +31,6 @@ void _append_char(char **dest, size_t wix, size_t *dest_size, char chr) {
     *dest_size = new_size;
   }
 
-  // fprintf(stderr, "PING!\n");
-  // fprintf(stderr, "wix = %zu; dest_size = %zu ; dest = %p; *dest = %p\n",
-  // wix, *dest_size, dest, *dest);
   (*dest)[wix] = chr;
 }
 
@@ -91,13 +88,13 @@ char *_bstrcpy_until(char *src, char *src_org, char delimiter) {
 // Helper function for path relativity
 mcfg_path_t _insert_path_elems(mcfg_path_t src, mcfg_path_t rel) {
   if (src.sector == NULL)
-    src.sector = rel.sector;
+    src.sector = strdup(rel.sector);
 
   if (src.section == NULL)
-    src.section = rel.section;
+    src.section = strdup(rel.section);
 
   if (src.field == NULL)
-    src.field = rel.field;
+    src.field = strdup(rel.field);
 
   return src;
 }
@@ -141,6 +138,8 @@ mcfg_path_t mcfg_parse_path(char *path) {
     ret.section = elements[1];
   if (element_count > 2)
     ret.field = elements[2];
+
+  free(elements);
 
   return ret;
 }
@@ -224,7 +223,6 @@ char *mcfg_format_list(mcfg_list_t list, char *prefix, char *postfix) {
   cpy_offs += strlen(tmp);
   free(tmp);
 
-  fprintf(stderr, "seperator = %s\n", seperator);
   for (size_t ix = 1; ix < list.field_count; ix++) {
     strcpy(out + cpy_offs, seperator);
     cpy_offs += strlen(seperator);
@@ -360,25 +358,25 @@ char *mcfg_format_field_embeds_str(char *input, mcfg_file_t file,
           char *postfix = remove_newline(_strcpy_until(input + ix + 1, ' '));
           formatted_contents =
               mcfg_format_list(*mcfg_data_as_list(*_field), prefix, postfix);
-          fprintf(stderr, "MCFG_UTIL DEBUG: LIST PREFIX = %s\n", prefix);
-          fprintf(stderr, "MCFG_UTIL DEBUG: LIST POSTFIX = %s\n", postfix);
+
+          free(prefix);
+          free(postfix);
         } else {
           formatted_contents = mcfg_data_to_string(*_field);
         }
 
-        fprintf(stderr, "MCFG_UTIL DEBUG: pre formatted_contents = %s\n",
-                formatted_contents);
         formatted_contents =
             mcfg_format_field_embeds_str(formatted_contents, file, relativity);
 
-        fprintf(stderr, "MCFG_UTIL DEBUG: formatted_contents = %s\n",
-                formatted_contents);
-
-        wix +=
+        wix =
             _append_str(&result, wix, &current_result_size, formatted_contents);
+
+        free(formatted_contents); // why is this not freeing???
       case_embed_closing_end:
         free(embedded_field);
-        // TODO: Handle embedding
+        free(path.sector);
+        free(path.section);
+        free(path.field);
         break;
       }
 
@@ -395,6 +393,7 @@ char *mcfg_format_field_embeds_str(char *input, mcfg_file_t file,
   }
   _append_char(&result, wix, &current_result_size, 0);
 
+  fprintf(stderr, "result = %s\n", result);
   return result;
 }
 
