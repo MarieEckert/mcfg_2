@@ -15,7 +15,7 @@ sector test
   section sect1
     str dest 'foo $(/embedding_test/sect1/foo) with someu16
     $(/embedding_test/sect1/someu16) this should appear normal -> \$(aa) ''
-    <$(/list_src/sect1/somelist)>
+    <$(/list_src/sect1/somelist)> a
   '
   end
 end
