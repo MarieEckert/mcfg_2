@@ -172,6 +172,42 @@ void _append_char(char **dest, size_t wix, size_t *dest_size, char chr) {
   (*dest)[wix] = chr;
 }
 
+char *_strcpy_until(char *src, char delimiter) {
+  int offs = 0;
+  while (offs < strlen(src)) {
+    if (src[offs] == delimiter)
+      break;
+    offs++;
+  }
+
+  if (offs == 0)
+    return "";
+
+  char *res = malloc(offs + 1);
+  memcpy(res, src, offs);
+  res[offs] = 0;
+
+  return res;
+}
+
+char *_bstrcpy_until(char *src, char *src_org, char delimiter) {
+  int offs = 0;
+  while ((src - offs) > src_org) {
+    if ((src - offs)[0] == delimiter)
+      break;
+    offs++;
+  }
+
+  if (offs == 0)
+    return "";
+
+  char *res = malloc(offs + 1);
+  memcpy(res, src - offs + 1, offs);
+  res[offs] = 0;
+
+  return res;
+}
+
 // Helper function for path relativity
 mcfg_path_t _insert_path_elems(mcfg_path_t src, mcfg_path_t rel) {
   if (src.sector == NULL)
@@ -218,35 +254,48 @@ char *mcfg_format_field_embeds(mcfg_field_t field, mcfg_file_t file,
       if (!escaping) {
         building_embed_opening = true;
       } else {
+        escaping = false;
+
         _append_char(&result, wix, &current_result_size, input[ix]);
         wix++;
       }
       break;
     case MCFG_EMBED_OPENING:
-      if (building_embed_opening)
-        building_embed_opening = false;
-      if (!escaping) {
+      if (!escaping && building_embed_opening) {
         building_field_name = true;
         embedded_field_name_start = ix + 1;
       } else {
         _append_char(&result, wix, &current_result_size, input[ix]);
         wix++;
       }
+
+      building_embed_opening = false;
       break;
     case MCFG_EMBED_CLOSING:
       if (building_field_name) {
         building_field_name = false;
+
         size_t _len = ix - embedded_field_name_start;
         embedded_field = malloc_or_die(_len + 1);
         memcpy(embedded_field, input + embedded_field_name_start, _len);
         embedded_field[_len] = 0;
         fprintf(stderr, "MCFG_UTIL DEBUG: FIELD NAME = %s\n", embedded_field);
+
         mcfg_path_t path =
             _insert_path_elems(mcfg_parse_path(embedded_field), relativity);
         mcfg_field_t *_field = mcfg_get_field_by_path(&file, path);
+
         char *formatted_contents = "?";
         if (_field == NULL)
           goto case_embed_closing_end;
+
+        if (_field->type == TYPE_LIST) {
+          char *prefix =
+              _bstrcpy_until(input + embedded_field_name_start - 3, input, ' ');
+          char *postfix = _strcpy_until(input + ix + 1, ' ');
+          fprintf(stderr, "MCFG_UTIL DEBUG: LIST PREFIX = %s\n", prefix);
+          fprintf(stderr, "MCFG_UTIL DEBUG: LIST POSTFIX = %s\n", postfix);
+        }
 
       case_embed_closing_end:
         free(embedded_field);
