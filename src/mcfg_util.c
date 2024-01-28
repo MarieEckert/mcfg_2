@@ -338,9 +338,10 @@ char *mcfg_format_field_embeds(mcfg_field_t field, mcfg_file_t file,
           goto case_embed_closing_end;
 
         if (_field->type == TYPE_LIST) {
-          char *prefix =
-              _bstrcpy_until(input + embedded_field_name_start - 3, input, ' ');
-          char *postfix = _strcpy_until(input + ix + 1, ' ');
+          char *prefix = remove_newline(
+              _bstrcpy_until(input + embedded_field_name_start - 3, input, ' ')
+          );
+          char *postfix = remove_newline(_strcpy_until(input + ix + 1, ' '));
           formatted_contents =
               mcfg_format_list(*mcfg_data_as_list(*_field), prefix, postfix);
           fprintf(stderr, "MCFG_UTIL DEBUG: LIST PREFIX = %s\n", prefix);

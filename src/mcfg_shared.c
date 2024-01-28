@@ -15,12 +15,14 @@ bool is_string_empty(char *in) {
   return true;
 }
 
-void remove_newline(char *in) {
+char *remove_newline(char *in) {
   if (in == NULL || strlen(in) == 0)
-    return;
+    return in;
 
   if (in[strlen(in) - 1] == '\n')
     in[strlen(in) - 1] = 0;
+
+  return in;
 }
 
 bool has_newline(char *in) {
