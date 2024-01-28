@@ -10,9 +10,11 @@
 
 #include "mcfg.h"
 
-#ifndef MCFG_EMBED_FORMAT_RESIZE_AMOUNT
 #define MCFG_EMBED_FORMAT_RESIZE_AMOUNT 16
-#endif
+
+#define MCFG_EMBED_PREFIX '$'
+#define MCFG_EMBED_OPENING '('
+#define MCFG_EMBED_CLOSING ')'
 
 typedef struct mcfg_path {
   bool absolute;
@@ -81,10 +83,12 @@ char *mcfg_data_as_string(mcfg_field_t field);
 // Params:
 // field The field of which the data should be formatted (has to be TYPE_STRING)
 // file The file from which to take the data for formatting
+// relativity A path which should be used to complete relative paths.
 //
 // Returns:
 // A new heap allocated string containing the formatted field.
-char *mcfg_format_field_embeds(mcfg_field_t field, mcfg_file_t file);
+char *mcfg_format_field_embeds(mcfg_field_t field, mcfg_file_t file,
+                               mcfg_path_t relativity);
 
 //------------------------------------------------------------------------------
 // Get the data of the field as an int.

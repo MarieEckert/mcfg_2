@@ -76,7 +76,9 @@ int main(int argc, char **argv) {
 
   fprintf(stderr, "parsed you a mcfg file!\n");
   print_file(file);
-  free(mcfg_format_field_embeds(file->sectors[2].sections[0].fields[0], *file)); 
+  char rel_path[] = "/test/sect1";
+  free(mcfg_format_field_embeds(file->sectors[2].sections[0].fields[0], *file,
+                                mcfg_parse_path(rel_path)));
 cleanup:
   mcfg_free_file(file);
   return 0;

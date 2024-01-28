@@ -322,7 +322,6 @@ mcfg_data_parse_result_t _parse_string_field(char *str) {
     return ret;
   }
 
-  bool escaping = false;
   size_t ix = 0;
   size_t wix = 0;
   for (; ix < strlen(str); ix++) {

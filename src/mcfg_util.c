@@ -157,13 +157,24 @@ void _append_char(char **dest, size_t wix, size_t *dest_size, char chr) {
   (*dest)[wix] = chr;
 }
 
-char *mcfg_format_field_embeds(mcfg_field_t field, mcfg_file_t file) {
+// Helper function for path relativity
+mcfg_path_t _insert_path_elems(mcfg_path_t src, mcfg_path_t rel) {
+  if (src.sector == NULL)
+    src.sector = rel.sector;
+
+  if (src.section == NULL)
+    src.section = rel.section;
+
+  if (src.field == NULL)
+    src.field = rel.field;
+
+  return src;
+}
+
+char *mcfg_format_field_embeds(mcfg_field_t field, mcfg_file_t file,
+                               mcfg_path_t relativity) {
   if (field.data == NULL || field.type != TYPE_STRING)
     return NULL;
-
-  const char EMBED_PREFIX = '$';
-  const char EMBED_OPENING = '(';
-  const char EMBED_CLOSING = ')';
 
   char *input = mcfg_data_as_string(field);
   size_t input_len = strlen(input);
@@ -178,7 +189,6 @@ char *mcfg_format_field_embeds(mcfg_field_t field, mcfg_file_t file) {
   bool building_field_name = false;
   char *embedded_field;
   size_t embedded_field_name_start = 0;
-  size_t embedded_field_name_end = 0;
 
   for (size_t ix = 0; ix < input_len; ix++) {
     switch (input[ix]) {
@@ -189,7 +199,7 @@ char *mcfg_format_field_embeds(mcfg_field_t field, mcfg_file_t file) {
       }
       escaping = !escaping;
       break;
-    case EMBED_PREFIX:
+    case MCFG_EMBED_PREFIX:
       if (!escaping) {
         building_embed_opening = true;
       } else {
@@ -197,7 +207,7 @@ char *mcfg_format_field_embeds(mcfg_field_t field, mcfg_file_t file) {
         wix++;
       }
       break;
-    case EMBED_OPENING:
+    case MCFG_EMBED_OPENING:
       if (building_embed_opening)
         building_embed_opening = false;
       if (!escaping) {
@@ -208,7 +218,7 @@ char *mcfg_format_field_embeds(mcfg_field_t field, mcfg_file_t file) {
         wix++;
       }
       break;
-    case EMBED_CLOSING:
+    case MCFG_EMBED_CLOSING:
       if (building_field_name) {
         building_field_name = false;
         size_t _len = ix - embedded_field_name_start;
@@ -216,7 +226,8 @@ char *mcfg_format_field_embeds(mcfg_field_t field, mcfg_file_t file) {
         memcpy(embedded_field, input + embedded_field_name_start, _len);
         embedded_field[_len] = 0;
         fprintf(stderr, "MCFG_UTIL DEBUG: FIELD NAME = %s\n", embedded_field);
-        mcfg_path_t path = mcfg_parse_path(embedded_field);
+        mcfg_path_t path =
+            _insert_path_elems(mcfg_parse_path(embedded_field), relativity);
         mcfg_field_t *_field = mcfg_get_field_by_path(&file, path);
         char *formatted_contents = "?";
         if (_field == NULL)
