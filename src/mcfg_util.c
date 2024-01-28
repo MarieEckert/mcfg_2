@@ -99,13 +99,13 @@ char *_find_prev(char *src, char *src_org, char delimiter) {
 // Helper function for path relativity
 mcfg_path_t _insert_path_elems(mcfg_path_t src, mcfg_path_t rel) {
   if (src.sector == NULL)
-    src.sector = strdup(rel.sector);
+    src.sector = rel.sector != NULL ? strdup(rel.sector) : strdup("(null)");
 
   if (src.section == NULL)
-    src.section = strdup(rel.section);
+    src.section = rel.section != NULL ? strdup(rel.section) : strdup("(null)");
 
   if (src.field == NULL)
-    src.field = strdup(rel.field);
+    src.field = rel.field != NULL ? strdup(rel.field) : strdup("(null)");
 
   return src;
 }
@@ -359,7 +359,7 @@ char *mcfg_format_field_embeds_str(char *input, mcfg_file_t file,
             _insert_path_elems(mcfg_parse_path(embedded_field), relativity);
         mcfg_field_t *_field = mcfg_get_field_by_path(&file, path);
 
-        char *formatted_contents = "?";
+        char *formatted_contents = strdup("(nullptr)");
         if (_field == NULL)
           goto case_embed_closing_end;
 
@@ -382,11 +382,11 @@ char *mcfg_format_field_embeds_str(char *input, mcfg_file_t file,
         formatted_contents =
             mcfg_format_field_embeds_str(formatted_contents, file, relativity);
 
+      case_embed_closing_end:
         wix =
             _append_str(&result, wix, &current_result_size, formatted_contents);
 
         free(formatted_contents); // why is this not freeing???
-      case_embed_closing_end:
         free(embedded_field);
         free(path.sector);
         free(path.section);
