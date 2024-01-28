@@ -89,6 +89,17 @@ char *mcfg_list_as_string(mcfg_list_t list);
 char *mcfg_data_as_string(mcfg_field_t field);
 
 //------------------------------------------------------------------------------
+// Get the data of the field as a list
+//
+// Params:
+// field The field of which the data should be grabbed
+//
+// Returns:
+// A pointer to a mcfg_list_t structure formed from the data pointer in the
+// given field. If the data pointer is NULL, a NULL-Pointer will be returned.
+mcfg_list_t *mcfg_data_as_list(mcfg_field_t field);
+
+//------------------------------------------------------------------------------
 // Format the embeds of a string field.
 //
 // Params:
