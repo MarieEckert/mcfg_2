@@ -14,8 +14,34 @@
 #include <stdlib.h>
 #include <string.h>
 
+// From mcfg.c (to be refactored (?))
 void *malloc_or_die(size_t size);
+
+// From mcfg.c (to be refactored (?))
 void *realloc_or_die(void *org, size_t size);
+
+size_t size_t_max(size_t a, size_t b) { return a > b ? a : b; }
+
+// Helper function to append and resize a heap allocated string
+void _append_char(char **dest, size_t wix, size_t *dest_size, char chr) {
+  if (dest == NULL || *dest == NULL) {
+    return;
+  }
+
+  if (wix >= *dest_size) {
+    size_t size_diff = wix - *dest_size;
+    size_t new_size = size_t_max(MCFG_EMBED_FORMAT_RESIZE_AMOUNT, size_diff);
+
+    *dest = realloc_or_die(*dest, new_size);
+    *dest_size = new_size;
+    fprintf(stderr, "RESIZE\n");
+  }
+
+  // fprintf(stderr, "PING!\n");
+  // fprintf(stderr, "wix = %zu; dest_size = %zu ; dest = %p; *dest = %p\n",
+  // wix, *dest_size, dest, *dest);
+  (*dest)[wix] = chr;
+}
 
 mcfg_path_t mcfg_parse_path(char *path) {
   mcfg_path_t ret = {
@@ -117,6 +143,9 @@ char *mcfg_data_to_string(mcfg_field_t field) {
   return number_ret;
 }
 
+char *mcfg_format_list(mcfg_list_t list, char *prefix, char *postfix) {
+}
+
 char *mcfg_list_as_string(mcfg_list_t list) {
   if (list.field_count == 0 || list.fields == NULL)
     return strdup("");
@@ -147,29 +176,6 @@ char *mcfg_data_as_string(mcfg_field_t field) {
   if (field.data != NULL && field.type == TYPE_STRING)
     return (char *)field.data;
   return NULL;
-}
-
-size_t _max(size_t a, size_t b) { return a > b ? a : b; }
-
-// Helper function to resize
-void _append_char(char **dest, size_t wix, size_t *dest_size, char chr) {
-  if (dest == NULL || *dest == NULL) {
-    return;
-  }
-
-  if (wix >= *dest_size) {
-    size_t size_diff = wix - *dest_size;
-    size_t new_size = _max(MCFG_EMBED_FORMAT_RESIZE_AMOUNT, size_diff);
-
-    *dest = realloc_or_die(*dest, new_size);
-    *dest_size = new_size;
-    fprintf(stderr, "RESIZE\n");
-  }
-
-  // fprintf(stderr, "PING!\n");
-  // fprintf(stderr, "wix = %zu; dest_size = %zu ; dest = %p; *dest = %p\n",
-  // wix, *dest_size, dest, *dest);
-  (*dest)[wix] = chr;
 }
 
 char *_strcpy_until(char *src, char delimiter) {
@@ -293,10 +299,13 @@ char *mcfg_format_field_embeds(mcfg_field_t field, mcfg_file_t file,
           char *prefix =
               _bstrcpy_until(input + embedded_field_name_start - 3, input, ' ');
           char *postfix = _strcpy_until(input + ix + 1, ' ');
+ //         formatted_contents = mcfg_format_list(*_field, prefix, postfix);
           fprintf(stderr, "MCFG_UTIL DEBUG: LIST PREFIX = %s\n", prefix);
           fprintf(stderr, "MCFG_UTIL DEBUG: LIST POSTFIX = %s\n", postfix);
         }
 
+        fprintf(stderr, "MCFG_UTIL DEBUG: formatted_contents = %s\n", 
+                  formatted_contents);
       case_embed_closing_end:
         free(embedded_field);
         // TODO: Handle embedding

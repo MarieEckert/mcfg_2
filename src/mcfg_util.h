@@ -58,6 +58,16 @@ mcfg_field_t *mcfg_get_field_by_path(mcfg_file_t *file, mcfg_path_t path);
 char *mcfg_data_to_string(mcfg_field_t field);
 
 //------------------------------------------------------------------------------
+// Formats a list field using the provided pre- and postfix
+//
+// Params:
+// list The list struct of which the contents should be formatted
+//
+// Returns:
+// Heap-Allocated string of the formatted list.
+char *mcfg_format_list(mcfg_list_t list, char *prefix, char *postfix);
+
+//------------------------------------------------------------------------------
 // Converts a list to its string representation
 //
 // Params:
