@@ -61,7 +61,22 @@ mcfg_path_t mcfg_parse_path(char *path) {
 }
 
 mcfg_field_t *mcfg_get_field_by_path(mcfg_file_t *file, mcfg_path_t path) {
-  return NULL;
+  if (!path.absolute)
+    return NULL;
+
+  if (path.sector == NULL || path.section == NULL || path.field == NULL)
+    return NULL;
+
+  mcfg_sector_t *sector = mcfg_get_sector(file, path.sector);
+  if (sector == NULL)
+    return NULL;
+
+  mcfg_section_t *section = mcfg_get_section(sector, path.section);
+  if (section == NULL)
+    return NULL;
+
+  mcfg_field_t *field = mcfg_get_field(section, path.field);
+  return field;
 }
 
 char *mcfg_data_to_string(mcfg_field_t field) {

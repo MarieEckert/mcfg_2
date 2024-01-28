@@ -39,7 +39,8 @@ mcfg_path_t mcfg_parse_path(char *path);
 //
 // Params:
 // file The file in which the field lies
-// path The path to the field which should be grabbed
+// path The path to the field which should be grabbed. This path has to be
+//      absolute!
 //
 // Returns:
 // Pointer to the field pointed to by path. If the field was not found NULL will
