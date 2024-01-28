@@ -222,14 +222,14 @@ char *mcfg_format_list(mcfg_list_t list, char *prefix, char *postfix) {
     strcpy(out + cpy_offs, seperator);
     cpy_offs += strlen(seperator);
     tmp = mcfg_data_to_string(list.fields[ix]);
-    out = realloc(out, strlen(out) + strlen(tmp) + sizeof(seperator) + 1);
+    out = realloc_or_die(out, strlen(out) + strlen(tmp) + sizeof(seperator) + 1);
     strcpy(out + cpy_offs, tmp);
     cpy_offs = strlen(out);
     free(tmp);
   }
 
   size_t prev_end = strlen(out);
-  out = realloc(out, strlen(out) + strlen(postfix) + 1);
+  out = realloc_or_die(out, strlen(out) + strlen(postfix) + 1);
   strcpy(out + prev_end, postfix);
 
   return out;
@@ -242,7 +242,7 @@ char *mcfg_list_as_string(mcfg_list_t list) {
   size_t cpy_offs = 0;
   char *tmp = mcfg_data_to_string(list.fields[0]);
   char seperator[3] = ", ";
-  char *out = malloc(strlen(tmp) + sizeof(seperator));
+  char *out = malloc_or_die(strlen(tmp) + sizeof(seperator));
 
   strcpy(out, tmp);
   cpy_offs += strlen(out);
@@ -252,7 +252,7 @@ char *mcfg_list_as_string(mcfg_list_t list) {
     strcpy(out + cpy_offs, seperator);
     cpy_offs += strlen(seperator);
     tmp = mcfg_data_to_string(list.fields[ix]);
-    out = realloc(out, strlen(out) + strlen(tmp) + sizeof(seperator) + 1);
+    out = realloc_or_die(out, strlen(out) + strlen(tmp) + sizeof(seperator) + 1);
     strcpy(out + cpy_offs, tmp);
     cpy_offs = strlen(out);
     free(tmp);
