@@ -112,6 +112,16 @@ mcfg_list_t *mcfg_data_as_list(mcfg_field_t field);
 char *mcfg_format_field_embeds(mcfg_field_t field, mcfg_file_t file,
                                mcfg_path_t relativity);
 
+//------------------------------------------------------------------------------
+// Format the embeds in a string
+//
+// Params:
+// input The string in which the embeds should be formatted
+// file The file from which to take the data for formatting
+// relativity A path which should be used to complete relative paths.
+//
+// Returns:
+// A new heap allocated string containing the formatted input string.
 char *mcfg_format_field_embeds_str(char *input, mcfg_file_t file,
                                    mcfg_path_t relativity);
 //------------------------------------------------------------------------------
