@@ -1,4 +1,4 @@
-// mcfg_shared.h ; marie config format internal shared funtion header
+// mcfg_shared.h ; marie config format internal shared function header
 // for MCFG/2
 //
 // Copyright (c) 2023, Marie Eckert

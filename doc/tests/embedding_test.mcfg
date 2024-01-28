@@ -8,14 +8,14 @@ sector embedding_test
 end
 sector list_src
   section sect1
-    list str somelist 'aasd', 'bebis'
+    list str somelist 'aasd', 'bebis', '$(/embedding_test/sect1/someu16)'
   end
 end
 sector test
   section sect1
     str dest 'foo $(/embedding_test/sect1/foo) with someu16
     $(/embedding_test/sect1/someu16) this should appear normal -> \$(aa) ''
-    aaa$(/list_src/sect1/somelist)bbb
+    <$(/list_src/sect1/somelist)>
   '
   end
 end
