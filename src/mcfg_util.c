@@ -195,7 +195,45 @@ char *mcfg_data_to_string(mcfg_field_t field) {
   return number_ret;
 }
 
-char *mcfg_format_list(mcfg_list_t list, char *prefix, char *postfix) {}
+char *mcfg_format_list(mcfg_list_t list, char *prefix, char *postfix) {
+  if (list.field_count == 0 || list.fields == NULL)
+    return strdup("");
+
+  char space[2] = " ";
+  size_t base_alloc_size = strlen(prefix) + strlen(postfix) + sizeof(space);
+
+  char *seperator = malloc_or_die(base_alloc_size);
+  strcpy(seperator, postfix);
+  strcpy(seperator + strlen(postfix), space);
+  strcpy(seperator + strlen(postfix) + strlen(space), prefix);
+
+  size_t cpy_offs = 0;
+  char *tmp = mcfg_data_to_string(list.fields[0]);
+  char *out = malloc_or_die(base_alloc_size + strlen(tmp));
+
+  strcpy(out, prefix);
+  cpy_offs += strlen(prefix);
+  strcpy(out + cpy_offs, tmp);
+  cpy_offs += strlen(tmp);
+  free(tmp);
+
+  fprintf(stderr, "seperator = %s\n", seperator);
+  for (size_t ix = 1; ix < list.field_count; ix++) {
+    strcpy(out + cpy_offs, seperator);
+    cpy_offs += strlen(seperator);
+    tmp = mcfg_data_to_string(list.fields[ix]);
+    out = realloc(out, strlen(out) + strlen(tmp) + sizeof(seperator) + 1);
+    strcpy(out + cpy_offs, tmp);
+    cpy_offs = strlen(out);
+    free(tmp);
+  }
+
+  size_t prev_end = strlen(out);
+  out = realloc(out, strlen(out) + strlen(postfix) + 1);
+  strcpy(out + prev_end, postfix);
+
+  return out;
+}
 
 char *mcfg_list_as_string(mcfg_list_t list) {
   if (list.field_count == 0 || list.fields == NULL)
@@ -306,8 +344,8 @@ char *mcfg_format_field_embeds(mcfg_field_t field, mcfg_file_t file,
           char *prefix =
               _bstrcpy_until(input + embedded_field_name_start - 3, input, ' ');
           char *postfix = _strcpy_until(input + ix + 1, ' ');
-          //         formatted_contents = mcfg_format_list(*_field, prefix,
-          //         postfix);
+          formatted_contents =
+              mcfg_format_list(*mcfg_data_as_list(*_field), prefix, postfix);
           fprintf(stderr, "MCFG_UTIL DEBUG: LIST PREFIX = %s\n", prefix);
           fprintf(stderr, "MCFG_UTIL DEBUG: LIST POSTFIX = %s\n", postfix);
         }
