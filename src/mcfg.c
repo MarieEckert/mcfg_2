@@ -1,5 +1,5 @@
 // mcfg.c ; marie config format parser implementation
-// implementation for mcfg version 2
+// implementation for MCFG/2
 //
 // Copyright (c) 2023, Marie Eckert
 // Licensend under the BSD 3-Clause License.
@@ -10,6 +10,8 @@
 //------------------------------------------------------------------------------
 
 #include "mcfg.h"
+
+#include "mcfg_shared.h"
 
 #include <errno.h>
 #include <math.h>
@@ -61,37 +63,6 @@ bool _integer_bounds_check(int64_t _int, mcfg_field_type_t type) {
   default:
     return false;
   }
-}
-
-bool is_string_empty(char *in) {
-  if (in == NULL || in[0] == 0)
-    return true;
-
-  size_t len = strlen(in);
-  for (size_t i = 0; i < len; i++)
-    if (in[i] > ' ')
-      return false;
-
-  return true;
-}
-
-void remove_newline(char *in) {
-  if (in == NULL || strlen(in) == 0)
-    return;
-
-  if (in[strlen(in) - 1] == '\n')
-    in[strlen(in) - 1] = 0;
-}
-
-bool has_newline(char *in) {
-  if (in == NULL || strlen(in) == 0)
-    return false;
-
-  for (size_t ix = 0; ix < strlen(in); ix++)
-    if (in[ix] == '\n')
-      return true;
-
-  return false;
 }
 
 mcfg_boolean_t _strtobool(char *in) {
@@ -322,16 +293,18 @@ mcfg_data_parse_result_t _parse_string_field(char *str) {
     return ret;
   }
 
-  bool escaping = false;
   size_t ix = 0;
   size_t wix = 0;
   for (; ix < strlen(str); ix++) {
-    if (str[ix] == '\'' && !escaping)
-      break;
-
-    if (str[ix] == '\\' && !escaping) {
-      escaping = true;
-      continue;
+    if (str[ix] == '\'') {
+      // Disgusting!
+      bool prev_char_not_quote = ix == 0 || str[ix - 1] != '\'';
+      bool next_char_not_quote =
+          ix + 1 < strlen(str) ? str[ix + 1] != '\'' : true;
+      if (prev_char_not_quote && next_char_not_quote)
+        break;
+      else if (!prev_char_not_quote)
+        continue;
     }
 
     ((char *)ret.data)[wix] = str[ix];
