@@ -6,7 +6,7 @@ sector .config
     str includes '-Isrc'
 
   fields mariebuild:
-    str libname   'libmcfg.a'
+    str libname   'libmcfg_2.a'
     str compiler  'clang'
 
     list files 'mcfg:mcfg_util'

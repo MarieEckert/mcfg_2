@@ -58,6 +58,13 @@ function build_all() {
   build_test
 }
 
+echo "MCFG/2 build script. "
+if command -v mb &> /dev/null; then
+  echo "Hint: You have mariebuild installed. If the version is compatible, it is"
+  echo "      recommended to use mariebuild instead. (Usage 'mb')"
+fi
+echo ""
+
 if [ "$1" = "--lib-only" ]; then
   build_lib
 else
