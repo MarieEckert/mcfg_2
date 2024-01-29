@@ -3,7 +3,7 @@ sector .config
   ; author: Marie Eckert
 
   fields depends:
-    str includes '-Isrc'
+    str includes '-Isrc -Iinclude/'
     str libs     '-lm -L. -lmcfg_2'
 
   fields mariebuild:
