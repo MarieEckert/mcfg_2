@@ -4,11 +4,11 @@ CC="clang"
 SRCDIR="src/"
 OBJDIR="out/"
 
-CFLAGS="-ggdb"
-LDFLAGS="-lm -L. -lmcfg_2"
-
 LIB_BASENAME="mcfg_2"
 LIBNAME="lib$LIB_BASENAME.a"
+
+CFLAGS="-ggdb"
+LDFLAGS="-lm -L. -l$LIB_BASENAME"
 
 TEST_BIN="mcfg_test"
 
@@ -49,7 +49,7 @@ function build_test() {
   build_objs "${OBJECTS[@]}"
 
   echo "==> Linking \"$TEST_BIN\""
-  echo "  LD -o $TEST_BIN ${COMPILED_OBJECTS[@]}"
+  echo "  LD -o $TEST_BIN ${COMPILED_OBJECTS[@]} $LDFLAGS"
   $CC $CFLAGS -o $TEST_BIN ${COMPILED_OBJECTS[@]} $LDFLAGS
 }
 
