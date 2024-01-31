@@ -111,8 +111,11 @@ mcfg_path_t _insert_path_elems(mcfg_path_t src, mcfg_path_t rel) {
 }
 
 mcfg_path_t mcfg_parse_path(char *path) {
-  mcfg_path_t ret = {
-      .absolute = false, .sector = NULL, .section = NULL, .field = NULL};
+  mcfg_path_t ret = {.absolute = false,
+                     .dynfield_path = false,
+                     .sector = NULL,
+                     .section = NULL,
+                     .field = NULL};
 
   if (path == NULL)
     return ret;
@@ -143,6 +146,8 @@ mcfg_path_t mcfg_parse_path(char *path) {
   if (absolute && element_count == 0)
     return ret;
 
+  // TODO: This is completly wrong for relative paths, but im to fucking sick
+  // and drowned out on painkillers at the moment to fix it.
   ret.absolute = absolute;
   ret.sector = elements[0];
   if (element_count > 1)

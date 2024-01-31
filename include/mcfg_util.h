@@ -18,6 +18,7 @@
 
 typedef struct mcfg_path {
   bool absolute;
+  bool dynfield_path;
 
   char *sector;
   char *section;
