@@ -13,7 +13,7 @@
 #include <stdint.h>
 #include <sys/types.h>
 
-#define MCFG_2_VERSION "0.1.0 (develop)"
+#define MCFG_2_VERSION "0.2.0 (develop)"
 
 typedef enum mcfg_err {
   MCFG_OK,
