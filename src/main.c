@@ -78,8 +78,9 @@ int main(int argc, char **argv) {
   print_file(file);
   char rel_path[] = "/test/sect1";
   mcfg_path_t rel = mcfg_parse_path(rel_path);
-  free(mcfg_format_field_embeds(file->sectors[2].sections[0].fields[0], *file,
-                              rel));
+  char *res = mcfg_format_field_embeds(file->sectors[2].sections[1].fields[1],
+                                       *file, rel);
+  fprintf(stderr, "format res =\n%s\n", res);
   free(rel.sector);
   free(rel.section);
   free(rel.field);

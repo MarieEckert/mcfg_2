@@ -98,8 +98,10 @@ char *_find_prev(char *src, char *src_org, char delimiter) {
 
 // Helper function for path relativity
 mcfg_path_t _insert_path_elems(mcfg_path_t src, mcfg_path_t rel) {
-  if (src.sector == NULL)
+  if (src.sector == NULL) {
     src.sector = rel.sector != NULL ? strdup(rel.sector) : strdup("(null)");
+    src.absolute = true;
+  }
 
   if (src.section == NULL)
     src.section = rel.section != NULL ? strdup(rel.section) : strdup("(null)");
@@ -111,8 +113,11 @@ mcfg_path_t _insert_path_elems(mcfg_path_t src, mcfg_path_t rel) {
 }
 
 mcfg_path_t mcfg_parse_path(char *path) {
-  mcfg_path_t ret = {
-      .absolute = false, .sector = NULL, .section = NULL, .field = NULL};
+  mcfg_path_t ret = {.absolute = false,
+                     .dynfield_path = false,
+                     .sector = NULL,
+                     .section = NULL,
+                     .field = NULL};
 
   if (path == NULL)
     return ret;
@@ -144,25 +149,93 @@ mcfg_path_t mcfg_parse_path(char *path) {
     return ret;
 
   ret.absolute = absolute;
+
   if (absolute) {
     ret.sector = elements[0];
     if (element_count > 1)
       ret.section = elements[1];
     if (element_count > 2)
       ret.field = elements[2];
-  } else {
-    ret.field = elements[element_count - 1];
-    if (element_count - 2 > -1)
-      ret.section = elements[element_count - 2];
-    if (element_count - 3 > -1)
-      ret.sector = elements[element_count - 3];
+
+    goto exit;
   }
 
+  if (element_count == 1) {
+    ret.field = elements[0];
+
+    if (elements[0][0] == '%' && elements[0][strlen(elements[0]) - 1] == '%') {
+      ret.dynfield_path = true;
+
+      size_t newsize = strlen(elements[0]) - 1;
+      char *new = malloc_or_die(newsize);
+      memcpy(new, elements[0] + 1, newsize - 1);
+      new[newsize - 1] = 0;
+
+      free(elements[0]);
+      elements[0] = new;
+    }
+
+    goto exit;
+  }
+
+  ret.field = elements[element_count - 1];
+  if (element_count - 2 > -1)
+    ret.section = elements[element_count - 2];
+  if (element_count - 3 > -1)
+    ret.sector = elements[element_count - 3];
+
+exit:
   free(elements);
   return ret;
 }
 
+char *mcfg_path_to_str(mcfg_path_t path) {
+  size_t size = path.absolute ? 2 : 1;
+  if (path.sector != NULL)
+    size += strlen(path.sector) + 1;
+
+  if (path.section != NULL)
+    size += strlen(path.section) + 1;
+
+  if (path.field != NULL)
+    size += strlen(path.field);
+
+  char *out = malloc_or_die(size);
+  size_t offs = 0;
+
+  if (path.absolute) {
+    out[0] = '/';
+    offs++;
+  }
+
+  if (path.sector != NULL) {
+    strcpy(out + offs, path.sector);
+    offs += strlen(path.sector);
+    if (path.section != NULL) {
+      out[offs] = '/';
+      offs++;
+    }
+  }
+
+  if (path.section != NULL) {
+    strcpy(out + offs, path.section);
+    offs += strlen(path.section);
+    if (path.field != NULL) {
+      out[offs] = '/';
+      offs++;
+    }
+  }
+
+  if (path.field != NULL)
+    strcpy(out + offs, path.field);
+
+  return out;
+}
+
 mcfg_field_t *mcfg_get_field_by_path(mcfg_file_t *file, mcfg_path_t path) {
+  if (path.dynfield_path)
+    return mcfg_get_dynfield(file, path.field);
+
   if (!path.absolute)
     return NULL;
 
@@ -366,9 +439,13 @@ char *mcfg_format_field_embeds_str(char *input, mcfg_file_t file,
             _insert_path_elems(mcfg_parse_path(embedded_field), relativity);
         mcfg_field_t *_field = mcfg_get_field_by_path(&file, path);
 
-        char *formatted_contents = strdup("(nullptr)");
-        if (_field == NULL)
+        fprintf(stderr, "MCFG_UTIL DEBUG: path = %s\n", mcfg_path_to_str(path));
+
+        char *formatted_contents;
+        if (_field == NULL) {
+          formatted_contents = strdup("(nullptr)");
           goto case_embed_closing_end;
+        }
 
         if (_field->type == TYPE_LIST) {
           char *prefix = remove_newline(_bstrcpy_until(
@@ -414,7 +491,6 @@ char *mcfg_format_field_embeds_str(char *input, mcfg_file_t file,
   }
   _append_char(&result, wix, &current_result_size, 0);
 
-  fprintf(stderr, "result = %s\n", result);
   return result;
 }
 

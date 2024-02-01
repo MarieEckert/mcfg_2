@@ -13,7 +13,7 @@
 #include <stdint.h>
 #include <sys/types.h>
 
-#define MCFG_2_VERSION "0.1.0 (develop)"
+#define MCFG_2_VERSION "0.2.0 (develop)"
 
 typedef enum mcfg_err {
   MCFG_OK,
@@ -26,6 +26,7 @@ typedef enum mcfg_err {
   MCFG_DUPLICATE_SECTOR,
   MCFG_DUPLICATE_SECTION,
   MCFG_DUPLICATE_FIELD,
+  MCFG_DUPLICATE_DYNFIELD,
   MCFG_INVALID_TYPE,
   MCFG_NULLPTR,
   MCFG_INTEGER_OUT_OF_BOUNDS,
@@ -267,6 +268,22 @@ mcfg_err_t mcfg_add_sector(mcfg_file_t *file, char *name);
 mcfg_err_t mcfg_add_section(mcfg_sector_t *sector, char *name);
 
 //------------------------------------------------------------------------------
+// Add a dynfield to a file
+//
+// Params:
+// file The mcfg_file struct into which the dynfield should be added
+// type The datatype of the dynfield which is to be added
+// name The name of the dynfield which is to be added
+// data Pointer to the data of the dynfield which is to be added
+// size The size of data in bytes
+//
+// Returns:
+// MCFG_OK if no errors occured, MCFG_DUPLICATE_DYNFIELD if a dynfield with
+// the given name already exists in the file.
+mcfg_err_t mcfg_add_dynfield(mcfg_file_t *file, mcfg_field_type_t type,
+                             char *name, void *data, size_t size);
+
+//------------------------------------------------------------------------------
 // Add a field to a section
 //
 // Params:
@@ -315,6 +332,17 @@ mcfg_sector_t *mcfg_get_sector(mcfg_file_t *file, char *name);
 // Returns:
 // Pointer to the section, NULL if no section with given name could be found.
 mcfg_section_t *mcfg_get_section(mcfg_sector_t *sector, char *name);
+
+//------------------------------------------------------------------------------
+// Get the dynamically generated fiekd with name from file
+//
+// Params:
+// file The file from which the field is to be grabbed
+// name The name of the dynfield.
+//
+// Returns:
+// Pointer to the field, NULL if no field with given name could be found.
+mcfg_field_t *mcfg_get_dynfield(mcfg_file_t *file, char *name);
 
 //------------------------------------------------------------------------------
 // Get the field with name from section

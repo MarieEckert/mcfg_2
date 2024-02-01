@@ -12,11 +12,16 @@ sector list_src
   end
 end
 sector test
+  section sectneg1
+    i16 test -200
+  end
+
   section sect1
+    u8 test 200
     str dest 'foo $(/embedding_test/sect1/foo) with someu16
     $(/embedding_test/sect1/someu16) this should appear normal -> \$(aa) ''
     <$(/list_src/sect1/somelist)> a
-    $(/bogus/field)
+    $(/bogus/field) $(test) $(sectneg1/test)
   '
   end
 end

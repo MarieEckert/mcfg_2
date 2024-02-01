@@ -18,6 +18,7 @@
 
 typedef struct mcfg_path {
   bool absolute;
+  bool dynfield_path;
 
   char *sector;
   char *section;
@@ -33,6 +34,16 @@ typedef struct mcfg_path {
 // Returns:
 // The path parsed into a mcfg_path struct
 mcfg_path_t mcfg_parse_path(char *path);
+
+//------------------------------------------------------------------------------
+// Convert a mcfg_path_t structure into its string representation
+//
+// Params:
+// path The path to be converted
+//
+// Returns:
+// A Heap allocated string with the path structures string representation
+char *mcfg_path_to_str(mcfg_path_t path);
 
 //------------------------------------------------------------------------------
 // Gets a field by its path
