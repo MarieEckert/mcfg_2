@@ -329,6 +329,8 @@ char *mcfg_format_list(mcfg_list_t list, char *prefix, char *postfix) {
   out = realloc_or_die(out, strlen(out) + strlen(postfix) + 1);
   strcpy(out + prev_end, postfix);
 
+  free(seperator);
+
   return out;
 }
 
@@ -460,8 +462,12 @@ char *mcfg_format_field_embeds_str(char *input, mcfg_file_t file,
           formatted_contents = mcfg_data_to_string(*_field);
         }
 
+        char *old_formatted_contents = formatted_contents;
+
         formatted_contents =
             mcfg_format_field_embeds_str(formatted_contents, file, relativity);
+
+        free(old_formatted_contents);
 
       case_embed_closing_end:
         wix =
