@@ -97,6 +97,8 @@ char *mcfg_err_string(mcfg_err_t err) {
     return "Duplicate Section";
   case MCFG_DUPLICATE_FIELD:
     return "Duplicate Field";
+  case MCFG_DUPLICATE_DYNFIELD:
+    return "Duplicate Dynamic Field";
   case MCFG_INVALID_TYPE:
     return "Invalid Datatype";
   case MCFG_NULLPTR:
@@ -776,6 +778,31 @@ mcfg_err_t mcfg_add_section(mcfg_sector_t *sector, char *name) {
   sector->sections[ix].name = name;
   sector->sections[ix].field_count = 0;
   sector->section_count++;
+  return MCFG_OK;
+}
+
+mcfg_err_t mcfg_add_dynfield(mcfg_file_t *file, mcfg_field_type_t type,
+                          char *name, void *data, size_t size) {
+  if (file == NULL)
+    return MCFG_NULLPTR;
+
+  size_t ix = file->dynfield_count;
+
+  remove_newline(name);
+  if (file->dynfield_count == 0) {
+    file->dynfields = malloc_or_die(sizeof(*file->dynfields));
+  } else {
+    if (mcfg_get_dynfield(file, name) != NULL)
+      return MCFG_DUPLICATE_DYNFIELD;
+    file->dynfields = realloc_or_die(
+        file->dynfields, sizeof(*file->dynfields) * (file->dynfield_count + 1));
+  }
+
+  file->dynfields[ix].type = type;
+  file->dynfields[ix].name = name;
+  file->dynfields[ix].data = data;
+  file->dynfields[ix].size = size;
+  file->dynfield_count++;
   return MCFG_OK;
 }
 

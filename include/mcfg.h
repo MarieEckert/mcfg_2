@@ -26,6 +26,7 @@ typedef enum mcfg_err {
   MCFG_DUPLICATE_SECTOR,
   MCFG_DUPLICATE_SECTION,
   MCFG_DUPLICATE_FIELD,
+  MCFG_DUPLICATE_DYNFIELD,
   MCFG_INVALID_TYPE,
   MCFG_NULLPTR,
   MCFG_INTEGER_OUT_OF_BOUNDS,
@@ -265,6 +266,22 @@ mcfg_err_t mcfg_add_sector(mcfg_file_t *file, char *name);
 // MCFG_OK if no errors occured, MCFG_DUPLICATE_SECTION if a section with given
 // name already exists in sector.
 mcfg_err_t mcfg_add_section(mcfg_sector_t *sector, char *name);
+
+//------------------------------------------------------------------------------
+// Add a dynfield to a file
+//
+// Params:
+// file The mcfg_file struct into which the dynfield should be added
+// type The datatype of the dynfield which is to be added
+// name The name of the dynfield which is to be added
+// data Pointer to the data of the dynfield which is to be added
+// size The size of data in bytes
+//
+// Returns:
+// MCFG_OK if no errors occured, MCFG_DUPLICATE_DYNFIELD if a dybfield with 
+// the given name already exists in the file.
+mcfg_err_t mcfg_add_dynfield(mcfg_file_t *file, mcfg_field_type_t type,
+                          char *name, void *data, size_t size);
 
 //------------------------------------------------------------------------------
 // Add a field to a section
