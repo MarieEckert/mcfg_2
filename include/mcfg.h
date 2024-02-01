@@ -317,6 +317,17 @@ mcfg_sector_t *mcfg_get_sector(mcfg_file_t *file, char *name);
 mcfg_section_t *mcfg_get_section(mcfg_sector_t *sector, char *name);
 
 //------------------------------------------------------------------------------
+// Get the dynamically generated fiekd with name from file
+//
+// Params:
+// file The file from which the field is to be grabbed
+// name The name of the dynfield. Has to be wrapped within percentage-signs
+//
+// Returns:
+// Pointer to the field, NULL if no field with given name could be found.
+mcfg_field_t *mcfg_get_dynfield(mcfg_file_t *file, char *name);
+
+//------------------------------------------------------------------------------
 // Get the field with name from section
 //
 // Params:

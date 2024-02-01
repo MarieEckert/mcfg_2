@@ -854,6 +854,19 @@ mcfg_section_t *mcfg_get_section(mcfg_sector_t *sector, char *name) {
   return ret;
 }
 
+mcfg_field_t *mcfg_get_dynfield(mcfg_file_t *file, char *name) {
+  mcfg_field_t *ret = NULL;
+
+  for (size_t ix = 0; ix < file->dynfield_count; ix++) {
+    if (strcmp(file->dynfields[ix].name, name) == 0) {
+      ret = &file->dynfields[ix];
+      break;
+    }
+  }
+
+  return ret;
+}
+
 mcfg_field_t *mcfg_get_field(mcfg_section_t *section, char *name) {
   mcfg_field_t *ret = NULL;
 
