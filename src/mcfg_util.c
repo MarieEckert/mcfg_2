@@ -233,6 +233,9 @@ char *mcfg_path_to_str(mcfg_path_t path) {
 }
 
 mcfg_field_t *mcfg_get_field_by_path(mcfg_file_t *file, mcfg_path_t path) {
+  if (path.dynfield_path)
+    return mcfg_get_dynfield(file, path.field);
+
   if (!path.absolute)
     return NULL;
 
