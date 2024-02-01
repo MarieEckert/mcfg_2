@@ -163,8 +163,17 @@ mcfg_path_t mcfg_parse_path(char *path) {
   if (element_count == 1) {
     ret.field = elements[0];
 
-    if (elements[0][0] == '%' && elements[0][strlen(elements[0]) - 1] == '%')
+    if (elements[0][0] == '%' && elements[0][strlen(elements[0]) - 1] == '%') {
       ret.dynfield_path = true;
+
+      size_t newsize = strlen(elements[0]) - 1;
+      char *new = malloc_or_die(newsize);
+      memcpy(new, elements[0] + 1, newsize - 1);
+      new[newsize - 1] = 0;
+
+      free(elements[0]);
+      elements[0] = new;
+    }
 
     goto exit;
   }
