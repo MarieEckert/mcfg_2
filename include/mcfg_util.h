@@ -36,6 +36,16 @@ typedef struct mcfg_path {
 mcfg_path_t mcfg_parse_path(char *path);
 
 //------------------------------------------------------------------------------
+// Convert a mcfg_path_t structure into its string representation
+//
+// Params:
+// path The path to be converted
+//
+// Returns:
+// A Heap allocated string with the path structures string representation
+char *mcfg_path_to_str(mcfg_path_t path);
+
+//------------------------------------------------------------------------------
 // Gets a field by its path
 //
 // Params:
