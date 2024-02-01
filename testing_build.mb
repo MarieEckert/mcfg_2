@@ -3,8 +3,8 @@ sector .config
   ; author: Marie Eckert
 
   fields depends:
-    str includes '-Isrc'
-    str libs     '-lm -L. -lmcfg'
+    str includes '-Isrc -Iinclude/'
+    str libs     '-lm -L. -lmcfg_2'
 
   fields mariebuild:
     str binname   'mcfg_test'

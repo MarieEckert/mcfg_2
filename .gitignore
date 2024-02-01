@@ -2,6 +2,6 @@
 *vgcore*
 out/
 mcfg_test
-libmcfg.a
+*.a
 *.swp
 *.log
