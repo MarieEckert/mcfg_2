@@ -155,6 +155,11 @@ mcfg_path_t mcfg_parse_path(char *path) {
       ret.section = elements[1];
     if (element_count > 2)
       ret.field = elements[2];
+  } else if (element_count == 1) {
+    ret.field = elements[0];
+
+    if (elements[0][0] == '%' && elements[0][strlen(elements[0]) - 1] == '%')
+      ret.dynfield_path = true;
   } else {
     ret.field = elements[element_count - 1];
     if (element_count - 2 > -1)
