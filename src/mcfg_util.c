@@ -124,7 +124,7 @@ mcfg_path_t mcfg_parse_path(char *path) {
 
   const char *path_seperator = "/";
 
-  size_t element_count = 0;
+  ssize_t element_count = 0;
   char **elements;
   bool absolute = path[0] == path_seperator[0];
 
