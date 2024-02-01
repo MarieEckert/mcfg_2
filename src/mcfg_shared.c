@@ -8,6 +8,7 @@
 #include "mcfg_shared.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
 void *malloc_or_die(size_t size) {
