@@ -140,18 +140,25 @@ mcfg_path_t mcfg_parse_path(char *path) {
     tok = strtok_r(NULL, path_seperator, &strtok_saveptr);
   }
 
-  if (absolute && element_count == 0)
+  if (element_count == 0)
     return ret;
 
   ret.absolute = absolute;
-  ret.sector = elements[0];
-  if (element_count > 1)
-    ret.section = elements[1];
-  if (element_count > 2)
-    ret.field = elements[2];
+  if (absolute) {
+    ret.sector = elements[0];
+    if (element_count > 1)
+      ret.section = elements[1];
+    if (element_count > 2)
+      ret.field = elements[2];
+  } else {
+    ret.field = elements[element_count - 1];
+    if (element_count - 2 > -1)
+      ret.section = elements[element_count - 2];
+    if (element_count - 3 > -1)
+      ret.sector = elements[element_count - 3];
+  }
 
   free(elements);
-
   return ret;
 }
 
