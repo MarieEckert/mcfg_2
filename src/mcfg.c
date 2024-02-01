@@ -782,7 +782,7 @@ mcfg_err_t mcfg_add_section(mcfg_sector_t *sector, char *name) {
 }
 
 mcfg_err_t mcfg_add_dynfield(mcfg_file_t *file, mcfg_field_type_t type,
-                          char *name, void *data, size_t size) {
+                             char *name, void *data, size_t size) {
   if (file == NULL)
     return MCFG_NULLPTR;
 

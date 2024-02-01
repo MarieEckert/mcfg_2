@@ -278,10 +278,10 @@ mcfg_err_t mcfg_add_section(mcfg_sector_t *sector, char *name);
 // size The size of data in bytes
 //
 // Returns:
-// MCFG_OK if no errors occured, MCFG_DUPLICATE_DYNFIELD if a dybfield with 
+// MCFG_OK if no errors occured, MCFG_DUPLICATE_DYNFIELD if a dynfield with
 // the given name already exists in the file.
 mcfg_err_t mcfg_add_dynfield(mcfg_file_t *file, mcfg_field_type_t type,
-                          char *name, void *data, size_t size);
+                             char *name, void *data, size_t size);
 
 //------------------------------------------------------------------------------
 // Add a field to a section
@@ -338,7 +338,7 @@ mcfg_section_t *mcfg_get_section(mcfg_sector_t *sector, char *name);
 //
 // Params:
 // file The file from which the field is to be grabbed
-// name The name of the dynfield. Has to be wrapped within percentage-signs
+// name The name of the dynfield.
 //
 // Returns:
 // Pointer to the field, NULL if no field with given name could be found.
