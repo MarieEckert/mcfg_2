@@ -433,13 +433,10 @@ char *mcfg_format_field_embeds_str(char *input, mcfg_file_t file,
         embedded_field = malloc_or_die(_len + 1);
         memcpy(embedded_field, input + embedded_field_name_start, _len);
         embedded_field[_len] = 0;
-        fprintf(stderr, "MCFG_UTIL DEBUG: FIELD NAME = %s\n", embedded_field);
 
         mcfg_path_t path =
             _insert_path_elems(mcfg_parse_path(embedded_field), relativity);
         mcfg_field_t *_field = mcfg_get_field_by_path(&file, path);
-
-        fprintf(stderr, "MCFG_UTIL DEBUG: path = %s\n", mcfg_path_to_str(path));
 
         char *formatted_contents;
         if (_field == NULL) {
