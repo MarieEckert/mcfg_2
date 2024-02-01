@@ -20,27 +20,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-void *malloc_or_die(size_t size) {
-  void *ptr = malloc(size);
-  if (ptr == NULL) {
-    fprintf(stderr, "malloc_or_die failed. (size = %zu)\n", size);
-    abort();
-  }
-
-  return ptr;
-}
-
-void *realloc_or_die(void *org, size_t size) {
-  void *ptr = realloc(org, size);
-  if (ptr == NULL) {
-    fprintf(stderr, "realloc_or_die failed. (org = %p; size = %zu)\n", org,
-            size);
-    abort();
-  }
-
-  return ptr;
-}
-
 bool _integer_bounds_check(int64_t _int, mcfg_field_type_t type) {
   if (mcfg_sizeof(type) <= 0)
     return false;
