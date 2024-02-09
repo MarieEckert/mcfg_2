@@ -163,8 +163,6 @@ mcfg_path_t mcfg_parse_path(char *path) {
   }
 
   if (element_count == 1) {
-    ret.field = elements[0];
-
     if (elements[0][0] == '%' && elements[0][strlen(elements[0]) - 1] == '%') {
       ret.dynfield_path = true;
 
@@ -177,6 +175,7 @@ mcfg_path_t mcfg_parse_path(char *path) {
       elements[0] = new;
     }
 
+    ret.field = elements[0];
     goto exit;
   }
 
@@ -475,7 +474,7 @@ char *mcfg_format_field_embeds_str(char *input, mcfg_file_t file,
         wix =
             _append_str(&result, wix, &current_result_size, formatted_contents);
 
-        free(formatted_contents); // why is this not freeing???
+        free(formatted_contents);
         free(embedded_field);
         free(path.sector);
         free(path.section);
