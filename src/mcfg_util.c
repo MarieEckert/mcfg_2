@@ -25,8 +25,10 @@ void _append_char(char **dest, size_t wix, size_t *dest_size, char chr) {
 
   if (wix >= *dest_size) {
     size_t size_diff = wix - *dest_size;
-    size_t new_size = _size_t_max(MCFG_EMBED_FORMAT_RESIZE_AMOUNT, size_diff);
+    size_t new_size =
+        *dest_size + _size_t_max(MCFG_EMBED_FORMAT_RESIZE_AMOUNT, size_diff);
 
+    fprintf(stderr, "REALLOC!\n");
     *dest = realloc_or_die(*dest, new_size);
     *dest_size = new_size;
   }
