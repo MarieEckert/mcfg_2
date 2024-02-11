@@ -25,7 +25,8 @@ void _append_char(char **dest, size_t wix, size_t *dest_size, char chr) {
 
   if (wix >= *dest_size) {
     size_t size_diff = wix - *dest_size;
-    size_t new_size = _size_t_max(MCFG_EMBED_FORMAT_RESIZE_AMOUNT, size_diff);
+    size_t new_size =
+        *dest_size + _size_t_max(MCFG_EMBED_FORMAT_RESIZE_AMOUNT, size_diff);
 
     *dest = realloc_or_die(*dest, new_size);
     *dest_size = new_size;
@@ -161,8 +162,6 @@ mcfg_path_t mcfg_parse_path(char *path) {
   }
 
   if (element_count == 1) {
-    ret.field = elements[0];
-
     if (elements[0][0] == '%' && elements[0][strlen(elements[0]) - 1] == '%') {
       ret.dynfield_path = true;
 
@@ -175,6 +174,7 @@ mcfg_path_t mcfg_parse_path(char *path) {
       elements[0] = new;
     }
 
+    ret.field = elements[0];
     goto exit;
   }
 
@@ -473,7 +473,7 @@ char *mcfg_format_field_embeds_str(char *input, mcfg_file_t file,
         wix =
             _append_str(&result, wix, &current_result_size, formatted_contents);
 
-        free(formatted_contents); // why is this not freeing???
+        free(formatted_contents);
         free(embedded_field);
         free(path.sector);
         free(path.section);
