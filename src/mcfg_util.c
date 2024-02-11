@@ -58,7 +58,7 @@ char *_strcpy_until(char *src, char delimiter) {
   }
 
   if (offs == 0)
-    return strdup("");
+    return strdup("\0");
 
   char *res = malloc(offs + 1);
   memcpy(res, src, offs);
@@ -77,7 +77,7 @@ char *_bstrcpy_until(char *src, char *src_org, char delimiter) {
   }
 
   if (offs == 0)
-    return strdup("");
+    return strdup("\0");
 
   char *res = malloc(offs + 1);
   memcpy(res, src - offs + 1, offs);
