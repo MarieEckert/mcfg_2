@@ -5,6 +5,7 @@ sector config
 
     str libname 'mcfg_2'
     str libfile 'lib$(/config/files/libname).a'
+    str testfile 'mcfg_test'
 
     list str sources 'mcfg_shared', 'mcfg_util', 'mcfg'
   end
@@ -14,6 +15,7 @@ sector config
 
     str cc 'clang'
     str cflags '-ggdb -Iinclude/ -Isrc/'
+    str ldflags '-lm -L. -l$(/config/files/libname)'
 
     list str targets 'clean', 'debug', 'release'
     str default 'debug'
@@ -55,4 +57,24 @@ sector c_rules
 
     str exec 'ar -rc $(/config/files/libfile) $(%input%) && ranlib $(/config/files/libfile)'
   end
+
+  section mcfg_test
+    str exec_mode 'singular'
+    
+    list str input 'main'
+    str input_format '$(/config/files/src)$(%element%).c'
+    str output_format '$(/config/files/obj)$(%element%).o'
+    
+    str exec '$(/config/mariebuild/cc) $(/config/mariebuild/cflags) -c -o $(%output%) $(%input%)'
+  end
+
+  section link_test
+    str exec_mode 'unify'
+    str build_type 'full'
+
+    str input_src '/c_rules/mcfg_test/input'
+    str input_format '$(/config/files/obj)$(%element%).o'
+    str output_format '$(/config/files/testfile)'
+
+    str exec '$(/config/mariebuild/cc) $(/config/mariebuild/cflags) -o $(%output%) $(%input%) $(/config/mariebuild/ldflags)'
 end
