@@ -1,11 +1,13 @@
 #!/bin/bash
 
+OBJ_DIR="obj/"
+
 function directory_setup() {
-  if [ -d out/ ]; then
-    rm -rf out
+  if [ -d $OBJ_DIR ]; then
+    rm -rf $OBJ_DIR
   fi
 
-  mkdir out/
+  mkdir $OBJ_DIR
 }
 
 echo "MCFG/2 setup script"
