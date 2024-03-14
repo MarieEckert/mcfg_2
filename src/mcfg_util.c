@@ -24,7 +24,7 @@ void _append_char(char **dest, size_t wix, size_t *dest_size, char chr) {
   }
 
   if (wix >= *dest_size) {
-    size_t size_diff = wix - *dest_size;
+    size_t size_diff = wix - *dest_size + 1;
     size_t new_size =
         *dest_size + _size_t_max(MCFG_EMBED_FORMAT_RESIZE_AMOUNT, size_diff);
 
@@ -382,6 +382,9 @@ char *mcfg_format_field_embeds(mcfg_field_t field, mcfg_file_t file,
   return mcfg_format_field_embeds_str(input, file, relativity);
 }
 
+// TODO: Format using following regex (danke simon):
+// (\\.|[^\\$])*?\$\(([a-zA-Z0-9\/]*)\)/g
+// Use matchgroup 2
 char *mcfg_format_field_embeds_str(char *input, mcfg_file_t file,
                                    mcfg_path_t relativity) {
   size_t input_len = strlen(input);
@@ -453,7 +456,8 @@ char *mcfg_format_field_embeds_str(char *input, mcfg_file_t file,
           formatted_contents =
               mcfg_format_list(*mcfg_data_as_list(*_field), prefix, postfix);
 
-          wix = _find_prev(input + ix, input, ' ') - input + 1;
+          if (wix != 0)
+            wix = _find_prev(input + ix, input, ' ') - input + 1;
           ix = (size_t)(strchr(input + ix, ' ') - input) - 1;
 
           free(prefix);
