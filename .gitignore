@@ -1,6 +1,7 @@
 *valgrind*
 *vgcore*
 out/
+obj/
 mcfg_test
 *.a
 *.swp

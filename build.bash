@@ -2,7 +2,7 @@
 
 CC="clang"
 SRCDIR="src/"
-OBJDIR="out/"
+OBJDIR="obj/"
 
 LIB_BASENAME="mcfg_2"
 LIBNAME="lib$LIB_BASENAME.a"
