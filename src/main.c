@@ -3,6 +3,7 @@
 
 #include "mcfg.h"
 #include "mcfg_util.h"
+#include "mcfg_format.h"
 
 #define TEST_DIR "doc/tests/"
 
@@ -80,7 +81,7 @@ int main(int argc, char **argv) {
   char rel_path[] = "/test/sect1";
   mcfg_path_t rel = mcfg_parse_path(rel_path);
   char *res = mcfg_format_field_embeds(file->sectors[2].sections[1].fields[1],
-                                       *file, rel);
+                                       *file, rel).formatted;
   fprintf(stderr, "format res =\n%s\n", res);
   if (res != NULL)
     free(res);
