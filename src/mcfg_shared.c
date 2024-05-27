@@ -33,34 +33,42 @@ void *realloc_or_die(void *org, size_t size) {
 }
 
 bool is_string_empty(char *in) {
-  if (in == NULL || in[0] == 0)
+  if (in == NULL || in[0] == 0) {
     return true;
+  }
 
   size_t len = strlen(in);
-  for (size_t i = 0; i < len; i++)
-    if (in[i] > ' ')
+  for (size_t i = 0; i < len; i++) {
+    if (in[i] > ' ') {
       return false;
+    }
+  }
 
   return true;
 }
 
 char *remove_newline(char *in) {
-  if (in == NULL || strlen(in) == 0)
+  if (in == NULL || strlen(in) == 0) {
     return in;
+  }
 
-  if (in[strlen(in) - 1] == '\n')
+  if (in[strlen(in) - 1] == '\n') {
     in[strlen(in) - 1] = 0;
+  }
 
   return in;
 }
 
 bool has_newline(char *in) {
-  if (in == NULL || strlen(in) == 0)
+  if (in == NULL || strlen(in) == 0) {
     return false;
+  }
 
-  for (size_t ix = 0; ix < strlen(in); ix++)
-    if (in[ix] == '\n')
+  for (size_t ix = 0; ix < strlen(in); ix++) {
+    if (in[ix] == '\n') {
       return true;
+    }
+  }
 
   return false;
 }
@@ -68,13 +76,15 @@ bool has_newline(char *in) {
 char *strcpy_until(char *src, char delimiter) {
   int offs = 0;
   while (offs < strlen(src)) {
-    if (src[offs] == delimiter)
+    if (src[offs] == delimiter) {
       break;
+    }
     offs++;
   }
 
-  if (offs == 0)
+  if (offs == 0) {
     return strdup("\0");
+  }
 
   char *res = malloc(offs + 1);
   if (res == NULL) {
@@ -91,13 +101,15 @@ char *strcpy_until(char *src, char delimiter) {
 char *bstrcpy_until(char *src, char *src_org, char delimiter) {
   int offs = 0;
   while ((src - offs) > src_org) {
-    if ((src - offs)[0] == delimiter)
+    if ((src - offs)[0] == delimiter) {
       break;
+    }
     offs++;
   }
 
-  if (offs == 0)
+  if (offs == 0) {
     return strdup("\0");
+  }
 
   char *res = malloc(offs + 1);
   if (res == NULL) {
@@ -113,8 +125,9 @@ char *bstrcpy_until(char *src, char *src_org, char delimiter) {
 char *find_prev(char *src, char *src_org, char delimiter) {
   int offs = 0;
   while ((src - offs) > src_org) {
-    if ((src - offs)[0] == delimiter)
+    if ((src - offs)[0] == delimiter) {
       return src - offs;
+    }
     offs++;
   }
 
