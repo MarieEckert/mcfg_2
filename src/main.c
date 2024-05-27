@@ -80,11 +80,16 @@ int main(int argc, char **argv) {
 
   char rel_path[] = "/test/sect1";
   mcfg_path_t rel = mcfg_parse_path(rel_path);
-  char *res = mcfg_format_field_embeds(file->sectors[2].sections[1].fields[1],
-                                       *file, rel).formatted;
-  fprintf(stderr, "format res =\n%s\n", res);
-  if (res != NULL)
-    free(res);
+  mcfg_fmt_res_t res = mcfg_format_field_embeds(file->sectors[2].sections[1].fields[2],
+                                       *file, rel);
+  if (res.err != MCFG_FMT_OK) {
+    fprintf(stderr, "formatting error: %d\n", res.err);
+  } else {
+    fprintf(stderr, "format res =\n%s\n", res.formatted);
+  }
+
+  if (res.formatted != NULL)
+    free(res.formatted);
 
   free(rel.sector);
   free(rel.section);

@@ -41,6 +41,24 @@
     ret;                                                                       \
   })
 
+/**
+ * @brief This macro is inteded for use inside _format, to ensure that we never
+ * write outside of the buffer.
+ * @note Causes to return with error on (re)alloction failure!
+ *
+ * @param b The buffer
+ * @param a The allocated buffer size
+ * @param s The would-be size after writing to it
+ */
+#define APPEND_CHECK(b, a, s)                                                  \
+  if (s > a) {                                                                 \
+    if (b == NULL) {                                                           \
+      b = FMTMALLOC(s);                                                        \
+    } else {                                                                   \
+      b = FMTREALLOC(b, s);                                                    \
+    }                                                                          \
+  }
+
 typedef struct _embed {
   /** @brief the position at which the embed starts in the input */
   size_t pos;
@@ -111,6 +129,9 @@ mcfg_fmt_err_t _append_embed(_embeds_t *embeds, char *field, size_t pos,
   return MCFG_FMT_OK;
 }
 
+/**
+ * @brief Extracts field embeds from the given input
+ */
 _embeds_t _extract_embeds(char *input) {
   _embeds_t res = {.count = 0, .embeds = NULL};
 
@@ -183,6 +204,7 @@ exit:
   return res;
 }
 
+/* TODO: Remove once debugging is done. "embed validity" does not exist */
 mcfg_fmt_err_t _embeds_valid(_embeds_t embeds, mcfg_file_t file,
                              mcfg_path_t rel) {
   for (size_t ix = 0; ix < embeds.count; ix++) {
@@ -215,15 +237,14 @@ mcfg_fmt_res_t _format(char *input, _embeds_t embeds, mcfg_file_t file,
 
   for (size_t ix = 0; ix < embeds.count; ix++) {
     if (write_offs > res.formatted_size) {
-      res.formatted_size += 64;
+      res.formatted_size += 1;
       res.formatted = FMTREALLOC(res.formatted, res.formatted_size);
     }
 
     _embed_t embed = embeds.embeds[ix];
 
-    /* write up until embed */
-    memcpy(res.formatted + write_offs, input + cpy_offs,
-           embed.pos - cpy_offs);
+    /* copy characters from input up until embed */
+    memcpy(res.formatted + write_offs, input + cpy_offs, embed.pos - cpy_offs);
     write_offs += embed.pos - cpy_offs;
     cpy_offs = embed.src_end_pos;
 
@@ -233,7 +254,8 @@ mcfg_fmt_res_t _format(char *input, _embeds_t embeds, mcfg_file_t file,
 
     /* field does not exist, insert (nullptr) as placeholder */
     if (field == NULL) {
-      memcpy(res.formatted + write_offs, _FIELD_NULLPTR, sizeof(_FIELD_NULLPTR));
+      memcpy(res.formatted + write_offs, _FIELD_NULLPTR,
+             sizeof(_FIELD_NULLPTR));
       write_offs += sizeof(_FIELD_NULLPTR) - 1;
       continue;
     }
@@ -241,18 +263,53 @@ mcfg_fmt_res_t _format(char *input, _embeds_t embeds, mcfg_file_t file,
     /* field is a number type */
     if (field->type != TYPE_STRING && field->type != TYPE_LIST) {
       char *str = mcfg_data_to_string(*field);
-      memcpy(res.formatted + write_offs, str, strlen(str));
-      write_offs += strlen(str);
+      const size_t str_len = strlen(str);
+
+      APPEND_CHECK(res.formatted, res.formatted_size, write_offs + str_len);
+
+      memcpy(res.formatted + write_offs, str, str_len);
+      write_offs += str_len;
       free(str);
       continue;
     }
 
+    mcfg_fmt_res_t subformat_res;
+
+    /* "sub-"format the field before appending */
     if (field->type == TYPE_LIST) {
-      /* TODO: FORMAT LIST FIELD */
+      /* TODO: Extract pre- and postfix */
+      char *list = mcfg_format_list(*mcfg_data_as_list(*field), "<", ">");
+      ERR_CHECK(list != NULL, MCFG_FMT_NULLPTR);
+
+      printf("%s\n", list);
+      subformat_res = mcfg_format_field_embeds_str(list, file, rel);
+
+      /* TODO: Move write_offs back to position of last space + 1
+       *       and set cpy_offs to position of next space
+       */
+
+      free(list);
+    } else if (field->type == TYPE_STRING) {
+      subformat_res = mcfg_format_field_embeds(*field, file, rel);
     }
 
-    mcfg_fmt_res_t subformat_res = mcfg_format_field_embeds(*field, file, rel);
+    ERR_CHECK(subformat_res.err == MCFG_FMT_OK, subformat_res.err);
+
+    /* append "sub-"formatted field */
+    const size_t subformat_len = strlen(subformat_res.formatted);
+    APPEND_CHECK(res.formatted, res.formatted_size, write_offs + subformat_len);
+    memcpy(res.formatted + write_offs, subformat_res.formatted, subformat_len);
+    write_offs += subformat_len;
   }
+
+  if (res.formatted[write_offs] != 0) {
+    res.formatted[write_offs] = 0;
+    write_offs++;
+  }
+
+  /* trim buffer size */
+  FMTREALLOC(res.formatted, write_offs);
+  res.formatted_size = write_offs;
 
   return res;
 }
