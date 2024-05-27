@@ -64,3 +64,59 @@ bool has_newline(char *in) {
 
   return false;
 }
+// Copy src until delimiter char is hit
+char *strcpy_until(char *src, char delimiter) {
+  int offs = 0;
+  while (offs < strlen(src)) {
+    if (src[offs] == delimiter)
+      break;
+    offs++;
+  }
+
+  if (offs == 0)
+    return strdup("\0");
+
+  char *res = malloc(offs + 1);
+  if (res == NULL) {
+    return NULL;
+  }
+
+  memcpy(res, src, offs);
+  res[offs] = 0;
+
+  return res;
+}
+
+// Copy backwards from src until src_org or the delimiter char is hit.
+char *bstrcpy_until(char *src, char *src_org, char delimiter) {
+  int offs = 0;
+  while ((src - offs) > src_org) {
+    if ((src - offs)[0] == delimiter)
+      break;
+    offs++;
+  }
+
+  if (offs == 0)
+    return strdup("\0");
+
+  char *res = malloc(offs + 1);
+  if (res == NULL) {
+    return NULL;
+  }
+
+  memcpy(res, src - offs + 1, offs);
+  res[offs] = 0;
+
+  return res;
+}
+
+char *find_prev(char *src, char *src_org, char delimiter) {
+  int offs = 0;
+  while ((src - offs) > src_org) {
+    if ((src - offs)[0] == delimiter)
+      return src - offs;
+    offs++;
+  }
+
+  return src - offs;
+}

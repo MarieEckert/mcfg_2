@@ -7,6 +7,8 @@
 
 #include "mcfg_format.h"
 
+#include "mcfg_shared.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -278,15 +280,26 @@ mcfg_fmt_res_t _format(char *input, _embeds_t embeds, mcfg_file_t file,
     /* "sub-"format the field before appending */
     if (field->type == TYPE_LIST) {
       /* TODO: Extract pre- and postfix */
-      char *list = mcfg_format_list(*mcfg_data_as_list(*field), "<", ">");
+
+      char *prefix =
+          remove_newline(bstrcpy_until(input + embed.pos - 1, input, ' '));
+      char *postfix =
+          remove_newline(strcpy_until(input + embed.src_end_pos, ' '));
+
+      ERR_CHECK(prefix != NULL, MCFG_FMT_NULLPTR);
+      ERR_CHECK(postfix != NULL, MCFG_FMT_NULLPTR);
+
+      /* Move write_offs back to position of last space + 1
+       * and set cpy_offs to position of next space
+       */
+      cpy_offs = (size_t)(strchr(input + embed.src_end_pos, ' ') - input);
+      write_offs -= strlen(prefix);
+
+      char *list =
+          mcfg_format_list(*mcfg_data_as_list(*field), prefix, postfix);
       ERR_CHECK(list != NULL, MCFG_FMT_NULLPTR);
 
-      printf("%s\n", list);
       subformat_res = mcfg_format_field_embeds_str(list, file, rel);
-
-      /* TODO: Move write_offs back to position of last space + 1
-       *       and set cpy_offs to position of next space
-       */
 
       free(list);
     } else if (field->type == TYPE_STRING) {
@@ -300,6 +313,13 @@ mcfg_fmt_res_t _format(char *input, _embeds_t embeds, mcfg_file_t file,
     APPEND_CHECK(res.formatted, res.formatted_size, write_offs + subformat_len);
     memcpy(res.formatted + write_offs, subformat_res.formatted, subformat_len);
     write_offs += subformat_len;
+  }
+
+  if (cpy_offs < strlen(input)) {
+    const size_t remaining = strlen(input) - cpy_offs;
+    APPEND_CHECK(res.formatted, res.formatted_size, write_offs + remaining);
+    memcpy(res.formatted + write_offs, input + cpy_offs, remaining);
+    write_offs += remaining;
   }
 
   if (res.formatted[write_offs] != 0) {

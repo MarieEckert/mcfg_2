@@ -22,7 +22,7 @@ sector test
     str stest 'asdasd $(sectneg1/a)'
     str dest 'foo $(/embedding_test/sect1/foo) with someu16
     $(/embedding_test/sect1/someu16) this should appear normal -> \$(aa) ''
-    <$(/list_src/sect1/somelist)> a
+    abc__<$(/list_src/sect1/somelist)>@@ a
     $(/bogus/field) $(test) $(sectneg1/test)
     $(stest)
   '

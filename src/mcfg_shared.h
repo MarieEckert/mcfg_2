@@ -20,4 +20,10 @@ char *remove_newline(char *in);
 
 bool has_newline(char *in);
 
+char *strcpy_until(char *src, char delimiter);
+
+char *bstrcpy_until(char *src, char *src_org, char delimiter);
+
+char *find_prev(char *src, char *src_org, char delimiter);
+
 #endif

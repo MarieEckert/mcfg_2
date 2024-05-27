@@ -41,7 +41,7 @@ typedef struct mcfg_fmt_res {
 // Returns:
 // A new heap allocated string containing the formatted field.
 mcfg_fmt_res_t mcfg_format_field_embeds(mcfg_field_t field, mcfg_file_t file,
-                               mcfg_path_t relativity);
+                                        mcfg_path_t relativity);
 
 //------------------------------------------------------------------------------
 // Format the embeds in a string
@@ -54,6 +54,6 @@ mcfg_fmt_res_t mcfg_format_field_embeds(mcfg_field_t field, mcfg_file_t file,
 // Returns:
 // A new heap allocated string containing the formatted input string.
 mcfg_fmt_res_t mcfg_format_field_embeds_str(char *input, mcfg_file_t file,
-                                   mcfg_path_t relativity);
+                                            mcfg_path_t relativity);
 
 #endif // ifndef MCFG_FORMAT_H

@@ -2,8 +2,8 @@
 #include <stdlib.h>
 
 #include "mcfg.h"
-#include "mcfg_util.h"
 #include "mcfg_format.h"
+#include "mcfg_util.h"
 
 #define TEST_DIR "doc/tests/"
 
@@ -80,8 +80,8 @@ int main(int argc, char **argv) {
 
   char rel_path[] = "/test/sect1";
   mcfg_path_t rel = mcfg_parse_path(rel_path);
-  mcfg_fmt_res_t res = mcfg_format_field_embeds(file->sectors[2].sections[1].fields[2],
-                                       *file, rel);
+  mcfg_fmt_res_t res = mcfg_format_field_embeds(
+      file->sectors[2].sections[1].fields[2], *file, rel);
   if (res.err != MCFG_FMT_OK) {
     fprintf(stderr, "formatting error: %d\n", res.err);
   } else {
