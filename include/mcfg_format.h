@@ -14,7 +14,12 @@
 /* TODO: Remove once (re|m)alloc_or_die functions are out of use */
 #define MCFG_MALLOC_FAIL 2
 
+/**
+ * @brief Error codes thrown by formatting functions
+ * @see mcfg_err_t
+ */
 typedef enum mcfg_fmt_err {
+  /** @brief everything is ok :) */
   MCFG_FMT_OK = MCFG_OK,
   MCFG_FMT_NULLPTR = MCFG_NULLPTR,
   MCFG_FMT_MALLOC_FAIL = MCFG_MALLOC_FAIL, /* TODO: Move rest of impl away from

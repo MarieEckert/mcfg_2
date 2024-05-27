@@ -15,21 +15,50 @@
 
 #define MCFG_2_VERSION "0.2.0 (develop)"
 
+/**
+ * @brief mcfg's core errors
+ * @see mcfg_err_string
+ */
 typedef enum mcfg_err {
+  /** @brief everything is ok :) */
   MCFG_OK,
+
+  /** @brief something is not implemented yet */
   MCFG_TODO,
+
+  /**
+   * @brief The parser has arrived in an invalid state. Can have multiple
+   * causes
+   */
   MCFG_INVALID_PARSER_STATE,
+
+  /** @brief The parser detected a syntax error */
   MCFG_SYNTAX_ERROR,
+
+  /** @brief An invalid keyword was used */
   MCFG_INVALID_KEYWORD,
+
+  /** @brief The end keyword was used outside of a sector or section */
   MCFG_END_IN_NOWHERE,
+
+  /** @brief The parser input is structured in an invalid way */
   MCFG_STRUCTURE_ERROR,
+
   MCFG_DUPLICATE_SECTOR,
   MCFG_DUPLICATE_SECTION,
   MCFG_DUPLICATE_FIELD,
   MCFG_DUPLICATE_DYNFIELD,
   MCFG_INVALID_TYPE,
+
+  /**
+   * @brief NULL was encountered where it could not be handled. Most likely
+   * cause is that NULL was passed an argument to a function which expected
+   * a valid pointer
+   */
   MCFG_NULLPTR,
   MCFG_INTEGER_OUT_OF_BOUNDS,
+
+  /** @brief A bit-mask used to identify OS-Errors (errno) */
   MCFG_OS_ERROR_MASK = 0xf000
 } mcfg_err_t;
 
@@ -46,6 +75,9 @@ typedef enum mcfg_field_type {
   TYPE_U32,
 } mcfg_field_type_t;
 
+/**
+ * @deprecated in 1.0.0
+ */
 typedef enum mcfg_boolean {
   BOOL_FALSE = 0,
   BOOL_TRUE = 1,
