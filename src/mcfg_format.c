@@ -212,18 +212,6 @@ exit:
   return res;
 }
 
-/* TODO: Remove once debugging is done. "embed validity" does not exist */
-mcfg_fmt_err_t _embeds_valid(_embeds_t embeds, mcfg_file_t file,
-                             mcfg_path_t rel) {
-  for (size_t ix = 0; ix < embeds.count; ix++) {
-    _embed_t embed = embeds.embeds[ix];
-    printf("%zu: pos = %zu, src_end_pos = %zu, field = %s\n", ix, embed.pos,
-           embed.src_end_pos, embed.field);
-  }
-
-  return MCFG_FMT_OK;
-}
-
 mcfg_fmt_res_t _format(char *input, _embeds_t embeds, mcfg_file_t file,
                        mcfg_path_t rel) {
   mcfg_fmt_res_t res = {
@@ -330,6 +318,7 @@ mcfg_fmt_res_t _format(char *input, _embeds_t embeds, mcfg_file_t file,
     free(subformat_res.formatted);
   }
 
+  /* copy remainder of input */
   if (cpy_offs < strlen(input)) {
     const size_t remaining = strlen(input) - cpy_offs;
     APPEND_CHECK(res.formatted, res.formatted_size, write_offs + remaining);
@@ -367,13 +356,6 @@ mcfg_fmt_res_t mcfg_format_field_embeds_str(char *input, mcfg_file_t file,
   _embeds_t embeds = _extract_embeds(input);
   if (embeds.err != MCFG_FMT_OK) {
     res.err = embeds.err;
-    goto exit;
-  }
-
-  /* Ensure all embedded fields exist */
-  mcfg_fmt_err_t err = _embeds_valid(embeds, file, relativity);
-  if (err != MCFG_FMT_OK) {
-    res.err = err;
     goto exit;
   }
 

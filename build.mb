@@ -14,7 +14,7 @@ sector config
     str build_type 'incremental'
 
     str cc 'clang'
-    str cflags '-ggdb -Iinclude/ -Isrc/'
+    str cflags '-gdwarf-4 -Wextra -Wall -Iinclude/ -Isrc/'
     str ldflags '-lm -L. -l$(/config/files/libname)'
 
     list str targets 'clean', 'debug', 'release'
