@@ -208,7 +208,7 @@ char *mcfg_format_list(mcfg_list_t list, char *prefix, char *postfix) {
 
   size_t cpy_offs = 0;
   char *tmp = mcfg_data_to_string(list.fields[0]);
-  char *out = malloc_or_die(base_alloc_size + strlen(tmp));
+  char *out = malloc_or_die(base_alloc_size + strlen(tmp) + strlen(prefix));
 
   strcpy(out, prefix);
   cpy_offs += strlen(prefix);
@@ -217,11 +217,11 @@ char *mcfg_format_list(mcfg_list_t list, char *prefix, char *postfix) {
   free(tmp);
 
   for (size_t ix = 1; ix < list.field_count; ix++) {
-    strcpy(out + cpy_offs, seperator);
+    memcpy(out + cpy_offs, seperator, strlen(seperator));
     cpy_offs += strlen(seperator);
     tmp = mcfg_data_to_string(list.fields[ix]);
     out =
-        realloc_or_die(out, strlen(out) + strlen(tmp) + sizeof(seperator) + 1);
+        realloc_or_die(out, strlen(out) + strlen(tmp) + strlen(seperator) + 1);
     strcpy(out + cpy_offs, tmp);
     cpy_offs = strlen(out);
     free(tmp);
