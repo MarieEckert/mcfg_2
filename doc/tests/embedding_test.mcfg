@@ -14,14 +14,17 @@ end
 sector test
   section sectneg1
     i16 test -200
+    str a 'üüäü'
   end
 
   section sect1
     u8 test 200
+    str stest 'asdasd $(sectneg1/a)'
     str dest 'foo $(/embedding_test/sect1/foo) with someu16
     $(/embedding_test/sect1/someu16) this should appear normal -> \$(aa) ''
-    <$(/list_src/sect1/somelist)> a
+    abc__<$(/list_src/sect1/somelist)>@@ a
     $(/bogus/field) $(test) $(sectneg1/test)
+    $(stest)
   '
   end
 end

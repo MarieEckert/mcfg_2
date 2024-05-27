@@ -7,14 +7,14 @@ sector config
     str libfile 'lib$(/config/files/libname).a'
     str testfile 'mcfg_test'
 
-    list str sources 'mcfg_shared', 'mcfg_util', 'mcfg'
+    list str sources 'mcfg_shared', 'mcfg_util', 'mcfg_format', 'mcfg'
   end
 
   section mariebuild
     str build_type 'incremental'
 
     str cc 'clang'
-    str cflags '-ggdb -Iinclude/ -Isrc/'
+    str cflags '-gdwarf-4 -Wextra -Wall -Iinclude/ -Isrc/'
     str ldflags '-lm -L. -l$(/config/files/libname)'
 
     list str targets 'clean', 'debug', 'release'
@@ -40,7 +40,7 @@ sector c_rules
   section libsources
     str exec_mode 'singular'
 
-    list str input 'mcfg_shared', 'mcfg_util', 'mcfg'
+    str input_src '/config/files/sources'
     str input_format '$(/config/files/src)$(%element%).c'
     str output_format '$(/config/files/obj)$(%element%).o'
 
@@ -51,7 +51,7 @@ sector c_rules
     str exec_mode 'unify'
     str build_type 'full'
 
-    str input_src '/c_rules/libsources/input'
+    str input_src '/config/files/sources'
     str input_format '$(/config/files/obj)$(%element%).o'
     str output_format '$(/config/files/libfile)'
 
