@@ -35,17 +35,18 @@ mcfg_path_t mcfg_parse_path(char *path);
 /**
  * @brief Convert a mcfg_path_t structure into its string representation
  * @param path The path to be converted
- * @return A Heap allocated string with the path structures string representation
+ * @return A Heap allocated string with the path structures string
+ * representation
  */
 char *mcfg_path_to_str(mcfg_path_t path);
 
 /**
  * @brief Gets a field by its path
  * @param file The file in which the field lies
- * @param path The path to the field which should be grabbed. This path has to be
- *      absolute!
- * @return Pointer to the field pointed to by path. If the field was not found NULL will
- * be returned.
+ * @param path The path to the field which should be grabbed. This path has to
+ * be absolute!
+ * @return Pointer to the field pointed to by path. If the field was not found
+ * NULL will be returned.
  */
 mcfg_field_t *mcfg_get_field_by_path(mcfg_file_t *file, mcfg_path_t path);
 

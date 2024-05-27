@@ -32,7 +32,8 @@ typedef struct mcfg_fmt_res {
 
 /**
  * @brief Format the embeds of a string field.
- * @param field The field of which the data should be formatted (has to be TYPE_STRING)
+ * @param field The field of which the data should be formatted (has to be
+ * TYPE_STRING)
  * @param file The file from which to take the data for formatting
  * @param relativity A path which should be used to complete relative paths.
  * @return A new heap allocated string containing the formatted field.
