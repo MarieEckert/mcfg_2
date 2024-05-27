@@ -1,9 +1,9 @@
-// mcfg_util.h ; marie config format utility header
-// for MCFG/2
-//
-// Copyright (c) 2023, Marie Eckert
-// Licensend under the BSD 3-Clause License.
-//------------------------------------------------------------------------------
+/* mcfg_util.h ; marie config format utility header
+ * for MCFG/2
+ *
+ * Copyright (c) 2023, Marie Eckert
+ * Licensend under the BSD 3-Clause License.
+ */
 
 #ifndef MCFG_UTIL_H
 #define MCFG_UTIL_H

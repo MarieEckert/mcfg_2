@@ -1,9 +1,9 @@
-// mcfg.h ; marie config format parser header
-// for MCFG/2
-//
-// Copyright (c) 2023, Marie Eckert
-// Licensend under the BSD 3-Clause License.
-//------------------------------------------------------------------------------
+/* mcfg.h ; marie config format parser header
+ * for MCFG/2
+ *
+ * Copyright (c) 2023, Marie Eckert
+ * Licensend under the BSD 3-Clause License.
+ */
 
 #ifndef MCFG_H
 #define MCFG_H

@@ -1,13 +1,14 @@
-// mcfg.c ; marie config format parser implementation
-// implementation for MCFG/2
-//
-// Copyright (c) 2023, Marie Eckert
-// Licensend under the BSD 3-Clause License.
-//------------------------------------------------------------------------------
-// TODO:
-// - Parse lists with element type string
-// - Edge-Case Handling (checking for null-pointer, ...)
-//------------------------------------------------------------------------------
+/* mcfg.c ; marie config format parser implementation
+ * implementation for MCFG/2
+ *
+ * Copyright (c) 2023, Marie Eckert
+ * Licensend under the BSD 3-Clause License.
+ */
+
+/* TODO:
+ * - Parse lists with element type string
+ * - Edge-Case Handling (checking for null-pointer, ...)
+ */
 
 #include "mcfg.h"
 

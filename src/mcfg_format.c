@@ -1,9 +1,9 @@
-// mcfg_format.c ; marie config format field-formatting implementation
-// for MCFG/2
-//
-// Copyright (c) 2024, Marie Eckert
-// Licensend under the BSD 3-Clause License.
-//------------------------------------------------------------------------------
+/* mcfg_format.c ; marie config format field-formatting implementation
+ * for MCFG/2
+ *
+ * Copyright (c) 2024, Marie Eckert
+ * Licensend under the BSD 3-Clause License.
+ */
 
 #include "mcfg_format.h"
 
