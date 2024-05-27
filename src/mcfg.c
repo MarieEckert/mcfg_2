@@ -39,6 +39,12 @@
     ret;                                                                       \
   })
 
+#define DATA_PARSE_ERR_CHECK(c, e)                                             \
+  ({                                                                           \
+    if (!(c))                                                                  \
+      return (mcfg_data_parse_result_t){.error = e};                           \
+  })
+
 bool _integer_bounds_check(int64_t _int, mcfg_field_type_t type) {
   if (mcfg_sizeof(type) <= 0)
     return false;
@@ -103,6 +109,8 @@ char *mcfg_err_string(mcfg_err_t err) {
     return "NULL-Pointer";
   case MCFG_INTEGER_OUT_OF_BOUNDS:
     return "Integer value is out of bounds";
+  case MCFG_MALLOC_FAIL:
+    return "A memory (re)allocation failed!";
   default:
     return "invalid error code";
   }
@@ -285,13 +293,18 @@ mcfg_data_parse_result_t _parse_string_field(char *str) {
       .size = 0,
   };
 
-  ret.data = malloc_or_die(strlen(str) + 1);
   if (strlen(str) == 0) {
-    ret.data = malloc_or_die(1);
+    ret.data = malloc(1);
+
+    DATA_PARSE_ERR_CHECK(ret.data != NULL, MCFG_MALLOC_FAIL);
+
     ((char *)ret.data)[0] = 0;
     ret.size = 1;
     return ret;
   }
+
+  ret.data = malloc(strlen(str) + 1);
+  DATA_PARSE_ERR_CHECK(ret.data != NULL, MCFG_MALLOC_FAIL);
 
   size_t ix = 0;
   size_t wix = 0;
@@ -335,7 +348,9 @@ mcfg_data_parse_result_t _parse_number_type_field(mcfg_field_type_t type,
     goto _parse_number_type_field_ret;
   }
 
-  ret.data = malloc_or_die(ret.size);
+  ret.data = malloc(ret.size);
+
+  DATA_PARSE_ERR_CHECK(ret.data != NULL, MCFG_MALLOC_FAIL);
 
   int64_t converted = 0;
 
