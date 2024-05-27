@@ -15,22 +15,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Helper function for path relativity
-mcfg_path_t _insert_path_elems(mcfg_path_t src, mcfg_path_t rel) {
-  if (src.sector == NULL) {
-    src.sector = rel.sector != NULL ? strdup(rel.sector) : strdup("(null)");
-    src.absolute = true;
-  }
-
-  if (src.section == NULL)
-    src.section = rel.section != NULL ? strdup(rel.section) : strdup("(null)");
-
-  if (src.field == NULL)
-    src.field = rel.field != NULL ? strdup(rel.field) : strdup("(null)");
-
-  return src;
-}
-
 mcfg_path_t mcfg_parse_path(char *path) {
   mcfg_path_t ret = {.absolute = false,
                      .dynfield_path = false,

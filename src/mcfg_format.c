@@ -47,7 +47,7 @@ typedef struct _embed {
 
   /**
    * @brief the position where the embed ends in the input (position of the
-   * closing bracket)
+   * closing bracket + 1)
    */
   size_t src_end_pos;
 
@@ -61,6 +61,22 @@ typedef struct _embeds {
   size_t count;
   _embed_t *embeds;
 } _embeds_t;
+
+// Helper function for path relativity
+mcfg_path_t _insert_path_elems(mcfg_path_t src, mcfg_path_t rel) {
+  if (src.sector == NULL) {
+    src.sector = rel.sector != NULL ? strdup(rel.sector) : strdup("(null)");
+    src.absolute = true;
+  }
+
+  if (src.section == NULL)
+    src.section = rel.section != NULL ? strdup(rel.section) : strdup("(null)");
+
+  if (src.field == NULL)
+    src.field = rel.field != NULL ? strdup(rel.field) : strdup("(null)");
+
+  return src;
+}
 
 void _free__embeds(_embeds_t embeds) {
   if (embeds.count == 0 || embeds.embeds == NULL) {
@@ -133,7 +149,7 @@ _embeds_t _extract_embeds(char *input) {
 
       building_embed = false;
       building_field_name = true;
-      field_pos = ix + 1;
+      field_pos = ix - 1;
       break;
     case ')':
       if (!building_field_name) {
@@ -142,7 +158,7 @@ _embeds_t _extract_embeds(char *input) {
 
       building_field_name = false;
       field_name[field_name_wix] = 0;
-      field_src_end_pos = ix;
+      field_src_end_pos = ix + 1;
       field_name_wix = 0;
 
       res.err =
@@ -182,9 +198,61 @@ mcfg_fmt_res_t _format(char *input, _embeds_t embeds, mcfg_file_t file,
                        mcfg_path_t rel) {
   mcfg_fmt_res_t res = {
       .err = MCFG_FMT_OK,
-      .formatted_size = 0,
+      .formatted_size = strlen(input) + 1,
       .formatted = NULL,
   };
+
+  res.formatted = FMTMALLOC(res.formatted_size);
+  if (embeds.count == 0) {
+    strcpy(res.formatted, input);
+    return res;
+  }
+
+  size_t cpy_offs = 0;
+  size_t write_offs = 0;
+
+  const char _FIELD_NULLPTR[] = "(nullptr)";
+
+  for (size_t ix = 0; ix < embeds.count; ix++) {
+    if (write_offs > res.formatted_size) {
+      res.formatted_size += 64;
+      res.formatted = FMTREALLOC(res.formatted, res.formatted_size);
+    }
+
+    _embed_t embed = embeds.embeds[ix];
+
+    /* write up until embed */
+    memcpy(res.formatted + write_offs, input + cpy_offs,
+           embed.pos - cpy_offs);
+    write_offs += embed.pos - cpy_offs;
+    cpy_offs = embed.src_end_pos;
+
+    /* get, format & insert field */
+    mcfg_path_t path = _insert_path_elems(mcfg_parse_path(embed.field), rel);
+    mcfg_field_t *field = mcfg_get_field_by_path(&file, path);
+
+    /* field does not exist, insert (nullptr) as placeholder */
+    if (field == NULL) {
+      memcpy(res.formatted + write_offs, _FIELD_NULLPTR, sizeof(_FIELD_NULLPTR));
+      write_offs += sizeof(_FIELD_NULLPTR) - 1;
+      continue;
+    }
+
+    /* field is a number type */
+    if (field->type != TYPE_STRING && field->type != TYPE_LIST) {
+      char *str = mcfg_data_to_string(*field);
+      memcpy(res.formatted + write_offs, str, strlen(str));
+      write_offs += strlen(str);
+      free(str);
+      continue;
+    }
+
+    if (field->type == TYPE_LIST) {
+      /* TODO: FORMAT LIST FIELD */
+    }
+
+    mcfg_fmt_res_t subformat_res = mcfg_format_field_embeds(*field, file, rel);
+  }
 
   return res;
 }
@@ -219,7 +287,7 @@ mcfg_fmt_res_t mcfg_format_field_embeds_str(char *input, mcfg_file_t file,
     goto exit;
   }
 
-  res = _format(input, embeds, file, relativity);
+  res = _format(strdup(input), embeds, file, relativity);
 
 exit:
   _free__embeds(embeds);
