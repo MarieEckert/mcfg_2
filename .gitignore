@@ -2,6 +2,7 @@
 *vgcore*
 out/
 obj/
+doc/doxygen
 mcfg_test
 *.a
 *.swp
