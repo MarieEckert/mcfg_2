@@ -102,6 +102,12 @@ void _free__embeds(_embeds_t embeds) {
   if (embeds.count == 0 || embeds.embeds == NULL) {
     return;
   }
+
+  for (size_t ix = 0; ix < embeds.count; ix++) {
+    free(embeds.embeds[ix].field);
+  }
+
+  free(embeds.embeds);
 }
 
 mcfg_fmt_err_t _append_embed(_embeds_t *embeds, char *field, size_t pos,
@@ -254,6 +260,10 @@ mcfg_fmt_res_t _format(char *input, _embeds_t embeds, mcfg_file_t file,
     mcfg_path_t path = _insert_path_elems(mcfg_parse_path(embed.field), rel);
     mcfg_field_t *field = mcfg_get_field_by_path(&file, path);
 
+    free(path.sector);
+    free(path.section);
+    free(path.field);
+
     /* field does not exist, insert (nullptr) as placeholder */
     if (field == NULL) {
       memcpy(res.formatted + write_offs, _FIELD_NULLPTR,
@@ -283,10 +293,10 @@ mcfg_fmt_res_t _format(char *input, _embeds_t embeds, mcfg_file_t file,
 
       char *prefix =
           remove_newline(bstrcpy_until(input + embed.pos - 1, input, ' '));
+      ERR_CHECK(prefix != NULL, MCFG_FMT_NULLPTR);
+
       char *postfix =
           remove_newline(strcpy_until(input + embed.src_end_pos, ' '));
-
-      ERR_CHECK(prefix != NULL, MCFG_FMT_NULLPTR);
       ERR_CHECK(postfix != NULL, MCFG_FMT_NULLPTR);
 
       /* Move write_offs back to position of last space + 1
@@ -297,6 +307,9 @@ mcfg_fmt_res_t _format(char *input, _embeds_t embeds, mcfg_file_t file,
 
       char *list =
           mcfg_format_list(*mcfg_data_as_list(*field), prefix, postfix);
+
+      free(prefix);
+      free(postfix);
       ERR_CHECK(list != NULL, MCFG_FMT_NULLPTR);
 
       subformat_res = mcfg_format_field_embeds_str(list, file, rel);
@@ -313,6 +326,8 @@ mcfg_fmt_res_t _format(char *input, _embeds_t embeds, mcfg_file_t file,
     APPEND_CHECK(res.formatted, res.formatted_size, write_offs + subformat_len);
     memcpy(res.formatted + write_offs, subformat_res.formatted, subformat_len);
     write_offs += subformat_len;
+
+    free(subformat_res.formatted);
   }
 
   if (cpy_offs < strlen(input)) {
@@ -322,13 +337,11 @@ mcfg_fmt_res_t _format(char *input, _embeds_t embeds, mcfg_file_t file,
     write_offs += remaining;
   }
 
-  if (res.formatted[write_offs] != 0) {
-    res.formatted[write_offs] = 0;
-    write_offs++;
-  }
+  res.formatted[write_offs] = 0;
+  write_offs++;
 
   /* trim buffer size */
-  FMTREALLOC(res.formatted, write_offs);
+  res.formatted = FMTREALLOC(res.formatted, write_offs);
   res.formatted_size = write_offs;
 
   return res;
@@ -364,7 +377,7 @@ mcfg_fmt_res_t mcfg_format_field_embeds_str(char *input, mcfg_file_t file,
     goto exit;
   }
 
-  res = _format(strdup(input), embeds, file, relativity);
+  res = _format(input, embeds, file, relativity);
 
 exit:
   _free__embeds(embeds);
