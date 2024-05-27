@@ -20,6 +20,7 @@ typedef enum mcfg_fmt_err {
   MCFG_FMT_MALLOC_FAIL = MCFG_MALLOC_FAIL, /* TODO: Move rest of impl away from
                                               (re|m)alloc_or_die functions */
   MCFG_FMT_INVALID_TYPE = MCFG_INVALID_TYPE,
+  MCFG_FMT_NOT_FOUND,
 } mcfg_fmt_err_t;
 
 typedef struct mcfg_fmt_res {
