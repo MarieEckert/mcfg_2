@@ -21,6 +21,24 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define XMALLOC(s)                                                             \
+  ({                                                                           \
+    void *ret = malloc(s);                                                     \
+    if (ret == NULL) {                                                         \
+      return MCFG_MALLOC_FAIL;                                                 \
+    }                                                                          \
+    ret;                                                                       \
+  })
+
+#define XREALLOC(o, s)                                                         \
+  ({                                                                           \
+    void *ret = realloc(o, s);                                                 \
+    if (ret == NULL) {                                                         \
+      return MCFG_MALLOC_FAIL;                                                 \
+    }                                                                          \
+    ret;                                                                       \
+  })
+
 bool _integer_bounds_check(int64_t _int, mcfg_field_type_t type) {
   if (mcfg_sizeof(type) <= 0)
     return false;
@@ -626,7 +644,7 @@ mcfg_err_t _parse_field(char *line, mcfg_parser_ctxt_t *ctxt) {
       return data_result.error;
 
     size_t new_size = field->size + data_result.size - 1;
-    char *new_str = malloc_or_die(new_size);
+    char *new_str = XMALLOC(new_size);
 
     // string field data is always expected to be NULL-terminated
     memcpy(new_str, field->data, field->size - 1);
@@ -725,12 +743,12 @@ mcfg_err_t mcfg_add_sector(mcfg_file_t *file, char *name) {
 
   remove_newline(name);
   if (file->sector_count == 0) {
-    file->sectors = malloc_or_die(sizeof(*file->sectors));
+    file->sectors = XMALLOC(sizeof(*file->sectors));
   } else {
     if (mcfg_get_sector(file, name) != NULL)
       return MCFG_DUPLICATE_SECTOR;
-    file->sectors = realloc_or_die(file->sectors, sizeof(mcfg_sector_t) *
-                                                      (file->sector_count + 1));
+    file->sectors = XREALLOC(file->sectors,
+                             sizeof(mcfg_sector_t) * (file->sector_count + 1));
   }
 
   file->sectors[ix].name = name;
@@ -747,11 +765,11 @@ mcfg_err_t mcfg_add_section(mcfg_sector_t *sector, char *name) {
 
   remove_newline(name);
   if (sector->section_count == 0) {
-    sector->sections = malloc_or_die(sizeof(*sector->sections));
+    sector->sections = XMALLOC(sizeof(*sector->sections));
   } else {
     if (mcfg_get_section(sector, name) != NULL)
       return MCFG_DUPLICATE_FIELD;
-    sector->sections = realloc_or_die(
+    sector->sections = XREALLOC(
         sector->sections, sizeof(mcfg_section_t) * (sector->section_count + 1));
   }
 
@@ -770,12 +788,12 @@ mcfg_err_t mcfg_add_dynfield(mcfg_file_t *file, mcfg_field_type_t type,
 
   remove_newline(name);
   if (file->dynfield_count == 0) {
-    file->dynfields = malloc_or_die(sizeof(*file->dynfields));
+    file->dynfields = XMALLOC(sizeof(*file->dynfields));
   } else {
     if (mcfg_get_dynfield(file, name) != NULL)
       return MCFG_DUPLICATE_DYNFIELD;
-    file->dynfields = realloc_or_die(
-        file->dynfields, sizeof(*file->dynfields) * (file->dynfield_count + 1));
+    file->dynfields = XREALLOC(file->dynfields, sizeof(*file->dynfields) *
+                                                    (file->dynfield_count + 1));
   }
 
   file->dynfields[ix].type = type;
@@ -795,12 +813,12 @@ mcfg_err_t mcfg_add_field(mcfg_section_t *section, mcfg_field_type_t type,
 
   remove_newline(name);
   if (section->field_count == 0) {
-    section->fields = malloc_or_die(sizeof(*section->fields));
+    section->fields = XMALLOC(sizeof(*section->fields));
   } else {
     if (mcfg_get_field(section, name) != NULL)
       return MCFG_DUPLICATE_FIELD;
-    section->fields = realloc_or_die(
-        section->fields, sizeof(mcfg_field_t) * (section->field_count + 1));
+    section->fields = XREALLOC(section->fields, sizeof(mcfg_field_t) *
+                                                    (section->field_count + 1));
   }
 
   section->fields[ix].type = type;
@@ -821,10 +839,10 @@ mcfg_err_t mcfg_add_list_field(mcfg_list_t *list, size_t size, void *data) {
   size_t ix = list->field_count;
 
   if (list->field_count == 0) {
-    list->fields = malloc_or_die(sizeof(*list->fields));
+    list->fields = XMALLOC(sizeof(*list->fields));
   } else {
-    list->fields = realloc_or_die(list->fields, sizeof(mcfg_field_t) *
-                                                    (list->field_count + 1));
+    list->fields =
+        XREALLOC(list->fields, sizeof(mcfg_field_t) * (list->field_count + 1));
   }
 
   list->fields[ix].type = list->type;

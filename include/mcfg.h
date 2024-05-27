@@ -58,6 +58,8 @@ typedef enum mcfg_err {
   MCFG_NULLPTR,
   MCFG_INTEGER_OUT_OF_BOUNDS,
 
+  MCFG_MALLOC_FAIL,
+
   /** @brief A bit-mask used to identify OS-Errors (errno) */
   MCFG_OS_ERROR_MASK = 0xf000
 } mcfg_err_t;

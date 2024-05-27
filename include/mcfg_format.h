@@ -11,9 +11,6 @@
 #include "mcfg.h"
 #include "mcfg_util.h"
 
-/* TODO: Remove once (re|m)alloc_or_die functions are out of use */
-#define MCFG_MALLOC_FAIL 2
-
 /**
  * @brief Error codes thrown by formatting functions
  * @see mcfg_err_t
