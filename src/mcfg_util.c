@@ -15,6 +15,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define DATA_PARSE_ERR_CHECK(c, e)                                             \
+  ({                                                                           \
+    if (!(c))                                                                  \
+      return e;                                                                \
+  })
+
 mcfg_path_t mcfg_parse_path(char *path) {
   mcfg_path_t ret = {.absolute = false,
                      .dynfield_path = false,
@@ -37,12 +43,23 @@ mcfg_path_t mcfg_parse_path(char *path) {
 
   while (tok != NULL) {
     if (element_count == 0) {
-      elements = malloc_or_die(sizeof(char *));
+      elements = malloc(sizeof(char *));
+
+      if (elements == NULL) {
+        return {.sector = NULL, .section = NULL, .field = NULL};
+      }
     } else {
-      elements = realloc_or_die(elements, sizeof(char *) * (element_count + 1));
+      elements = realloc(elements, sizeof(char *) * (element_count + 1));
+      if (elements == NULL) {
+        return {.sector = NULL, .section = NULL, .field = NULL};
+      }
     }
 
-    elements[element_count] = malloc_or_die(strlen(tok) + 1);
+    elements[element_count] = malloc(strlen(tok) + 1);
+    if (elements[element_count] == NULL) {
+      return {.sector = NULL, .section = NULL, .field = NULL};
+    }
+
     strcpy(elements[element_count], tok);
 
     element_count++;
@@ -72,7 +89,7 @@ mcfg_path_t mcfg_parse_path(char *path) {
       ret.dynfield_path = true;
 
       size_t newsize = strlen(elements[0]) - 1;
-      char *new = malloc_or_die(newsize);
+      char *new = malloc(newsize);
       memcpy(new, elements[0] + 1, newsize - 1);
       new[newsize - 1] = 0;
 
@@ -111,7 +128,11 @@ char *mcfg_path_to_str(mcfg_path_t path) {
     size += strlen(path.field);
   }
 
-  char *out = malloc_or_die(size);
+  char *out = malloc(size);
+  if (out == NULL) {
+    return NULL;
+  }
+
   size_t offs = 0;
 
   if (path.absolute) {
@@ -217,14 +238,19 @@ char *mcfg_format_list(mcfg_list_t list, char *prefix, char *postfix) {
   char space[2] = " ";
   size_t base_alloc_size = strlen(prefix) + strlen(postfix) + sizeof(space);
 
-  char *seperator = malloc_or_die(base_alloc_size);
+  char *seperator = malloc(base_alloc_size);
+  ERR_CHECK(seperator != NULL, NULL);
+
   strcpy(seperator, postfix);
   strcpy(seperator + strlen(postfix), space);
   strcpy(seperator + strlen(postfix) + strlen(space), prefix);
 
   size_t cpy_offs = 0;
   char *tmp = mcfg_data_to_string(list.fields[0]);
-  char *out = malloc_or_die(base_alloc_size + strlen(tmp) + strlen(prefix));
+  char *out = malloc(base_alloc_size + strlen(tmp) + strlen(prefix));
+  if (out == NULL) {
+    goto exit;
+  }
 
   strcpy(out, prefix);
   cpy_offs += strlen(prefix);
@@ -236,17 +262,24 @@ char *mcfg_format_list(mcfg_list_t list, char *prefix, char *postfix) {
     memcpy(out + cpy_offs, seperator, strlen(seperator));
     cpy_offs += strlen(seperator);
     tmp = mcfg_data_to_string(list.fields[ix]);
-    out =
-        realloc_or_die(out, strlen(out) + strlen(tmp) + strlen(seperator) + 1);
+    out = realloc(out, strlen(out) + strlen(tmp) + strlen(seperator) + 1);
+    if (out == NULL) {
+      goto exit;
+    }
+
     strcpy(out + cpy_offs, tmp);
     cpy_offs = strlen(out);
     free(tmp);
   }
 
   size_t prev_end = strlen(out);
-  out = realloc_or_die(out, strlen(out) + strlen(postfix) + 1);
-  strcpy(out + prev_end, postfix);
+  out = realloc(out, strlen(out) + strlen(postfix) + 1);
 
+  if (out != NULL) {
+    strcpy(out + prev_end, postfix);
+  }
+
+exit:
   free(seperator);
 
   return out;
@@ -260,23 +293,29 @@ char *mcfg_list_as_string(mcfg_list_t list) {
   size_t cpy_offs = 0;
   char *tmp = mcfg_data_to_string(list.fields[0]);
   char seperator[3] = ", ";
-  char *out = malloc_or_die(strlen(tmp) + sizeof(seperator));
+  char *out = malloc(strlen(tmp) + sizeof(seperator));
+  if (out == NULL) {
+    goto exit;
+  }
 
   strcpy(out, tmp);
   cpy_offs += strlen(out);
-  free(tmp);
 
   for (size_t ix = 1; ix < list.field_count; ix++) {
+    free(tmp);
+
     strcpy(out + cpy_offs, seperator);
     cpy_offs += strlen(seperator);
     tmp = mcfg_data_to_string(list.fields[ix]);
-    out =
-        realloc_or_die(out, strlen(out) + strlen(tmp) + sizeof(seperator) + 1);
+    out = realloc(out, strlen(out) + strlen(tmp) + sizeof(seperator) + 1);
+    if (out == NULL) {
+      goto exit;
+    }
     strcpy(out + cpy_offs, tmp);
     cpy_offs = strlen(out);
-    free(tmp);
   }
 
+  free(tmp);
   return out;
 }
 

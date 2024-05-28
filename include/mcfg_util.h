@@ -28,7 +28,9 @@ typedef struct mcfg_path {
 /**
  * @brief Convert a string path into a mcfg_path struct
  * @param path The path which should be converted
- * @return The path parsed into a mcfg_path struct
+ * @return The path parsed into a mcfg_path struct, each element is a seperatly
+ * heap-allocated string. If this function fails, all elements will be null in
+ * the returned value.
  */
 mcfg_path_t mcfg_parse_path(char *path);
 
