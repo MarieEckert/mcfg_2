@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define DATA_PARSE_ERR_CHECK(c, e)                                             \
+#define ERR_CHECK(c, e)                                                        \
   ({                                                                           \
     if (!(c))                                                                  \
       return e;                                                                \
@@ -46,18 +46,18 @@ mcfg_path_t mcfg_parse_path(char *path) {
       elements = malloc(sizeof(char *));
 
       if (elements == NULL) {
-        return {.sector = NULL, .section = NULL, .field = NULL};
+        return (mcfg_path_t){.sector = NULL, .section = NULL, .field = NULL};
       }
     } else {
       elements = realloc(elements, sizeof(char *) * (element_count + 1));
       if (elements == NULL) {
-        return {.sector = NULL, .section = NULL, .field = NULL};
+        return (mcfg_path_t){.sector = NULL, .section = NULL, .field = NULL};
       }
     }
 
     elements[element_count] = malloc(strlen(tok) + 1);
     if (elements[element_count] == NULL) {
-      return {.sector = NULL, .section = NULL, .field = NULL};
+      return (mcfg_path_t){.sector = NULL, .section = NULL, .field = NULL};
     }
 
     strcpy(elements[element_count], tok);
@@ -315,6 +315,7 @@ char *mcfg_list_as_string(mcfg_list_t list) {
     cpy_offs = strlen(out);
   }
 
+exit:
   free(tmp);
   return out;
 }

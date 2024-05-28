@@ -11,27 +11,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-void *malloc_or_die(size_t size) {
-  void *ptr = malloc(size);
-  if (ptr == NULL) {
-    fprintf(stderr, "malloc_or_die failed. (size = %zu)\n", size);
-    abort();
-  }
-
-  return ptr;
-}
-
-void *realloc_or_die(void *org, size_t size) {
-  void *ptr = realloc(org, size);
-  if (ptr == NULL) {
-    fprintf(stderr, "realloc_or_die failed. (org = %p; size = %zu)\n", org,
-            size);
-    abort();
-  }
-
-  return ptr;
-}
-
 bool is_string_empty(char *in) {
   if (in == NULL || in[0] == 0) {
     return true;
