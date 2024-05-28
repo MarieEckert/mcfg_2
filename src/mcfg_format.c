@@ -89,11 +89,13 @@ mcfg_path_t _insert_path_elems(mcfg_path_t src, mcfg_path_t rel) {
     src.absolute = true;
   }
 
-  if (src.section == NULL)
+  if (src.section == NULL) {
     src.section = rel.section != NULL ? strdup(rel.section) : strdup("(null)");
+  }
 
-  if (src.field == NULL)
+  if (src.field == NULL) {
     src.field = rel.field != NULL ? strdup(rel.field) : strdup("(null)");
+  }
 
   return src;
 }
