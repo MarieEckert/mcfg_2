@@ -234,16 +234,14 @@ mcfg_fmt_res_t _format(char *input, _embeds_t embeds, mcfg_file_t file,
   const char _FIELD_NULLPTR[] = "(nullptr)";
 
   for (size_t ix = 0; ix < embeds.count; ix++) {
-    if (write_offs > res.formatted_size) {
-      res.formatted_size += 1;
-      res.formatted = FMTREALLOC(res.formatted, res.formatted_size);
-    }
-
     _embed_t embed = embeds.embeds[ix];
 
     /* copy characters from input up until embed */
-    memcpy(res.formatted + write_offs, input + cpy_offs, embed.pos - cpy_offs);
-    write_offs += embed.pos - cpy_offs;
+    const size_t input_cpy_size = embed.pos - cpy_offs; /* size to be copied */
+    APPEND_CHECK(res.formatted, res.formatted_size,
+                 write_offs + input_cpy_size);
+    memcpy(res.formatted + write_offs, input + cpy_offs, input_cpy_size);
+    write_offs += input_cpy_size;
     cpy_offs = embed.src_end_pos;
 
     /* get, format & insert field */
@@ -279,8 +277,6 @@ mcfg_fmt_res_t _format(char *input, _embeds_t embeds, mcfg_file_t file,
 
     /* "sub-"format the field before appending */
     if (field->type == TYPE_LIST) {
-      /* TODO: Extract pre- and postfix */
-
       char *prefix =
           remove_newline(bstrcpy_until(input + embed.pos - 1, input, ' '));
       ERR_CHECK(prefix != NULL, MCFG_FMT_NULLPTR);
@@ -328,6 +324,7 @@ mcfg_fmt_res_t _format(char *input, _embeds_t embeds, mcfg_file_t file,
     write_offs += remaining;
   }
 
+  APPEND_CHECK(res.formatted, res.formatted_size, write_offs + 1);
   res.formatted[write_offs] = 0;
   write_offs++;
 
