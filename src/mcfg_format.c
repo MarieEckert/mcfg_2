@@ -71,6 +71,9 @@ typedef struct _embed {
    */
   size_t src_end_pos;
 
+  /** @brief if true, this embed is simply ignored in the output */
+  bool ignore_me;
+
   /** @brief The given path to the field */
   char *field;
 } _embed_t;
@@ -113,7 +116,7 @@ void _free__embeds(_embeds_t embeds) {
 }
 
 mcfg_fmt_err_t _append_embed(_embeds_t *embeds, char *field, size_t pos,
-                             size_t src_end_pos) {
+                             size_t src_end_pos, bool ignore_me) {
   if (embeds == NULL) {
     return MCFG_FMT_NULLPTR;
   }
@@ -134,6 +137,7 @@ mcfg_fmt_err_t _append_embed(_embeds_t *embeds, char *field, size_t pos,
 
   embeds->embeds[wix].field = field;
   embeds->embeds[wix].pos = pos;
+  embeds->embeds[wix].ignore_me = ignore_me;
   embeds->embeds[wix].src_end_pos = src_end_pos;
 
   return MCFG_FMT_OK;
@@ -169,6 +173,11 @@ _embeds_t _extract_embeds(char *input) {
     switch (input[ix]) {
     case '\\':
       escaping = true;
+
+      /* append an "ingore_me" embed to stop _format from copying the the
+       * backslash while also avoding it trying to lookup a field
+       */
+      res.err = _append_embed(&res, strdup("\\"), ix, ix + 1, true);
       break;
     case '$':
       building_embed = true;
@@ -192,8 +201,8 @@ _embeds_t _extract_embeds(char *input) {
       field_src_end_pos = ix + 1;
       field_name_wix = 0;
 
-      res.err =
-          _append_embed(&res, strdup(field_name), field_pos, field_src_end_pos);
+      res.err = _append_embed(&res, strdup(field_name), field_pos,
+                              field_src_end_pos, false);
       if (res.err != MCFG_FMT_OK) {
         goto exit;
       }
@@ -243,6 +252,10 @@ mcfg_fmt_res_t _format(char *input, _embeds_t embeds, mcfg_file_t file,
     memcpy(res.formatted + write_offs, input + cpy_offs, input_cpy_size);
     write_offs += input_cpy_size;
     cpy_offs = embed.src_end_pos;
+
+    if (embed.ignore_me) {
+      continue;
+    }
 
     /* get, format & insert field */
     mcfg_path_t path = _insert_path_elems(mcfg_parse_path(embed.field), rel);
