@@ -173,7 +173,11 @@ _embeds_t _extract_embeds(char *input) {
     switch (input[ix]) {
     case '\\':
       escaping = true;
-      res.err = _append_embed(&res, strdup("\\"), ix, ix+1, true);
+
+      /* append an "ingore_me" embed to stop _format from copying the the
+       * backslash while also avoding it trying to lookup a field
+       */
+      res.err = _append_embed(&res, strdup("\\"), ix, ix + 1, true);
       break;
     case '$':
       building_embed = true;
@@ -197,9 +201,8 @@ _embeds_t _extract_embeds(char *input) {
       field_src_end_pos = ix + 1;
       field_name_wix = 0;
 
-      res.err =
-          _append_embed(&res, strdup(field_name), field_pos, field_src_end_pos,
-                        false);
+      res.err = _append_embed(&res, strdup(field_name), field_pos,
+                              field_src_end_pos, false);
       if (res.err != MCFG_FMT_OK) {
         goto exit;
       }
