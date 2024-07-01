@@ -114,6 +114,20 @@ exit:
   return ret;
 }
 
+void mcfg_free_path(mcfg_path_t path) {
+  if (path.sector != NULL) {
+    free(path.sector);
+  }
+
+  if (path.section != NULL) {
+    free(path.section);
+  }
+
+  if (path.field != NULL) {
+    free(path.field);
+  }
+}
+
 char *mcfg_path_to_str(mcfg_path_t path) {
   size_t size = path.absolute ? 2 : 1;
   if (path.sector != NULL) {
