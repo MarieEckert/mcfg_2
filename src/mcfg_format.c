@@ -7,7 +7,7 @@
 
 #include "mcfg_format.h"
 
-#include "mcfg_shared.h"
+#include "shared.h"
 
 #include <stdio.h>
 #include <stdlib.h>

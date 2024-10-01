@@ -12,7 +12,7 @@
 
 #include "mcfg.h"
 
-#include "mcfg_shared.h"
+#include "shared.h"
 
 #include <errno.h>
 #include <math.h>

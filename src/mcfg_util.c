@@ -8,7 +8,7 @@
 #include "mcfg_util.h"
 
 #include "mcfg.h"
-#include "mcfg_shared.h"
+#include "shared.h"
 
 #include <math.h>
 #include <stdio.h>

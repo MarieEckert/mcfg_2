@@ -1,12 +1,12 @@
-/* mcfg_shared.h ; marie config format internal shared function header
+/* shared.h ; marie config format internal shared function header
  * for MCFG/2
  *
  * Copyright (c) 2023, Marie Eckert
  * Licensend under the BSD 3-Clause License.
  */
 
-#ifndef MCFG_SHARED_H
-#define MCFG_SHARED_H
+#ifndef SHARED_H
+#define SHARED_H
 
 #include <stdbool.h>
 #include <sys/types.h>
