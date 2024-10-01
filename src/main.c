@@ -4,6 +4,10 @@
 #include "mcfg.h"
 #include "mcfg_format.h"
 #include "mcfg_util.h"
+#include "parse.h"
+
+/* TODO: lazyness hack! remove! */
+#include "../doc/tests/test.h"
 
 #define TEST_DIR "doc/tests/"
 
@@ -94,6 +98,16 @@ int main(int argc, char **argv) {
   free(rel.sector);
   free(rel.section);
   free(rel.field);
+
+  syntax_tree_t tree;
+  ret = lex_input(doc_tests_embedding_test_mcfg, &tree);
+
+  syntax_tree_t *current = &tree;
+  while (current != NULL) {
+    printf("TOKEN = %d, VALUE = %s\n", current->token, current->value);
+
+    current = current->next;
+  }
 
 cleanup:
   mcfg_free_file(file);

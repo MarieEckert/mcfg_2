@@ -29,7 +29,7 @@ function build_objs() {
 }
 
 function build_lib() {
-  OBJECTS=("mcfg mcfg_util mcfg_shared mcfg_format")
+  OBJECTS=("mcfg mcfg_util parse shared mcfg_format")
 
   echo "==> Compiling sources for \"$LIBNAME\""
   build_objs "${OBJECTS[@]}"
