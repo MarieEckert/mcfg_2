@@ -7,7 +7,44 @@
 
 #include "parse.h"
 
+#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+
+#define XMALLOC(s)                                                             \
+  ({                                                                           \
+    void *ret;                                                                 \
+    ret = malloc(s);                                                           \
+    if (ret == NULL) {                                                         \
+      return MCFG_MALLOC_FAIL;                                                 \
+    }                                                                          \
+    ret;                                                                       \
+  })
+
+#define ERR_CHECK_RET(val)                                                     \
+  do {                                                                         \
+    if (val != MCFG_OK) {                                                      \
+      return val;                                                              \
+    }                                                                          \
+  } while (0)
+
+mcfg_err_t _set_node(syntax_tree_t **node, token_t token, char *value) {
+  (*node)->token = token;
+  (*node)->value = value;
+
+  syntax_tree_t *new_current = XMALLOC(sizeof(syntax_tree_t));
+
+  new_current->token = TK_UNASSIGNED_TOKEN;
+  new_current->value = NULL;
+  new_current->prev = *node;
+
+  *(*node)->next = *new_current;
+
+  *node = new_current;
+
+  return MCFG_OK;
+}
 
 /* NOTE: This lexing structure does not really produce a tree, it is more like
  *       a linked list of tokens encountered within the input.
@@ -46,6 +83,19 @@ mcfg_err_t lex_input(char *input, syntax_tree_t *tree) {
     case 'l': /* possibly a list */
       break;
     case 's': /* possibly a string, section or sector */
+      char *input_offs = input + ix;
+
+      if (!isspace(input[ix - 1])) {
+        fprintf(stderr, "no whitespace before s\n");
+        char *cur_char_str = XMALLOC(2);
+        cur_char_str[0] = cur_char;
+        cur_char_str[1] = 0;
+
+        ERR_CHECK_RET(_set_node(&current_node, TK_UNKNOWN, cur_char_str));
+        continue;
+      }
+
+      fprintf(stderr, "prepending whitespace\n");
       break;
     case 'e': /* possibly an end */
       break;

@@ -104,7 +104,8 @@ int main(int argc, char **argv) {
 
   syntax_tree_t *current = &tree;
   while (current != NULL) {
-    printf("TOKEN = %d, VALUE = %s\n", current->token, current->value);
+    printf("TOKEN = %d, VALUE = %s\n", current->token,
+           current->value != NULL ? current->value : "(null)");
 
     current = current->next;
   }
