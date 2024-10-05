@@ -29,6 +29,14 @@
     }                                                                          \
   } while (0)
 
+#define TOKEN_CHECKED_SET(cnode, str, val, tk)                                 \
+  do {                                                                         \
+    if (strncmp(str, val, sizeof(val) - 1) == 0) {                             \
+      _set_node(&cnode, tk, NULL);                                             \
+      break;                                                                   \
+    }                                                                          \
+  } while (0)
+
 mcfg_err_t _set_node(syntax_tree_t **node, token_t token, char *value) {
   (*node)->token = token;
   (*node)->value = value;
@@ -39,7 +47,7 @@ mcfg_err_t _set_node(syntax_tree_t **node, token_t token, char *value) {
   new_current->value = NULL;
   new_current->prev = *node;
 
-  *(*node)->next = *new_current;
+  (*node)->next = new_current;
 
   *node = new_current;
 
@@ -85,17 +93,9 @@ mcfg_err_t lex_input(char *input, syntax_tree_t *tree) {
     case 's': /* possibly a string, section or sector */
       char *input_offs = input + ix;
 
-      if (!isspace(input[ix - 1])) {
-        fprintf(stderr, "no whitespace before s\n");
-        char *cur_char_str = XMALLOC(2);
-        cur_char_str[0] = cur_char;
-        cur_char_str[1] = 0;
-
-        ERR_CHECK_RET(_set_node(&current_node, TK_UNKNOWN, cur_char_str));
-        continue;
-      }
-
-      fprintf(stderr, "prepending whitespace\n");
+      TOKEN_CHECKED_SET(current_node, input_offs, "str", TK_STR);
+      TOKEN_CHECKED_SET(current_node, input_offs, "sector", TK_SECTOR);
+      TOKEN_CHECKED_SET(current_node, input_offs, "section", TK_SECTION);
       break;
     case 'e': /* possibly an end */
       break;
