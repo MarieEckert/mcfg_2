@@ -73,6 +73,8 @@ mcfg_err_t lex_input(char *input, syntax_tree_t *tree) {
    * one char after it.
    */
   while (cur_char != '\0') {
+    char *input_offs = input + ix;
+
     switch (cur_char) {
     case ';': { /* comment */
       char *lf_ptr = strchr(input + ix, '\n');
@@ -86,19 +88,25 @@ mcfg_err_t lex_input(char *input, syntax_tree_t *tree) {
     case '\'': /* possibly a string open/close quote */
       break;
     case 'i': /* possibly a signed integer */
+      TOKEN_CHECKED_SET(current_node, input_offs, "i8", TK_I8);
+      TOKEN_CHECKED_SET(current_node, input_offs, "i16", TK_I16);
+      TOKEN_CHECKED_SET(current_node, input_offs, "i32", TK_I32);
       break;
     case 'u': /* possibly an unsigned integer */
+      TOKEN_CHECKED_SET(current_node, input_offs, "u8", TK_U8);
+      TOKEN_CHECKED_SET(current_node, input_offs, "u16", TK_U16);
+      TOKEN_CHECKED_SET(current_node, input_offs, "u32", TK_U32);
       break;
     case 'l': /* possibly a list */
+      TOKEN_CHECKED_SET(current_node, input_offs, "list", TK_LIST);
       break;
     case 's': /* possibly a string, section or sector */
-      char *input_offs = input + ix;
-
       TOKEN_CHECKED_SET(current_node, input_offs, "str", TK_STR);
       TOKEN_CHECKED_SET(current_node, input_offs, "sector", TK_SECTOR);
       TOKEN_CHECKED_SET(current_node, input_offs, "section", TK_SECTION);
       break;
     case 'e': /* possibly an end */
+      TOKEN_CHECKED_SET(current_node, input_offs, "end", TK_END);
       break;
     default:
       break; /* something else */
