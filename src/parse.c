@@ -33,7 +33,8 @@
   do {                                                                         \
     if (strncmp(str, val, sizeof(val) - 1) == 0) {                             \
       _set_node(&cnode, tk, NULL);                                             \
-      break;                                                                   \
+      ix += sizeof(val) - 1;						       \
+      continue;                                                                \
     }                                                                          \
   } while (0)
 
