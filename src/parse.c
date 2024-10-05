@@ -33,7 +33,7 @@
   do {                                                                         \
     if (strncmp(str, val, sizeof(val) - 1) == 0) {                             \
       _set_node(&cnode, tk, NULL);                                             \
-      ix += sizeof(val) - 1;						       \
+      ix += sizeof(val) - 1;                                                   \
       continue;                                                                \
     }                                                                          \
   } while (0)
@@ -53,6 +53,38 @@ mcfg_err_t _set_node(syntax_tree_t **node, token_t token, char *value) {
   *node = new_current;
 
   return MCFG_OK;
+}
+
+void _extract_string(void) {
+  /* TODO */
+  /*
+    char *next_quote_ptr = strchrnul(input_offs, '\'');
+
+    /* find real closing quote (ignore instances of '') */
+  /*
+    while (next_quote_ptr[0] != '\0' &&
+            (next_quote_ptr[0] == '\'' && next_quote_ptr[1] == '\'')) {
+      next_quote_ptr = strchrnul(next_quote_ptr + 1, '\'');
+      fprintf(stderr, "still searching, %c\n", next_quote_ptr[0]);
+    }
+
+    /* if never closed, set the remaining input as a string */
+  /*
+    if (*next_quote_ptr == '\0') {
+      fprintf(stderr, "nullptr!\n");
+      _set_node(&current_node, TK_STRING, strdup(input_offs + 1));
+      ix += next_quote_ptr - input;
+      break;
+    }
+
+    size_t value_size = next_quote_ptr - (input_offs + 1);
+    char *value = XMALLOC(value_size);
+    strncpy(value, input_offs + 1, value_size);
+
+    _set_node(&current_node, TK_STRING, value);
+
+    ix += next_quote_ptr - input + 1;
+  */
 }
 
 /* NOTE: This lexing structure does not really produce a tree, it is more like
@@ -85,7 +117,14 @@ mcfg_err_t lex_input(char *input, syntax_tree_t *tree) {
       ix += lf_ptr - input;
       break;
     }
+    case ',':
+      _set_node(&current_node, TK_COMMA, NULL);
+      break;
     case '\'': /* possibly a string open/close quote */
+      _set_node(&current_node, TK_QUOTE, NULL);
+
+      _extract_string(); /* TODO */
+
       break;
     case 'i': /* possibly a signed integer */
       TOKEN_CHECKED_SET(current_node, input_offs, "i8", TK_I8);
