@@ -53,7 +53,7 @@ bool has_newline(char *in) {
 }
 // Copy src until delimiter char is hit
 char *strcpy_until(char *src, char delimiter) {
-  int offs = 0;
+  size_t offs = 0;
   while (offs < strlen(src)) {
     if (src[offs] == delimiter) {
       break;
