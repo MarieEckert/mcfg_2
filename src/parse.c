@@ -30,12 +30,12 @@
   } while (0)
 
 #define TOKEN_CHECKED_SET(cnode, str, val, tk)                                 \
+  if (strncmp(str, val, sizeof(val) - 1) == 0) {                               \
+    _set_node(&cnode, tk, NULL);                                               \
+    ix += sizeof(val) - 2;                                                     \
+    break;                                                                     \
+  }                                                                            \
   do {                                                                         \
-    if (strncmp(str, val, sizeof(val) - 1) == 0) {                             \
-      _set_node(&cnode, tk, NULL);                                             \
-      ix += sizeof(val) - 1;                                                   \
-      continue;                                                                \
-    }                                                                          \
   } while (0)
 
 mcfg_err_t _set_node(syntax_tree_t **node, token_t token, char *value) {
@@ -130,24 +130,49 @@ mcfg_err_t lex_input(char *input, syntax_tree_t *tree) {
       TOKEN_CHECKED_SET(current_node, input_offs, "i8", TK_I8);
       TOKEN_CHECKED_SET(current_node, input_offs, "i16", TK_I16);
       TOKEN_CHECKED_SET(current_node, input_offs, "i32", TK_I32);
-      break;
+      goto _default_case;
     case 'u': /* possibly an unsigned integer */
       TOKEN_CHECKED_SET(current_node, input_offs, "u8", TK_U8);
       TOKEN_CHECKED_SET(current_node, input_offs, "u16", TK_U16);
       TOKEN_CHECKED_SET(current_node, input_offs, "u32", TK_U32);
-      break;
+      goto _default_case;
     case 'l': /* possibly a list */
       TOKEN_CHECKED_SET(current_node, input_offs, "list", TK_LIST);
-      break;
+      goto _default_case;
     case 's': /* possibly a string, section or sector */
       TOKEN_CHECKED_SET(current_node, input_offs, "str", TK_STR);
       TOKEN_CHECKED_SET(current_node, input_offs, "sector", TK_SECTOR);
       TOKEN_CHECKED_SET(current_node, input_offs, "section", TK_SECTION);
-      break;
+      goto _default_case;
     case 'e': /* possibly an end */
       TOKEN_CHECKED_SET(current_node, input_offs, "end", TK_END);
-      break;
+      goto _default_case;
+    _default_case:
     default:
+      /* ignore any whitespace outside of a string */
+      if (isspace(cur_char)) {
+        break;
+      }
+
+      /* Search where the current word ends */
+      size_t search_ix = ix + 1;
+
+      while (input[search_ix] != '\0' && !isspace(input[search_ix])) {
+        search_ix++;
+      }
+
+      /* Copy the word into a new buffer */
+      const size_t value_size = search_ix - ix + 1;
+      char *value = XMALLOC(value_size);
+      strncpy(value, input + ix, value_size - 1);
+      value[value_size - 1] = '\0';
+
+      fprintf(stderr, "value = %s\n", value);
+
+      /* finish up */
+      _set_node(&current_node, TK_UNKNOWN, value);
+      ix += value_size;
+
       break; /* something else */
     }
 
