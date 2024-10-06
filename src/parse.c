@@ -31,7 +31,7 @@
 
 #define TOKEN_CHECKED_SET(cnode, str, val, tk)                                 \
   if (strncmp(str, val, sizeof(val) - 1) == 0) {                               \
-    _set_node(&cnode, tk, NULL);                                               \
+    ERR_CHECK_RET(_set_node(&cnode, tk, NULL));                                \
     ix += sizeof(val) - 2;                                                     \
     break;                                                                     \
   }                                                                            \
