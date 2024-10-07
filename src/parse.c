@@ -55,36 +55,31 @@ mcfg_err_t _set_node(syntax_tree_t **node, token_t token, char *value) {
   return MCFG_OK;
 }
 
-void _extract_string(void) {
-  /* TODO */
-  /*
-    char *next_quote_ptr = strchrnul(input_offs, '\'');
+mcfg_err_t _extract_string(syntax_tree_t **node, char *input, size_t *ix) {
+  const char *input_offs = input + *ix + 1; /* add one to avoid opening quote */
+  char *quote_ptr = strchrnul(input_offs, '\'');
 
-    /* find real closing quote (ignore instances of '') */
-  /*
-    while (next_quote_ptr[0] != '\0' &&
-            (next_quote_ptr[0] == '\'' && next_quote_ptr[1] == '\'')) {
-      next_quote_ptr = strchrnul(next_quote_ptr + 1, '\'');
-      fprintf(stderr, "still searching, %c\n", next_quote_ptr[0]);
+  while (quote_ptr[0] != '\0' &&
+         (quote_ptr[0] == '\'' && quote_ptr[1] == '\'')) {
+    size_t offset = 1;
+    if (quote_ptr[1] == '\'') {
+      offset++;
     }
 
-    /* if never closed, set the remaining input as a string */
-  /*
-    if (*next_quote_ptr == '\0') {
-      fprintf(stderr, "nullptr!\n");
-      _set_node(&current_node, TK_STRING, strdup(input_offs + 1));
-      ix += next_quote_ptr - input;
-      break;
-    }
+    quote_ptr = strchrnul(quote_ptr + offset, '\'');
+  }
 
-    size_t value_size = next_quote_ptr - (input_offs + 1);
-    char *value = XMALLOC(value_size);
-    strncpy(value, input_offs + 1, value_size);
+  const size_t value_size = quote_ptr - input_offs + 1;
+  char *value = XMALLOC(value_size);
+  strncpy(value, input_offs, value_size - 1);
+  value[value_size - 1] = '\0';
 
-    _set_node(&current_node, TK_STRING, value);
+  fprintf(stderr, "value_size = %zu\n", value_size);
+  ERR_CHECK_RET(_set_node(node, TK_STRING, value));
 
-    ix += next_quote_ptr - input + 1;
-  */
+  *ix += value_size + 1;
+
+  return MCFG_OK;
 }
 
 /* NOTE: This lexing structure does not really produce a tree, it is more like
@@ -123,26 +118,26 @@ mcfg_err_t lex_input(char *input, syntax_tree_t *tree) {
     case '\'': /* possibly a string open/close quote */
       _set_node(&current_node, TK_QUOTE, NULL);
 
-      _extract_string(); /* TODO */
+      ERR_CHECK_RET(_extract_string(&current_node, input, &ix)); /* TODO */
 
       break;
     case 'i': /* possibly a signed integer */
-      TOKEN_CHECKED_SET(current_node, input_offs, "i8", TK_I8);
-      TOKEN_CHECKED_SET(current_node, input_offs, "i16", TK_I16);
-      TOKEN_CHECKED_SET(current_node, input_offs, "i32", TK_I32);
+      TOKEN_CHECKED_SET(current_node, input_offs, "i8 ", TK_I8);
+      TOKEN_CHECKED_SET(current_node, input_offs, "i16 ", TK_I16);
+      TOKEN_CHECKED_SET(current_node, input_offs, "i32 ", TK_I32);
       goto _default_case;
     case 'u': /* possibly an unsigned integer */
-      TOKEN_CHECKED_SET(current_node, input_offs, "u8", TK_U8);
-      TOKEN_CHECKED_SET(current_node, input_offs, "u16", TK_U16);
-      TOKEN_CHECKED_SET(current_node, input_offs, "u32", TK_U32);
+      TOKEN_CHECKED_SET(current_node, input_offs, "u8 ", TK_U8);
+      TOKEN_CHECKED_SET(current_node, input_offs, "u16 ", TK_U16);
+      TOKEN_CHECKED_SET(current_node, input_offs, "u32 ", TK_U32);
       goto _default_case;
     case 'l': /* possibly a list */
-      TOKEN_CHECKED_SET(current_node, input_offs, "list", TK_LIST);
+      TOKEN_CHECKED_SET(current_node, input_offs, "list ", TK_LIST);
       goto _default_case;
     case 's': /* possibly a string, section or sector */
-      TOKEN_CHECKED_SET(current_node, input_offs, "str", TK_STR);
-      TOKEN_CHECKED_SET(current_node, input_offs, "sector", TK_SECTOR);
-      TOKEN_CHECKED_SET(current_node, input_offs, "section", TK_SECTION);
+      TOKEN_CHECKED_SET(current_node, input_offs, "str ", TK_STR);
+      TOKEN_CHECKED_SET(current_node, input_offs, "sector ", TK_SECTOR);
+      TOKEN_CHECKED_SET(current_node, input_offs, "section ", TK_SECTION);
       goto _default_case;
     case 'e': /* possibly an end */
       TOKEN_CHECKED_SET(current_node, input_offs, "end", TK_END);
@@ -167,11 +162,11 @@ mcfg_err_t lex_input(char *input, syntax_tree_t *tree) {
       strncpy(value, input + ix, value_size - 1);
       value[value_size - 1] = '\0';
 
-      fprintf(stderr, "value = %s\n", value);
-
       /* finish up */
       _set_node(&current_node, TK_UNKNOWN, value);
-      ix += value_size;
+
+      /* subtract one from value_size because of null terminator */
+      ix += value_size - 1;
 
       break; /* something else */
     }
