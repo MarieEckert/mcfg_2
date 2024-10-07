@@ -178,6 +178,37 @@ mcfg_err_t _extract_string(syntax_tree_t **node, char *input, size_t *ix) {
   return MCFG_OK;
 }
 
+/**
+ * @brief extract a word from the input and set is as the current node.
+ * @param node Pointer to the current node-pointer
+ * @param input Pointer to the actual first character of the input
+ * @param ix Pointer to the used index to be updated once done
+ * @parma tk The token enum value to be set for the current node
+ * @return MCFG_OK on success
+ */
+mcfg_err_t _extract_word(syntax_tree_t **node, char *input, size_t *ix,
+                         token_t tk) {
+  /* Search where the current word ends */
+  size_t search_ix = *ix + 1;
+
+  while (input[search_ix] != '\0' && !isspace(input[search_ix])) {
+    search_ix++;
+  }
+
+  /* Copy the word into a new buffer */
+  const size_t value_size = search_ix - *ix + 1;
+  char *value = XMALLOC(value_size);
+  strncpy(value, input + *ix, value_size - 1);
+  value[value_size - 1] = '\0';
+
+  /* finish up */
+  ERR_CHECK_RET(_set_node(node, tk, value));
+
+  /* subtract one from value_size because of null terminator */
+  *ix += value_size - 1;
+  return MCFG_OK;
+}
+
 /* NOTE: This lexing structure does not really produce a tree, it is more like
  *       a linked list of tokens encountered within the input.
  */
@@ -244,6 +275,13 @@ mcfg_err_t lex_input(char *input, syntax_tree_t *tree) {
     case 'f': /* maybe a false literal */
       LITERAL_TOKEN_CHECKED_SET(current_node, input_offs, "false", TK_NUMBER);
       goto _default_case;
+    case '-': /* maybe a negative number literal */
+      if (!isdigit(input[ix + 1])) {
+        goto _default_case;
+      }
+
+      ERR_CHECK_RET(_extract_word(&current_node, input, &ix, TK_NUMBER));
+      break;
     _default_case:
     default:
       /* ignore any whitespace outside of a string */
@@ -251,25 +289,12 @@ mcfg_err_t lex_input(char *input, syntax_tree_t *tree) {
         break;
       }
 
-      /* Search where the current word ends */
-      size_t search_ix = ix + 1;
-
-      while (input[search_ix] != '\0' && !isspace(input[search_ix])) {
-        search_ix++;
+      if (isdigit(cur_char)) {
+        ERR_CHECK_RET(_extract_word(&current_node, input, &ix, TK_NUMBER));
+        break;
       }
 
-      /* Copy the word into a new buffer */
-      const size_t value_size = search_ix - ix + 1;
-      char *value = XMALLOC(value_size);
-      strncpy(value, input + ix, value_size - 1);
-      value[value_size - 1] = '\0';
-
-      /* finish up */
-      _set_node(&current_node, TK_UNKNOWN, value);
-
-      /* subtract one from value_size because of null terminator */
-      ix += value_size - 1;
-
+      ERR_CHECK_RET(_extract_word(&current_node, input, &ix, TK_UNKNOWN));
       break; /* something else */
     }
 
