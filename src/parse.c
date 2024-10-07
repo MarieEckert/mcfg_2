@@ -38,6 +38,15 @@
   do {                                                                         \
   } while (0)
 
+/**
+ * @brief Set the token and the value of the current node and append a new one
+ * onto it. This will cause the passed current node-pointer to be updated.
+ * @param node A pointer to the current node-pointer.
+ * @param token The token enum value to be set.
+ * @param value The string value to be set, can be NULL. Ownership should be
+ * considered to be transfered to the current node.
+ * @return MCFG_OK on success.
+ */
 mcfg_err_t _set_node(syntax_tree_t **node, token_t token, char *value) {
   (*node)->token = token;
   (*node)->value = value;
@@ -55,13 +64,35 @@ mcfg_err_t _set_node(syntax_tree_t **node, token_t token, char *value) {
   return MCFG_OK;
 }
 
+/**
+ * @brief extract a string from the input and set is as the current node.
+ * @param node Pointer to the current node-pointer
+ * @param input Pointer to the actual first character of the input
+ * @param ix Pointer to the used index to be updated once done
+ * @return MCFG_OK on success
+ */
 mcfg_err_t _extract_string(syntax_tree_t **node, char *input, size_t *ix) {
+  /* This function has two specific edge cases to handle when searching for the
+   * closing quote:
+   *    1. The quote may never be closed. In this case everything up to the NULL
+   *       byte of the input should be included in the string.
+   *    2. Any quote which is encountered may serve to "escape" a following
+   *       quote. So if "''" is encountered, it does not close the string.
+   *
+   * NOTE(1):
+   * Adding on to 2.: In case a "''" is encountered, one of the quotes must
+   * eventually be removed from the input as this mechanism serves the same
+   * functionality as double-quoting in pascal: Being able to insert a
+   * single-quote within the single-quoted strings of this format.
+   */
   const char *input_offs = input + *ix + 1; /* add one to avoid opening quote */
   char *quote_ptr = strchrnul(input_offs, '\'');
 
   while (quote_ptr[0] != '\0' &&
          (quote_ptr[0] == '\'' && quote_ptr[1] == '\'')) {
     size_t offset = 1;
+
+    /* increase offset to avoid the "escaped" quote if there was one */
     if (quote_ptr[1] == '\'') {
       offset++;
     }
@@ -69,12 +100,14 @@ mcfg_err_t _extract_string(syntax_tree_t **node, char *input, size_t *ix) {
     quote_ptr = strchrnul(quote_ptr + offset, '\'');
   }
 
+  /* TODO: do required extra steps as specified in NOTE(1) (or should this be
+   * moved to the parsing step?)
+   */
   const size_t value_size = quote_ptr - input_offs + 1;
   char *value = XMALLOC(value_size);
   strncpy(value, input_offs, value_size - 1);
   value[value_size - 1] = '\0';
 
-  fprintf(stderr, "value_size = %zu\n", value_size);
   ERR_CHECK_RET(_set_node(node, TK_STRING, value));
 
   *ix += value_size + 1;
