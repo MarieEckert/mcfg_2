@@ -12,6 +12,47 @@
 #include <stdlib.h>
 #include <string.h>
 
+char *mcfg_token_str(token_t tk) {
+  switch (tk) {
+  case TK_UNASSIGNED_TOKEN:
+    return "TK_UNASSIGNED_TOKEN";
+  case TK_SECTOR:
+    return "TK_SECTOR";
+  case TK_SECTION:
+    return "TK_SECTION";
+  case TK_END:
+    return "TK_END";
+  case TK_QUOTE:
+    return "TK_QUOTE";
+  case TK_COMMA:
+    return "TK_COMMA";
+  case TK_UNKNOWN:
+    return "TK_UNKNOWN";
+  case TK_STR:
+    return "TK_STR";
+  case TK_LIST:
+    return "TK_LIST";
+  case TK_BOOL:
+    return "TK_BOOL";
+  case TK_I8:
+    return "TK_I8";
+  case TK_U8:
+    return "TK_U8";
+  case TK_I16:
+    return "TK_I16";
+  case TK_U16:
+    return "TK_U16";
+  case TK_I32:
+    return "TK_I32";
+  case TK_U32:
+    return "TK_U32";
+  case TK_NUMBER:
+    return "TK_NUMBER";
+  case TK_STRING:
+    return "TK_STRING";
+  }
+}
+
 #define XMALLOC(s)                                                             \
   ({                                                                           \
     void *ret;                                                                 \
@@ -119,6 +160,7 @@ mcfg_err_t _extract_string(syntax_tree_t **node, char *input, size_t *ix) {
   value[value_size - 1] = '\0';
 
   ERR_CHECK_RET(_set_node(node, TK_STRING, value));
+  ERR_CHECK_RET(_set_node(node, TK_QUOTE, NULL));
 
   *ix += value_size + 1;
 
