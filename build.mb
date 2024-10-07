@@ -55,6 +55,7 @@ sector c_rules
     str output_format '$(/config/files/obj)$(%element%).o'
 
     str exec '#!/bin/bash
+    set -e
 
     COMMAND="$(/config/mariebuild/cc) $(/config/mariebuild/cflags) -c -o $(%output%) $(%input%)"
     printf "  \$COMMAND\\n"
@@ -91,6 +92,7 @@ sector c_rules
     str output_format '$(/config/files/obj)$(%element%).o'
 
     str exec '#!/bin/bash
+    set -e
 
     COMMAND="$(/config/mariebuild/cc) $(/config/mariebuild/cflags) -c -o $(%output%) $(%input%)"
     printf "  \$COMMAND\\n"
@@ -107,6 +109,7 @@ sector c_rules
     str output_format '$(/config/files/testfile)'
 
     str exec '#!/bin/bash
+    set -e
 
     COMMAND="$(/config/mariebuild/cc) $(/config/mariebuild/cflags) -o $(%output%) $(%input%) $(/config/mariebuild/ldflags)"
     printf "  \$COMMAND\\n"
