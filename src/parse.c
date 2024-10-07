@@ -29,6 +29,15 @@
     }                                                                          \
   } while (0)
 
+/**
+ * @brief Set the current nodes token & value and append a new one if the given
+ * string matches the first sizeof(str) - 1 characters of str and
+ * str[sizeof(str) - 1] is either whitespace or NULL.
+ * @param cnode Pointer to the current-node pointer
+ * @param str The string to check in
+ * @param val The value to check for
+ * @param tk The token enum value to set on match
+ */
 #define TOKEN_CHECKED_SET(cnode, str, val, tk)                                 \
   if (strncmp(str, val, sizeof(val) - 1) == 0 &&                               \
       (isspace(str[sizeof(val) - 1]) || str[sizeof(val) - 1] == '\0')) {       \
