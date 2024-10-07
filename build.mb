@@ -11,6 +11,7 @@ sector config
   end
 
   section mariebuild
+    u8 default_log_level 2
     str build_type 'incremental'
 
     str cc 'clang'
@@ -44,7 +45,12 @@ sector c_rules
     str input_format '$(/config/files/src)$(%element%).c'
     str output_format '$(/config/files/obj)$(%element%).o'
 
-    str exec '$(/config/mariebuild/cc) $(/config/mariebuild/cflags) -c -o $(%output%) $(%input%)'
+    str exec '#!/bin/bash
+
+    COMMAND="$(/config/mariebuild/cc) $(/config/mariebuild/cflags) -c -o $(%output%) $(%input%)"
+    printf "  \$COMMAND\\n"
+    $COMMAND
+    '
   end
 
   section linklib
@@ -55,17 +61,32 @@ sector c_rules
     str input_format '$(/config/files/obj)$(%element%).o'
     str output_format '$(/config/files/libfile)'
 
-    str exec 'ar -rc $(/config/files/libfile) $(%input%) && ranlib $(/config/files/libfile)'
+    str exec '#!/bin/bash
+    set -e
+
+    COMMAND="ar -rc $(/config/files/libfile) $(%input%)"
+    printf "  \$COMMAND\\n"
+    $COMMAND
+
+    COMMAND="ranlib $(/config/files/libfile)"
+    printf "  \$COMMAND\\n"
+    $COMMAND
+    '
   end
 
   section mcfg_test
     str exec_mode 'singular'
-    
+
     list str input 'main'
     str input_format '$(/config/files/src)$(%element%).c'
     str output_format '$(/config/files/obj)$(%element%).o'
-    
-    str exec '$(/config/mariebuild/cc) $(/config/mariebuild/cflags) -c -o $(%output%) $(%input%)'
+
+    str exec '#!/bin/bash
+
+    COMMAND="$(/config/mariebuild/cc) $(/config/mariebuild/cflags) -c -o $(%output%) $(%input%)"
+    printf "  \$COMMAND\\n"
+    $COMMAND
+    '
   end
 
   section link_test
@@ -76,5 +97,10 @@ sector c_rules
     str input_format '$(/config/files/obj)$(%element%).o'
     str output_format '$(/config/files/testfile)'
 
-    str exec '$(/config/mariebuild/cc) $(/config/mariebuild/cflags) -o $(%output%) $(%input%) $(/config/mariebuild/ldflags)'
+    str exec '#!/bin/bash
+
+    COMMAND="$(/config/mariebuild/cc) $(/config/mariebuild/cflags) -o $(%output%) $(%input%) $(/config/mariebuild/ldflags)"
+    printf "  \$COMMAND\\n"
+    $COMMAND
+    '
 end
