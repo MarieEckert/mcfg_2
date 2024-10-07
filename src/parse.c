@@ -5,6 +5,8 @@
  * Licensend under the BSD 3-Clause License.
  */
 
+#define _GNU_SOURCE
+
 #include "parse.h"
 
 #include <ctype.h>

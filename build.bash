@@ -7,7 +7,7 @@ OBJDIR="obj/"
 LIB_BASENAME="mcfg_2"
 LIBNAME="lib$LIB_BASENAME.a"
 
-CFLAGS="-ggdb -Iinclude/ -Isrc/"
+CFLAGS="-std=gnu17 -gdwarf-4 -Wextra -Wall -Iinclude/ -Isrc/"
 LDFLAGS="-lm -L. -l$LIB_BASENAME"
 
 TEST_BIN="mcfg_test"
