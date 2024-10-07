@@ -89,6 +89,12 @@ char *mcfg_token_str(token_t tk) {
   do {                                                                         \
   } while (0)
 
+/**
+ * @brief Essentially does the same as TOKEN_CHECKED_SET but also allows for the
+ * value in the string to be followed by a comma. This will also set the value
+ * field of the current node to be a copy of val.
+ * @see TOKEN_CHECKED_SET
+ */
 #define LITERAL_TOKEN_CHECKED_SET(cnode, str, val, tk)                         \
   if (strncmp(str, val, sizeof(val) - 1) == 0 &&                               \
       (isspace(str[sizeof(val) - 1]) || str[sizeof(val) - 1] == '\0' ||        \
