@@ -30,7 +30,8 @@
   } while (0)
 
 #define TOKEN_CHECKED_SET(cnode, str, val, tk)                                 \
-  if (strncmp(str, val, sizeof(val) - 1) == 0) {                               \
+  if (strncmp(str, val, sizeof(val) - 1) == 0 &&                               \
+      (isspace(str[sizeof(val) - 1]) || str[sizeof(val) - 1] == '\0')) {       \
     ERR_CHECK_RET(_set_node(&cnode, tk, NULL));                                \
     ix += sizeof(val) - 2;                                                     \
     break;                                                                     \
@@ -155,22 +156,22 @@ mcfg_err_t lex_input(char *input, syntax_tree_t *tree) {
 
       break;
     case 'i': /* possibly a signed integer */
-      TOKEN_CHECKED_SET(current_node, input_offs, "i8 ", TK_I8);
-      TOKEN_CHECKED_SET(current_node, input_offs, "i16 ", TK_I16);
-      TOKEN_CHECKED_SET(current_node, input_offs, "i32 ", TK_I32);
+      TOKEN_CHECKED_SET(current_node, input_offs, "i8", TK_I8);
+      TOKEN_CHECKED_SET(current_node, input_offs, "i16", TK_I16);
+      TOKEN_CHECKED_SET(current_node, input_offs, "i32", TK_I32);
       goto _default_case;
     case 'u': /* possibly an unsigned integer */
-      TOKEN_CHECKED_SET(current_node, input_offs, "u8 ", TK_U8);
-      TOKEN_CHECKED_SET(current_node, input_offs, "u16 ", TK_U16);
-      TOKEN_CHECKED_SET(current_node, input_offs, "u32 ", TK_U32);
+      TOKEN_CHECKED_SET(current_node, input_offs, "u8", TK_U8);
+      TOKEN_CHECKED_SET(current_node, input_offs, "u16", TK_U16);
+      TOKEN_CHECKED_SET(current_node, input_offs, "u32", TK_U32);
       goto _default_case;
     case 'l': /* possibly a list */
-      TOKEN_CHECKED_SET(current_node, input_offs, "list ", TK_LIST);
+      TOKEN_CHECKED_SET(current_node, input_offs, "list", TK_LIST);
       goto _default_case;
     case 's': /* possibly a string, section or sector */
-      TOKEN_CHECKED_SET(current_node, input_offs, "str ", TK_STR);
-      TOKEN_CHECKED_SET(current_node, input_offs, "sector ", TK_SECTOR);
-      TOKEN_CHECKED_SET(current_node, input_offs, "section ", TK_SECTION);
+      TOKEN_CHECKED_SET(current_node, input_offs, "str", TK_STR);
+      TOKEN_CHECKED_SET(current_node, input_offs, "sector", TK_SECTOR);
+      TOKEN_CHECKED_SET(current_node, input_offs, "section", TK_SECTION);
       goto _default_case;
     case 'e': /* possibly an end */
       TOKEN_CHECKED_SET(current_node, input_offs, "end", TK_END);
