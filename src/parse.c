@@ -89,6 +89,17 @@ char *mcfg_token_str(token_t tk) {
   do {                                                                         \
   } while (0)
 
+#define LITERAL_TOKEN_CHECKED_SET(cnode, str, val, tk)                         \
+  if (strncmp(str, val, sizeof(val) - 1) == 0 &&                               \
+      (isspace(str[sizeof(val) - 1]) || str[sizeof(val) - 1] == '\0' ||        \
+       str[sizeof(val) - 1] == ',')) {                                         \
+    ERR_CHECK_RET(_set_node(&cnode, tk, strdup(val)));                         \
+    ix += sizeof(val) - 2;                                                     \
+    break;                                                                     \
+  }                                                                            \
+  do {                                                                         \
+  } while (0)
+
 /**
  * @brief Set the token and the value of the current node and append a new one
  * onto it. This will cause the passed current node-pointer to be updated.
@@ -226,6 +237,12 @@ mcfg_err_t lex_input(char *input, syntax_tree_t *tree) {
       goto _default_case;
     case 'e': /* possibly an end */
       TOKEN_CHECKED_SET(current_node, input_offs, "end", TK_END);
+      goto _default_case;
+    case 't': /* maybe a true literal */
+      LITERAL_TOKEN_CHECKED_SET(current_node, input_offs, "true", TK_NUMBER);
+      goto _default_case;
+    case 'f': /* maybe a false literal */
+      LITERAL_TOKEN_CHECKED_SET(current_node, input_offs, "false", TK_NUMBER);
       goto _default_case;
     _default_case:
     default:
