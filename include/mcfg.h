@@ -118,6 +118,7 @@ typedef struct mcfg_file {
   mcfg_field_t *dynfields;
 } mcfg_file_t;
 
+/** @todo slated for removal in topic/new_parser */
 typedef struct mcfg_parser_ctxt {
   mcfg_file_t *target_file;
   mcfg_sector_t *target_sector;
@@ -128,6 +129,7 @@ typedef struct mcfg_parser_ctxt {
   char *file_path;
 } mcfg_parser_ctxt_t;
 
+/** @todo slated for removal in topic/new_parser */
 typedef struct mcfg_data_parse_result {
   mcfg_err_t error;
 
@@ -138,6 +140,7 @@ typedef struct mcfg_data_parse_result {
   size_t size;
 } mcfg_data_parse_result_t;
 
+/** @todo slated for removal in topic/new_parser */
 typedef enum mcfg_token {
   TOKEN_INVALID = -1,
   TOKEN_SECTOR,
@@ -186,6 +189,7 @@ mcfg_field_type_t mcfg_str_to_type(char *strtype);
  * @brief Gets the count of tokens in the input string
  * @param in The string for which to count the tokens
  * @return The amount of tokens found in the string, space-seperated.
+ * @todo slated for removal in topic/new_parser
  */
 size_t mcfg_get_token_count(char *in);
 
@@ -196,6 +200,7 @@ size_t mcfg_get_token_count(char *in);
  * @return The token at index. If the string is emtpy or the index invalid an
  * empty string is returned. Every return value is allocated on the heap so it
  * has to be freed.
+* @todo slated for removal in topic/new_parser
  */
 char *mcfg_get_token_raw(char *in, uint16_t index);
 
@@ -206,6 +211,7 @@ char *mcfg_get_token_raw(char *in, uint16_t index);
  * @return The mcfg_token enum value for the token at index. Returns
  * TOKEN_INVALID if index is invalid, input string is empty/NULL or no valid
  * token could be found at index.
+* @todo slated for removal in topic/new_parser
  */
 mcfg_token_t mcfg_get_token(char *in, uint16_t index);
 
@@ -214,6 +220,7 @@ mcfg_token_t mcfg_get_token(char *in, uint16_t index);
  * @param type The type of the field
  * @param str The entire line of the field declaration.
  * @return see declaration of struct mcfg_data_parse_result
+ * @todo slated for removal in topic/new_parser
  */
 mcfg_data_parse_result_t mcfg_parse_field_data(mcfg_field_type_t type,
                                                char *str);
@@ -224,6 +231,7 @@ mcfg_data_parse_result_t mcfg_parse_field_data(mcfg_field_type_t type,
  * @param ctxt The parser context in which the line is to be parsed
  * @return MCFG_OK if no errors occured, for other return values see the
  * declaration of mcfg_err_t.
+ * @todo slated for removal in topic/new_parser
  */
 mcfg_err_t mcfg_parse_line(char *line, mcfg_parser_ctxt_t *ctxt);
 
@@ -234,6 +242,7 @@ mcfg_err_t mcfg_parse_line(char *line, mcfg_parser_ctxt_t *ctxt);
  * @param ctxt_out Location for the parser context to be put. Can be NULL
  * @return MCFG_OK if no errors occured, for other return values see the
  * declaration of mcfg_err_t.
+ * @todo slated for removal in topic/new_parser
  */
 mcfg_err_t mcfg_parse_file_ctxto(char *path, mcfg_file_t *file,
                                  mcfg_parser_ctxt_t **ctxt_out);
@@ -244,6 +253,7 @@ mcfg_err_t mcfg_parse_file_ctxto(char *path, mcfg_file_t *file,
  * @param file The mcfg_file struct into which the file should be parsed
  * @return MCFG_OK if no errors occured, for other return values see the
  * declaration of mcfg_err_t.
+ * @todo slated for removal in topic/new_parser
  */
 mcfg_err_t mcfg_parse_file(char *path, mcfg_file_t *file);
 

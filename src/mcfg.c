@@ -45,6 +45,7 @@
       return (mcfg_data_parse_result_t){.error = e};                           \
   })
 
+/** @todo slated for removal in topic/new_parser */
 bool _integer_bounds_check(int64_t _int, mcfg_field_type_t type) {
   if (mcfg_sizeof(type) <= 0) {
     return false;
@@ -70,6 +71,7 @@ bool _integer_bounds_check(int64_t _int, mcfg_field_type_t type) {
   }
 }
 
+/** @deprecated in 1.0.0 */
 mcfg_boolean_t _strtobool(char *in) {
   if (is_string_empty(in)) {
     return BOOL_FALSE;
@@ -173,11 +175,13 @@ mcfg_get_token_exit:
   return ret;
 }
 
+/** @todo slated for removal in topic/new_parser */
 struct _mcfg_token_id {
   char *name;
   mcfg_token_t value;
 };
 
+/** @todo slated for removal in topic/new_parser */
 const struct _mcfg_token_id TOKEN_IDS[] = {
     {.name = "sector", .value = TOKEN_SECTOR},
     {.name = "section", .value = TOKEN_SECTION},
@@ -194,9 +198,11 @@ const struct _mcfg_token_id TOKEN_IDS[] = {
     {.name = "i32", .value = TOKEN_I32},
     {.name = "u32", .value = TOKEN_U32},
 };
+/** @todo slated for removal in topic/new_parser */
 const size_t EXISTING_TOKEN_COUNT =
     sizeof(TOKEN_IDS) / sizeof(struct _mcfg_token_id);
 
+/** @todo slated for removal in topic/new_parser */
 size_t _token_position(char *in, uint16_t index) {
   size_t pos = 0;
 
@@ -222,6 +228,7 @@ size_t _token_position(char *in, uint16_t index) {
   return pos;
 }
 
+/** @todo slated for removal in topic/new_parser */
 size_t mcfg_get_token_count(char *in) {
   if (is_string_empty(in)) {
     return 0;
@@ -241,6 +248,7 @@ size_t mcfg_get_token_count(char *in) {
   return count;
 }
 
+/** @todo slated for removal in topic/new_parser */
 char *mcfg_get_token_raw(char *in, uint16_t index) {
   if (is_string_empty(in)) {
     return strdup("");
@@ -270,6 +278,7 @@ char *mcfg_get_token_raw(char *in, uint16_t index) {
   return aret;
 }
 
+/** @todo slated for removal in topic/new_parser */
 mcfg_token_t mcfg_get_token(char *in, uint16_t index) {
   mcfg_token_t tok = TOKEN_INVALID;
   in = mcfg_get_token_raw(in, index);
@@ -293,6 +302,7 @@ mcfg_get_token_exit:
   return tok;
 }
 
+/** @todo slated for removal in topic/new_parser */
 mcfg_data_parse_result_t _parse_string_field(char *str) {
   mcfg_data_parse_result_t ret = {
       .error = MCFG_OK,
@@ -346,6 +356,7 @@ mcfg_data_parse_result_t _parse_string_field(char *str) {
   return ret;
 }
 
+/** @todo slated for removal in topic/new_parser */
 mcfg_data_parse_result_t _parse_number_type_field(mcfg_field_type_t type,
                                                   char *str) {
   mcfg_data_parse_result_t ret = {
@@ -381,6 +392,7 @@ _parse_number_type_field_ret:
   return ret;
 }
 
+/** @todo slated for removal in topic/new_parser */
 mcfg_data_parse_result_t _parse_str_list_data(mcfg_list_t *list, char *str) {
   mcfg_data_parse_result_t ret = {
       .error = MCFG_OK, .multiline = false, .data = NULL, .size = 0};
@@ -416,6 +428,7 @@ mcfg_data_parse_result_t _parse_str_list_data(mcfg_list_t *list, char *str) {
   return ret;
 }
 
+/** @todo slated for removal in topic/new_parser */
 mcfg_data_parse_result_t _parse_list_data(mcfg_list_t *list, char *str) {
   mcfg_data_parse_result_t ret = {
       .error = MCFG_OK, .multiline = false, .data = NULL, .size = 0};
@@ -491,6 +504,7 @@ mcfg_data_parse_result_t _parse_list_data(mcfg_list_t *list, char *str) {
   return ret;
 }
 
+/** @todo slated for removal in topic/new_parser */
 mcfg_data_parse_result_t _parse_list_field(char *str) {
   mcfg_data_parse_result_t ret = {
       .error = MCFG_OK, .multiline = false, .data = NULL, .size = 0};
@@ -522,6 +536,7 @@ mcfg_data_parse_result_t _parse_list_field(char *str) {
   return ret;
 }
 
+/** @todo slated for removal in topic/new_parser */
 mcfg_data_parse_result_t mcfg_parse_field_data(mcfg_field_type_t type,
                                                char *str) {
   mcfg_data_parse_result_t ret = {
@@ -557,6 +572,7 @@ mcfg_data_parse_result_t mcfg_parse_field_data(mcfg_field_type_t type,
   return ret;
 }
 
+/** @todo slated for removal in topic/new_parser */
 mcfg_err_t _parse_outside_sector(char *line, mcfg_parser_ctxt_t *ctxt) {
   mcfg_token_t tok = mcfg_get_token(line, 0);
 
@@ -590,6 +606,7 @@ mcfg_err_t _parse_outside_sector(char *line, mcfg_parser_ctxt_t *ctxt) {
   return MCFG_OK;
 }
 
+/** @todo slated for removal in topic/new_parser */
 mcfg_err_t _parse_sector(char *line, mcfg_parser_ctxt_t *ctxt) {
   mcfg_token_t tok = mcfg_get_token(line, 0);
 
@@ -628,6 +645,7 @@ mcfg_err_t _parse_sector(char *line, mcfg_parser_ctxt_t *ctxt) {
   return MCFG_OK;
 }
 
+/** @todo slated for removal in topic/new_parser */
 mcfg_err_t _parse_section(char *line, mcfg_parser_ctxt_t *ctxt) {
   mcfg_token_t tok = mcfg_get_token(line, 0);
 
@@ -677,6 +695,7 @@ mcfg_err_t _parse_section(char *line, mcfg_parser_ctxt_t *ctxt) {
   return MCFG_OK;
 }
 
+/** @todo slated for removal in topic/new_parser */
 mcfg_err_t _parse_field(char *line, mcfg_parser_ctxt_t *ctxt) {
   if (ctxt->target_field == NULL) {
     return MCFG_INVALID_PARSER_STATE;
@@ -724,6 +743,7 @@ mcfg_err_t _parse_field(char *line, mcfg_parser_ctxt_t *ctxt) {
   return MCFG_OK;
 }
 
+/** @todo slated for removal in topic/new_parser */
 mcfg_err_t mcfg_parse_line(char *line, mcfg_parser_ctxt_t *ctxt) {
   if (ctxt->target_file == NULL) {
     return MCFG_INVALID_PARSER_STATE;
@@ -746,6 +766,7 @@ mcfg_err_t mcfg_parse_line(char *line, mcfg_parser_ctxt_t *ctxt) {
   return MCFG_INVALID_PARSER_STATE;
 }
 
+/** @todo slated for removal in topic/new_parser */
 mcfg_err_t mcfg_parse_file_ctxto(char *path, mcfg_file_t *file,
                                  mcfg_parser_ctxt_t **ctxt_out) {
   FILE *in_file;
@@ -792,6 +813,7 @@ mcfg_err_t mcfg_parse_file_ctxto(char *path, mcfg_file_t *file,
   return result;
 }
 
+/** @todo slated for removal in topic/new_parser */
 mcfg_err_t mcfg_parse_file(char *path, mcfg_file_t *file) {
   return mcfg_parse_file_ctxto(path, file, NULL);
 }
