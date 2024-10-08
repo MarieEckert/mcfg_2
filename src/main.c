@@ -101,6 +101,11 @@ int main(int argc, char **argv) {
 
   syntax_tree_t tree;
   ret = lex_input(doc_tests_embedding_test_mcfg, &tree);
+  if (ret != MCFG_OK) {
+    fprintf(stderr, "mcfg parsing failed: %s (%d)\n", mcfg_err_string(ret),
+            ret);
+    goto cleanup;
+  }
 
   syntax_tree_t *current = &tree;
   while (current != NULL) {

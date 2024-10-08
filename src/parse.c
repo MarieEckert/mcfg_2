@@ -67,8 +67,9 @@ char *mcfg_token_str(token_t tk) {
 
 #define ERR_CHECK_RET(val)                                                     \
   do {                                                                         \
-    if (val != MCFG_OK) {                                                      \
-      return val;                                                              \
+    const mcfg_err_t __err_check_ret_err = val;                                \
+    if (__err_check_ret_err != MCFG_OK) {                                      \
+      return __err_check_ret_err;                                              \
     }                                                                          \
   } while (0)
 
@@ -135,6 +136,74 @@ mcfg_err_t _set_node(syntax_tree_t **node, token_t token, char *value) {
 }
 
 /**
+ * @brief result structure for the return value of _process_mcfg_string
+ * @see _process_mcfg_string
+ */
+typedef struct _process_mcfg_string_res {
+  /** @brief The error/status return value, MCFG_OK on success */
+  mcfg_err_t err;
+
+  /** @brief The resulting processed string, maybe NULL when err != MCFG_OK */
+  char *result;
+} _process_mcfg_string_res_t;
+
+/**
+ * @brief Performs extra processing required for MCFG/2 strings. This includes:
+ *    1. Making all double single-quotes ('') into single single-quotes (')
+ * @param in The string value to process
+ * @return A _process_mcfg_string_res_t struct
+ * @see _process_mcfg_string_res
+ */
+_process_mcfg_string_res_t _process_mcfg_string(char *in) {
+  _process_mcfg_string_res_t result = {
+      .err = MCFG_TODO,
+      .result = NULL,
+  };
+
+  char *dest_buffer = malloc(strlen(in) + 1);
+  if (dest_buffer == NULL) {
+    result.err = MCFG_MALLOC_FAIL;
+    return result;
+  }
+
+  char *next_quote_ptr = strchrnul(in, '\'');
+
+  size_t copy_offset = 0;
+  size_t write_offset = 0;
+
+  /* copy everything up to and including the next single-quote,
+   * then offset the "in" pointer to be 2 characters after the
+   * single-quote to skip the second single-quote
+   */
+  while (next_quote_ptr[0] != '\0') {
+    const size_t copy_amount = next_quote_ptr - in + 1;
+    memcpy(dest_buffer + write_offset, in, copy_amount);
+
+    write_offset += copy_amount;
+    in += copy_amount + 1;
+    next_quote_ptr = strchrnul(in, '\'');
+  }
+
+  memcpy(dest_buffer + write_offset, in + copy_offset, next_quote_ptr - in + 1);
+  write_offset += next_quote_ptr - in + 1;
+
+  /* This is something which is not really necessary but works better
+   * in some rare cases.
+   */
+#ifdef _MCFG_REALLOC_LEXED_STRINGS
+  dest_buffer = realloc(dest_buffer, write_offset);
+  if (dest_buffer == NULL) {
+    result.err = MCFG_MALLOC_FAIL;
+    return result;
+  }
+#endif
+
+  result.err = MCFG_OK;
+  result.result = dest_buffer;
+  return result;
+}
+
+/**
  * @brief extract a string from the input and set is as the current node.
  * @param node Pointer to the current node-pointer
  * @param input Pointer to the actual first character of the input
@@ -170,15 +239,22 @@ mcfg_err_t _extract_string(syntax_tree_t **node, char *input, size_t *ix) {
     quote_ptr = strchrnul(quote_ptr + offset, '\'');
   }
 
-  /* TODO: do required extra steps as specified in NOTE(1) (or should this be
-   * moved to the parsing step?)
-   */
   const size_t value_size = quote_ptr - input_offs + 1;
   char *value = XMALLOC(value_size);
   strncpy(value, input_offs, value_size - 1);
   value[value_size - 1] = '\0';
 
-  ERR_CHECK_RET(_set_node(node, TK_STRING, value));
+  /* do extra processing as specified in NOTE(1) */
+  _process_mcfg_string_res_t processing_result = _process_mcfg_string(value);
+  free(value);
+
+  ERR_CHECK_RET(processing_result.err);
+
+  if (processing_result.result == NULL) {
+    return MCFG_NULLPTR;
+  }
+
+  ERR_CHECK_RET(_set_node(node, TK_STRING, processing_result.result));
   ERR_CHECK_RET(_set_node(node, TK_QUOTE, NULL));
 
   *ix += value_size + 1;
@@ -191,7 +267,7 @@ mcfg_err_t _extract_string(syntax_tree_t **node, char *input, size_t *ix) {
  * @param node Pointer to the current node-pointer
  * @param input Pointer to the actual first character of the input
  * @param ix Pointer to the used index to be updated once done
- * @parma tk The token enum value to be set for the current node
+ * @param tk The token enum value to be set for the current node
  * @return MCFG_OK on success
  */
 mcfg_err_t _extract_word(syntax_tree_t **node, char *input, size_t *ix,
@@ -253,7 +329,7 @@ mcfg_err_t lex_input(char *input, syntax_tree_t *tree) {
     case '\'': /* possibly a string open/close quote */
       _set_node(&current_node, TK_QUOTE, NULL);
 
-      ERR_CHECK_RET(_extract_string(&current_node, input, &ix)); /* TODO */
+      ERR_CHECK_RET(_extract_string(&current_node, input, &ix));
 
       break;
     case 'i': /* possibly a signed integer */
