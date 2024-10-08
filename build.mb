@@ -15,7 +15,7 @@ sector config
     str build_type 'incremental'
 
     str cc 'clang-18'
-    str cflags '-std=gnu17 -gdwarf-4 -Wextra -Wall -Iinclude/ -Isrc/'
+    str cflags '-std=c17 -gdwarf-4 -Wextra -Wall -Iinclude/ -Isrc/'
     str ldflags '-lm -L. -l$(/config/files/libname)'
 
     list str targets 'clean', 'debug', 'release'
@@ -31,6 +31,9 @@ sector targets
       printf "  \$COMMAND\\n"
       $COMMAND
       COMMAND="mkdir $(/config/files/obj)"
+      printf "  \$COMMAND\\n"
+      $COMMAND
+      COMMAND="rm $(/config/files/libfile)"
       printf "  \$COMMAND\\n"
       $COMMAND
     '

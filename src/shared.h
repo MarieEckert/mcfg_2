@@ -11,6 +11,8 @@
 #include <stdbool.h>
 #include <sys/types.h>
 
+char *strchrnul(const char *str, int c);
+
 bool is_string_empty(char *in);
 
 char *remove_newline(char *in);

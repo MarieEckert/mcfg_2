@@ -5,11 +5,20 @@
  * Licensend under the BSD 3-Clause License.
  */
 
+#define _XOPEN_SOURCE 700
+#define _POSIX_C_SOURCE 2
+
 #include "shared.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+char *strchrnul(const char *str, int c) {
+  for(; str[0] != '\0' && str[0] != c; str++);
+
+  return (char*)str;
+}
 
 bool is_string_empty(char *in) {
   if (in == NULL || in[0] == 0) {

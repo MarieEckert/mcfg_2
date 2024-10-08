@@ -10,6 +10,9 @@
  * - Edge-Case Handling (checking for null-pointer, ...)
  */
 
+#define _XOPEN_SOURCE 700
+#define _POSIX_C_SOURCE 2
+
 #include "mcfg.h"
 
 #include "shared.h"
