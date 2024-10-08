@@ -88,6 +88,21 @@ typedef enum token {
 char *mcfg_token_str(token_t tk);
 
 /**
+ * @brief Structure to keep track on which lines a node / token sits.
+ */
+typedef struct linespan {
+  /** @brief The first line on which it resides */
+  size_t starting_line;
+
+  /**
+   * @brief The number of lines it resides. line_count == 1 should be taken to
+   * mean that it only lives on one single line. 0 is the default value but can
+   * also be interpreted to be a 1.
+   */
+  size_t line_count;
+} linespan_t;
+
+/**
  * @brief Struct to represent a lexed MCFG/2 file in a Double-Linked-List
  *        format.
  *
@@ -110,6 +125,9 @@ struct syntax_tree {
 
   /** @brief Optionally a value for this entry in the "tree" */
   char *value;
+
+  /** @brief The span of lines the node in the "tree" takes up */
+  linespan_t linespan;
 
   /** @brief The previous entry in the "tree" */
   syntax_tree_t *prev;

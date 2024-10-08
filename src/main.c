@@ -100,6 +100,10 @@ int main(int argc, char **argv) {
   free(rel.field);
 
   syntax_tree_t tree;
+  tree.prev = NULL;
+  tree.next = NULL;
+  tree.linespan.starting_line = 0;
+  tree.linespan.line_count = 1;
   ret = lex_input(doc_tests_embedding_test_mcfg, &tree);
   if (ret != MCFG_OK) {
     fprintf(stderr, "mcfg parsing failed: %s (%d)\n", mcfg_err_string(ret),
@@ -109,7 +113,9 @@ int main(int argc, char **argv) {
 
   syntax_tree_t *current = &tree;
   while (current != NULL) {
-    printf("TOKEN = %s, VALUE = %s\n", mcfg_token_str(current->token),
+    size_t current_line = current->linespan.starting_line;
+    printf("LINE %zu : TOKEN = %s, VALUE = %s\n", current_line,
+           mcfg_token_str(current->token),
            current->value != NULL ? current->value : "(null)");
 
     current = current->next;

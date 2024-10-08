@@ -85,7 +85,7 @@ char *mcfg_token_str(token_t tk) {
 #define TOKEN_CHECKED_SET(cnode, str, val, tk)                                 \
   if (strncmp(str, val, sizeof(val) - 1) == 0 &&                               \
       (isspace(str[sizeof(val) - 1]) || str[sizeof(val) - 1] == '\0')) {       \
-    ERR_CHECK_RET(_set_node(&cnode, tk, NULL));                                \
+    ERR_CHECK_RET(_set_node(&cnode, tk, NULL, 1));                             \
     ix += sizeof(val) - 2;                                                     \
     break;                                                                     \
   }                                                                            \
@@ -102,7 +102,7 @@ char *mcfg_token_str(token_t tk) {
   if (strncmp(str, val, sizeof(val) - 1) == 0 &&                               \
       (isspace(str[sizeof(val) - 1]) || str[sizeof(val) - 1] == '\0' ||        \
        str[sizeof(val) - 1] == ',')) {                                         \
-    ERR_CHECK_RET(_set_node(&cnode, tk, strdup(val)));                         \
+    ERR_CHECK_RET(_set_node(&cnode, tk, strdup(val), 1));                      \
     ix += sizeof(val) - 2;                                                     \
     break;                                                                     \
   }                                                                            \
@@ -116,17 +116,27 @@ char *mcfg_token_str(token_t tk) {
  * @param token The token enum value to be set.
  * @param value The string value to be set, can be NULL. Ownership should be
  * considered to be transfered to the current node.
+ * @param line_count The count of lines on which the node resides
  * @return MCFG_OK on success.
  */
-mcfg_err_t _set_node(syntax_tree_t **node, token_t token, char *value) {
+mcfg_err_t _set_node(syntax_tree_t **node, token_t token, char *value,
+                     size_t line_count) {
   (*node)->token = token;
   (*node)->value = value;
+  (*node)->linespan.line_count = line_count;
+
+  if ((*node)->linespan.starting_line == 0) {
+    (*node)->linespan.starting_line =
+        (*node)->prev != NULL ? (*node)->prev->linespan.starting_line : 1;
+  }
 
   syntax_tree_t *new_current = XMALLOC(sizeof(syntax_tree_t));
 
   new_current->token = TK_UNASSIGNED_TOKEN;
   new_current->value = NULL;
   new_current->prev = *node;
+  new_current->linespan.starting_line = 0;
+  new_current->linespan.line_count = 1;
 
   (*node)->next = new_current;
 
@@ -145,6 +155,9 @@ typedef struct _process_mcfg_string_res {
 
   /** @brief The resulting processed string, maybe NULL when err != MCFG_OK */
   char *result;
+
+  /** @brief The amount of linefeeds encountered in the input */
+  size_t linefeed_count;
 } _process_mcfg_string_res_t;
 
 /**
@@ -158,6 +171,7 @@ _process_mcfg_string_res_t _process_mcfg_string(char *in) {
   _process_mcfg_string_res_t result = {
       .err = MCFG_TODO,
       .result = NULL,
+      .linefeed_count = 0,
   };
 
   char *dest_buffer = malloc(strlen(in) + 1);
@@ -187,6 +201,16 @@ _process_mcfg_string_res_t _process_mcfg_string(char *in) {
   memcpy(dest_buffer + write_offset, in + copy_offset, next_quote_ptr - in + 1);
   write_offset += next_quote_ptr - in + 1;
 
+  /* count linefeeds in string so that they number of lines for nodes are
+   * correct after a multiline string
+   */
+  char *next_linefeed_ptr = strchr(dest_buffer, '\n');
+  while (next_linefeed_ptr != NULL) {
+    result.linefeed_count++;
+
+    next_linefeed_ptr = strchr(next_linefeed_ptr + 1, '\n');
+  }
+
   /* This is something which is not really necessary but works better
    * in some rare cases.
    */
@@ -208,9 +232,12 @@ _process_mcfg_string_res_t _process_mcfg_string(char *in) {
  * @param node Pointer to the current node-pointer
  * @param input Pointer to the actual first character of the input
  * @param ix Pointer to the used index to be updated once done
+ * @param line_number Pointer to the line number tracker so that in case of
+ * multiline strings, extract string can properly increment it
  * @return MCFG_OK on success
  */
-mcfg_err_t _extract_string(syntax_tree_t **node, char *input, size_t *ix) {
+mcfg_err_t _extract_string(syntax_tree_t **node, char *input, size_t *ix,
+                           size_t *line_number) {
   /* This function has two specific edge cases to handle when searching for the
    * closing quote:
    *    1. The quote may never be closed. In this case everything up to the NULL
@@ -254,10 +281,13 @@ mcfg_err_t _extract_string(syntax_tree_t **node, char *input, size_t *ix) {
     return MCFG_NULLPTR;
   }
 
-  ERR_CHECK_RET(_set_node(node, TK_STRING, processing_result.result));
-  ERR_CHECK_RET(_set_node(node, TK_QUOTE, NULL));
+  *line_number += processing_result.linefeed_count;
 
-  *ix += value_size + 1;
+  ERR_CHECK_RET(_set_node(node, TK_STRING, processing_result.result,
+                          processing_result.linefeed_count));
+  ERR_CHECK_RET(_set_node(node, TK_QUOTE, NULL, 1));
+
+  *ix += value_size;
 
   return MCFG_OK;
 }
@@ -286,10 +316,10 @@ mcfg_err_t _extract_word(syntax_tree_t **node, char *input, size_t *ix,
   value[value_size - 1] = '\0';
 
   /* finish up */
-  ERR_CHECK_RET(_set_node(node, tk, value));
+  ERR_CHECK_RET(_set_node(node, tk, value, 1));
 
   /* subtract one from value_size because of null terminator */
-  *ix += value_size - 1;
+  *ix += value_size - 2;
   return MCFG_OK;
 }
 
@@ -305,6 +335,8 @@ mcfg_err_t lex_input(char *input, syntax_tree_t *tree) {
 
   size_t ix = 0;
   char cur_char = input[0];
+
+  size_t line_number = 1;
 
   /* This loop doesn't actually go over every character by itself, in case of
    * e.g. a comment it searches for the next linefeed and, if found, jumps to
@@ -324,13 +356,12 @@ mcfg_err_t lex_input(char *input, syntax_tree_t *tree) {
       break;
     }
     case ',':
-      _set_node(&current_node, TK_COMMA, NULL);
+      _set_node(&current_node, TK_COMMA, NULL, 1);
       break;
     case '\'': /* possibly a string open/close quote */
-      _set_node(&current_node, TK_QUOTE, NULL);
+      _set_node(&current_node, TK_QUOTE, NULL, 1);
 
-      ERR_CHECK_RET(_extract_string(&current_node, input, &ix));
-
+      ERR_CHECK_RET(_extract_string(&current_node, input, &ix, &line_number));
       break;
     case 'i': /* possibly a signed integer */
       TOKEN_CHECKED_SET(current_node, input_offs, "i8", TK_I8);
@@ -366,6 +397,10 @@ mcfg_err_t lex_input(char *input, syntax_tree_t *tree) {
 
       ERR_CHECK_RET(_extract_word(&current_node, input, &ix, TK_NUMBER));
       break;
+    case '\n':
+      line_number++;
+      current_node->linespan.starting_line = line_number;
+      break;
     _default_case:
     default:
       /* ignore any whitespace outside of a string */
@@ -379,7 +414,7 @@ mcfg_err_t lex_input(char *input, syntax_tree_t *tree) {
       }
 
       ERR_CHECK_RET(_extract_word(&current_node, input, &ix, TK_UNKNOWN));
-      break; /* something else */
+      break;
     }
 
     ix++;
