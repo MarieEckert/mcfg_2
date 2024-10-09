@@ -16,6 +16,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define NAMESPACE mcfg_format
+
+#define _insert_path_elems NAMESPACED_DECL(_insert_path_elems)
+#define _free__embeds NAMESPACED_DECL(_free__embeds)
+#define _append_embed NAMESPACED_DECL(_append_embed)
+#define _extract_embeds NAMESPACED_DECL(_extract_embeds)
+#define _format NAMESPACED_DECL(_format)
+
 /* This macro checks if the condition (c) is false. If c is false, it is
  * considered an error and it will construct a mcfg_fmt_res_t structure with
  * the err field set to the error (e) and cause the function it was called
