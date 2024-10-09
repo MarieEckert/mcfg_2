@@ -9,8 +9,11 @@
 #define PARSE_H
 
 #include "mcfg.h"
+#include "shared.h"
 
 #include <stdbool.h>
+
+#define NAMESPACE parse
 
 typedef struct syntax_tree syntax_tree_t;
 
@@ -136,6 +139,8 @@ struct syntax_tree {
   syntax_tree_t *next;
 };
 
+#define lex_input NAMESPACED_DECL(lex_input)
+
 /**
  * @brief Lexes the input string
  * @param input The entire input which is to be lexed
@@ -143,6 +148,8 @@ struct syntax_tree {
  * @return MCFG_OK on success
  */
 mcfg_err_t lex_input(char *input, syntax_tree_t *tree);
+
+#define parse_tree NAMESPACED_DECL(parse_tree)
 
 /**
  * @brief Parses the given syntax tree into a mcfg_file_t struct

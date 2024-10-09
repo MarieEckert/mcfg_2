@@ -17,6 +17,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define NAMESPACE parse
+
+#define _set_node NAMESPACED_DECL(_set_node)
+#define _process_mcfg_string NAMESPACED_DECL(_process_mcfg_string)
+#define _extract_string NAMESPACED_DECL(_extract_string)
+#define _extract_word NAMESPACED_DECL(_extract_word)
+
 char *mcfg_token_str(token_t tk) {
   switch (tk) {
   case TK_UNASSIGNED_TOKEN:
