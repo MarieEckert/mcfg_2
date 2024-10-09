@@ -15,9 +15,10 @@
 #include <string.h>
 
 char *strchrnul(const char *str, int c) {
-  for(; str[0] != '\0' && str[0] != c; str++);
+  for (; str[0] != '\0' && str[0] != c; str++)
+    ;
 
-  return (char*)str;
+  return (char *)str;
 }
 
 bool is_string_empty(char *in) {
