@@ -151,12 +151,17 @@ mcfg_err_t lex_input(char *input, syntax_tree_t *tree);
 
 #define parse_tree NAMESPACED_DECL(parse_tree)
 
+typedef struct _parse_result {
+  mcfg_err_t err;
+  linespan_t err_linespan;
+} _parse_result_t;
+
 /**
  * @brief Parses the given syntax tree into a mcfg_file_t struct
  * @param tree The tree to be parsed
  * @param mcfg Pointer to write the result to
- * @return MCFG_OK on success
+ * @return _parse_result_t.err == MCFG_OK on success
  */
-mcfg_err_t parse_tree(syntax_tree_t tree, mcfg_file_t *mcfg);
+_parse_result_t parse_tree(syntax_tree_t tree, mcfg_file_t *mcfg);
 
 #endif // ifndef PARSE_H

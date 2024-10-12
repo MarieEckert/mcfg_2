@@ -418,11 +418,13 @@ mcfg_err_t lex_input(char *input, syntax_tree_t *tree) {
         break;
       }
 
+      /* add word as a number literal */
       if (isdigit(cur_char)) {
         ERR_CHECK_RET(_extract_word(&current_node, input, &ix, TK_NUMBER));
         break;
       }
 
+      /* thrown in the word as an unknown token */
       ERR_CHECK_RET(_extract_word(&current_node, input, &ix, TK_UNKNOWN));
       break;
     }
@@ -434,6 +436,53 @@ mcfg_err_t lex_input(char *input, syntax_tree_t *tree) {
   return MCFG_OK;
 }
 
-mcfg_err_t parse_tree(syntax_tree_t tree, mcfg_file_t *destination_file) {
-  return MCFG_OK;
+typedef enum _parse_tree_state {
+  PTS_IDLE = 0,
+  PTS_IN_SECTOR = 1 << 1,
+  PTS_IN_SECTION = 1 << 2,
+} _parse_tree_state_t;
+
+_parse_result_t parse_tree(syntax_tree_t tree, mcfg_file_t *destination_file) {
+  /* MCFG/2 Syntax Rules:
+   *    0. Unless explicitly stated, a token can not appear by itself.
+   *    1. The TK_SECTOR and TK_SECTION tokens are exclusively used to declare
+   *       new sectors and sections respectively. They must always be followed
+   *       by a TK_UNKNOWN token of which the value holds the name of the new
+   *       sector/section.
+   *    2. Any instance of a TK_STRING token should be prefixed by a TK_QUOTE
+   *       token. A terminating TK_QUOTE token coming immediatly after a String
+   *       closes it. If said TK_QUOTE token is missing, the string will be
+   *       presumed to be unclosed and reult in an error.
+   *    3. All datatype tokens (such as TK_STR, TK_U8, TK_BOOL, etc.) must be
+   *       followed by a TK_UNKNOWN token of which the value hodls the name of
+   *       the newly declared field. This token must then intern be followed by
+   *       a data literal valid for the datatype of the field.
+   *    4. The TK_LIST token must be followed by:
+   *          1. A datatype token
+   *          2. A TK_UNKNOWN token of which the value holds the name for the
+   *             list
+   *          3. A literal token, this can optionally be followed by a TK_COMMA
+   *             and another literal token.
+   */
+
+  /* MCFG/2 Structural Rules:
+   *    1. Sectors may only be declared at the top level,
+   *    2. Sections may only be declared inside sectors.
+   *    3. Fields may only be declared inside sections.
+   *    4. Sectors and Sections must both be termianted before a new one can be
+   *       opened using the TK_END token.
+   *    5. A TK_END token outside of a Sector is invalid.
+   */
+
+  _parse_result_t result = {
+      .err = MCFG_OK,
+      .err_linespan = tree.linespan,
+  };
+
+  if (destination_file == NULL) {
+    result.err = MCFG_NULLPTR;
+    return result;
+  }
+
+  return result;
 }
