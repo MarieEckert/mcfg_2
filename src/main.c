@@ -121,6 +121,16 @@ int main(int argc, char **argv) {
     current = current->next;
   }
 
+  mcfg_file_t test2;
+  _parse_result_t ret2 = parse_tree(tree, &test2);
+  if (ret2.err != MCFG_OK) {
+    fprintf(stderr, "mcfg parsing failed: %s (%d)\n", mcfg_err_string(ret2.err),
+            ret2.err);
+    fprintf(stderr, "in file \"%s\" on line %d\n", filepath,
+            ret2.err_linespan.starting_line);
+    goto cleanup;
+  }
+
 cleanup:
   mcfg_free_file(file);
   return 0;

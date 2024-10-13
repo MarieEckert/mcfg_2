@@ -484,5 +484,67 @@ _parse_result_t parse_tree(syntax_tree_t tree, mcfg_file_t *destination_file) {
     return result;
   }
 
+  _parse_tree_state_t state = PTS_IDLE;
+
+  syntax_tree_t *current = &tree;
+
+  while (current != NULL) {
+    switch (current->token) {
+    case TK_UNASSIGNED_TOKEN:
+      return result;
+    case TK_SECTOR:
+      /* TODO: Maybe a state check macro/function would be quite nice for this?
+       */
+      if (state != PTS_IDLE) {
+        result.err = MCFG_STRUCTURE_ERROR;
+        result.err_linespan = current->linespan;
+        return result;
+      }
+
+      /* TODO: open new sector */
+      break;
+    case TK_SECTION:
+      if (state != PTS_IN_SECTOR) {
+        result.err = MCFG_STRUCTURE_ERROR;
+        result.err_linespan = current->linespan;
+        return result;
+      }
+
+      break;
+    case TK_END:
+      break;
+    case TK_QUOTE:
+      break;
+    case TK_COMMA:
+      break;
+    case TK_UNKNOWN:
+      break;
+    case TK_STR:
+      break;
+    case TK_LIST:
+      break;
+    case TK_BOOL:
+      break;
+    case TK_I8:
+      break;
+    case TK_U8:
+      break;
+    case TK_I16:
+      break;
+    case TK_U16:
+      break;
+    case TK_I32:
+      break;
+    case TK_U32:
+      break;
+    case TK_NUMBER:
+      break;
+    case TK_STRING:
+      break;
+    }
+
+    current = current->next;
+  }
+
   return result;
 }
