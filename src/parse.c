@@ -436,10 +436,31 @@ mcfg_err_t lex_input(char *input, syntax_tree_t *tree) {
   return MCFG_OK;
 }
 
+/**
+ * @brief Validates that the current state of the parsing function matches the
+ * expected state. If it does not, it will cause the function to return with the
+ * given error.
+ * @param cstate The current parser state.
+ * @param estate The expected parser state.
+ * @param _err The error value to be set on mismatch.
+ */
+#define VALIDATE_PARSER_STATE(cstate, estate, _err)                            \
+  if (cstate != estate) {                                                      \
+    result.err = _err;                                                         \
+    result.err_linespan = current->linespan;                                   \
+    return result;                                                             \
+  }                                                                            \
+  do {                                                                         \
+  } while (0)
+
+/**
+ * @brief used by the parse_tree function to keep track of its own state.
+ */
 typedef enum _parse_tree_state {
+  /** @brief The parser is not inside of a section or sector */
   PTS_IDLE = 0,
-  PTS_IN_SECTOR = 1 << 1,
-  PTS_IN_SECTION = 1 << 2,
+  PTS_IN_SECTOR = 1,
+  PTS_IN_SECTION = 2,
 } _parse_tree_state_t;
 
 _parse_result_t parse_tree(syntax_tree_t tree, mcfg_file_t *destination_file) {
@@ -493,25 +514,21 @@ _parse_result_t parse_tree(syntax_tree_t tree, mcfg_file_t *destination_file) {
     case TK_UNASSIGNED_TOKEN:
       return result;
     case TK_SECTOR:
-      /* TODO: Maybe a state check macro/function would be quite nice for this?
-       */
-      if (state != PTS_IDLE) {
-        result.err = MCFG_STRUCTURE_ERROR;
-        result.err_linespan = current->linespan;
-        return result;
-      }
+      VALIDATE_PARSER_STATE(state, PTS_IDLE, MCFG_STRUCTURE_ERROR);
 
       /* TODO: open new sector */
       break;
     case TK_SECTION:
-      if (state != PTS_IN_SECTOR) {
-        result.err = MCFG_STRUCTURE_ERROR;
+      VALIDATE_PARSER_STATE(state, PTS_IN_SECTOR, MCFG_STRUCTURE_ERROR);
+
+      /* TODO: open new section */
+      break;
+    case TK_END:
+      if (state != PTS_IN_SECTOR && state != PTS_IN_SECTION) {
+        result.err = MCFG_END_IN_NOWHERE;
         result.err_linespan = current->linespan;
         return result;
       }
-
-      break;
-    case TK_END:
       break;
     case TK_QUOTE:
       break;
