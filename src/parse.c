@@ -587,22 +587,31 @@ _parse_result_t parse_tree(syntax_tree_t tree, mcfg_file_t *destination_file) {
     case TK_UNKNOWN:
       break;
     case TK_STR:
+      VALIDATE_PARSER_STATE(state, PTS_IN_SECTION, MCFG_STRUCTURE_ERROR);
       break;
     case TK_LIST:
+      VALIDATE_PARSER_STATE(state, PTS_IN_SECTION, MCFG_STRUCTURE_ERROR);
       break;
     case TK_BOOL:
+      VALIDATE_PARSER_STATE(state, PTS_IN_SECTION, MCFG_STRUCTURE_ERROR);
       break;
     case TK_I8:
+      VALIDATE_PARSER_STATE(state, PTS_IN_SECTION, MCFG_STRUCTURE_ERROR);
       break;
     case TK_U8:
+      VALIDATE_PARSER_STATE(state, PTS_IN_SECTION, MCFG_STRUCTURE_ERROR);
       break;
     case TK_I16:
+      VALIDATE_PARSER_STATE(state, PTS_IN_SECTION, MCFG_STRUCTURE_ERROR);
       break;
     case TK_U16:
+      VALIDATE_PARSER_STATE(state, PTS_IN_SECTION, MCFG_STRUCTURE_ERROR);
       break;
     case TK_I32:
+      VALIDATE_PARSER_STATE(state, PTS_IN_SECTION, MCFG_STRUCTURE_ERROR);
       break;
     case TK_U32:
+      VALIDATE_PARSER_STATE(state, PTS_IN_SECTION, MCFG_STRUCTURE_ERROR);
       break;
     case TK_NUMBER:
       break;
