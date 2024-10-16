@@ -437,6 +437,24 @@ mcfg_err_t lex_input(char *input, syntax_tree_t *tree) {
 }
 
 /**
+ * @brief Checks if the given error value is equal to MCFG_OK. If not, it will
+ * cause the calling function to return with the `err` field being set to the
+ * given error. The `err_linespan` field will be equal to `c->linespan`.
+ * @param e The error value to check.
+ * @param c Pointer to the current node.
+ */
+#define PARSER_ERR_CHECK_RET(e, c)                                             \
+  do {                                                                         \
+    mcfg_err_t _err = e;                                                       \
+    if (_err != MCFG_OK) {                                                     \
+      _parse_result_t _res;                                                    \
+      _res.err = _err;                                                         \
+      _res.err_linespan = c->linespan;                                         \
+      return _res;                                                             \
+    }                                                                          \
+  } while (0)
+
+/**
  * @brief Validates that the current state of the parsing function matches the
  * expected state. If it does not, it will cause the function to return with the
  * given error.
@@ -516,15 +534,47 @@ _parse_result_t parse_tree(syntax_tree_t tree, mcfg_file_t *destination_file) {
     case TK_SECTOR:
       VALIDATE_PARSER_STATE(state, PTS_IDLE, MCFG_STRUCTURE_ERROR);
 
-      /* TODO: open new sector */
+      /* see syntax rule 1 at the start of the function */
+      if (current->next == NULL || current->next->token != TK_UNKNOWN ||
+          current->next->value == NULL) {
+        result.err = MCFG_SYNTAX_ERROR;
+        result.err_linespan = current->linespan;
+        return result;
+      }
+
+      PARSER_ERR_CHECK_RET(
+          mcfg_add_sector(destination_file, current->next->value), current);
+      current = current->next;
+      state = PTS_IN_SECTOR;
       break;
     case TK_SECTION:
       VALIDATE_PARSER_STATE(state, PTS_IN_SECTOR, MCFG_STRUCTURE_ERROR);
 
-      /* TODO: open new section */
+      /* see syntax rule 1 at the start of the function */
+      if (current->next == NULL || current->next->token != TK_UNKNOWN ||
+          current->next->value == NULL) {
+        result.err = MCFG_SYNTAX_ERROR;
+        result.err_linespan = current->linespan;
+        return result;
+      }
+
+      PARSER_ERR_CHECK_RET(
+          mcfg_add_section(
+              &destination_file->sectors[destination_file->sector_count - 1],
+              current->next->value),
+          current);
+      current = current->next;
+      state = PTS_IN_SECTION;
       break;
     case TK_END:
-      if (state != PTS_IN_SECTOR && state != PTS_IN_SECTION) {
+      switch (state) {
+      case PTS_IN_SECTOR:
+        state = PTS_IDLE;
+        break;
+      case PTS_IN_SECTION:
+        state = PTS_IN_SECTOR;
+        break;
+      default:
         result.err = MCFG_END_IN_NOWHERE;
         result.err_linespan = current->linespan;
         return result;
