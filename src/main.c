@@ -130,6 +130,7 @@ int main(int argc, char **argv) {
             ret2.err_linespan.starting_line);
     goto cleanup;
   }
+  print_file(&test2);
 
 cleanup:
   mcfg_free_file(file);
