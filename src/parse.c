@@ -536,6 +536,7 @@ token_t _type_to_literal_type(const token_t token) {
 typedef struct _parse_literal_result {
   mcfg_err_t err;
   void *value;
+  size_t size;
 } _parse_literal_result_t;
 
 /**
@@ -559,7 +560,7 @@ _parse_result_t _parse_string_literal(mcfg_file_t *destination_file,
  */
 _parse_literal_result_t _parse_literal(const mcfg_field_type_t type,
                                        const char *const value) {
-  _parse_literal_result_t result = {.err = MCFG_OK, .value = NULL};
+  _parse_literal_result_t result = {.err = MCFG_OK, .value = NULL, .size = 0};
 
   if (type == TYPE_INVALID || type == TYPE_STRING) {
     result.err = MCFG_INVALID_TYPE;
@@ -567,10 +568,25 @@ _parse_literal_result_t _parse_literal(const mcfg_field_type_t type,
   }
 
   const ssize_t needed_size = mcfg_sizeof(type);
-  if (needed_size == -1) {
+  if (needed_size <= 0) {
     result.err = MCFG_INVALID_TYPE;
     return result;
   }
+
+  result.value = malloc(needed_size);
+  if (result.value == NULL) {
+    result.err = MCFG_MALLOC_FAIL;
+    return result;
+  }
+
+  if (type == TYPE_BOOL) {
+    *((bool *)result.value) = strcmp(value, "true") == 0 ? true : false;
+  } else {
+    int64_t converted = strtol(value, NULL, 10);
+    memcpy(result.value, &converted, needed_size);
+  }
+
+  result.size = needed_size;
 
   return result;
 }
@@ -634,6 +650,13 @@ _parse_result_t _parse_field(const token_t field_type_token,
     result.err = parse_result.err;
     return result;
   }
+
+  mcfg_sector_t *target_sector =
+      &destination_file->sectors[destination_file->sector_count - 1];
+  mcfg_section_t *target_section =
+      &target_sector->sections[target_sector->section_count - 1];
+  result.err = mcfg_add_field(target_section, _token_to_type(field_type_token),
+                              name, parse_result.value, parse_result.size);
 
   return result;
 }
