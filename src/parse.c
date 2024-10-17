@@ -385,6 +385,9 @@ mcfg_err_t lex_input(char *input, syntax_tree_t *tree) {
 
       ERR_CHECK_RET(_extract_string(&current_node, input, &ix, &line_number));
       break;
+    case 'b': /* possibly a bool */
+      TOKEN_CHECKED_SET(current_node, input_offs, "bool", TK_BOOL);
+      goto _default_case;
     case 'i': /* possibly a signed integer */
       TOKEN_CHECKED_SET(current_node, input_offs, "i8", TK_I8);
       TOKEN_CHECKED_SET(current_node, input_offs, "i16", TK_I16);
