@@ -19,10 +19,20 @@
 
 #define NAMESPACE parse
 
+/* lexer function declarations */
+
 #define _set_node NAMESPACED_DECL(_set_node)
 #define _process_mcfg_string NAMESPACED_DECL(_process_mcfg_string)
 #define _extract_string NAMESPACED_DECL(_extract_string)
 #define _extract_word NAMESPACED_DECL(_extract_word)
+
+/* parser function declarations */
+
+#define _token_to_type NAMESPACED_DECL(_token_to_type)
+#define _parse_string_literal NAMESPACED_DECL(_parse_string_literal)
+#define _parse_literal NAMESPACED_DECL(_parse_literal)
+#define _parse_field NAMESPACED_DECL(_parse_field)
+#define _parse_list NAMESPACED_DECL(_parse_list)
 
 char *mcfg_token_str(token_t tk) {
   switch (tk) {
@@ -474,6 +484,139 @@ mcfg_err_t lex_input(char *input, syntax_tree_t *tree) {
   } while (0)
 
 /**
+ * @todo document
+ */
+mcfg_field_type_t _token_to_type(const token_t token) {
+  switch (token) {
+  case TK_I8:
+    return TYPE_I8;
+  case TK_U8:
+    return TYPE_U8;
+  case TK_I16:
+    return TYPE_I16;
+  case TK_U16:
+    return TYPE_U16;
+  case TK_I32:
+    return TYPE_I32;
+  case TK_U32:
+    return TYPE_U32;
+  case TK_BOOL:
+    return TYPE_BOOL;
+  case TK_STR:
+    return TYPE_STRING;
+  default:
+    return TYPE_INVALID;
+  }
+}
+
+/**
+ * @todo document
+ */
+typedef struct _parse_literal_result {
+  mcfg_err_t err;
+  void *value;
+} _parse_literal_result_t;
+
+/**
+ * @todo implement, document
+ */
+_parse_result_t _parse_string_literal(mcfg_file_t *destination_file,
+                                      syntax_tree_t **current_ptr) {
+  _parse_result_t result = {
+      .err = MCFG_OK, .err_linespan = {.starting_line = 0, .line_count = 0}};
+
+  if (destination_file == NULL || current_ptr == NULL || *current_ptr == NULL) {
+    result.err = MCFG_NULLPTR;
+    return result;
+  }
+
+  return result;
+}
+
+/**
+ * @todo implement, document
+ */
+_parse_literal_result_t _parse_literal(const mcfg_field_type_t type,
+                                       const char *const value) {
+  _parse_literal_result_t result = {.err = MCFG_OK, .value = NULL};
+
+  if (type == TYPE_INVALID || type == TYPE_STRING) {
+    result.err = MCFG_INVALID_TYPE;
+    return result;
+  }
+
+  const ssize_t needed_size = mcfg_sizeof(type);
+  if (needed_size == -1) {
+    result.err = MCFG_INVALID_TYPE;
+    return result;
+  }
+
+  return result;
+}
+
+/**
+ * @todo implement, document
+ */
+_parse_result_t _parse_field(const token_t field_type_token,
+                             mcfg_file_t *destination_file,
+                             syntax_tree_t **current_ptr) {
+  _parse_result_t result = {
+      .err = MCFG_OK, .err_linespan = {.starting_line = 0, .line_count = 0}};
+
+  if (destination_file == NULL || current_ptr == NULL || *current_ptr == NULL) {
+    result.err = MCFG_NULLPTR;
+    return result;
+  }
+
+  syntax_tree_t *current = *current_ptr;
+
+  result.err_linespan = current->linespan;
+
+  /* get name of field */
+  char *name = NULL;
+  if (current->next == NULL || current->next->value == NULL ||
+      current->next->token != TK_UNKNOWN) {
+    result.err = MCFG_SYNTAX_ERROR;
+    return result;
+  }
+
+  name = current->next->value;
+
+  /* advance current to name token */
+  current = current->next;
+
+  /* get fields literal value */
+  if (current->next == NULL || current->next->value == NULL) {
+    result.err = MCFG_SYNTAX_ERROR;
+    return result;
+  }
+
+  /* advance current to value token */
+  current = current->next;
+  *current_ptr = current;
+
+  if (field_type_token == TK_STRING) {
+    /* todo: correctly handle strings here */
+    return _parse_string_literal(destination_file, current_ptr);
+  }
+
+  if (current->token != field_type_token) {
+    result.err = MCFG_INVALID_TYPE;
+    return result;
+  }
+
+  _parse_literal_result_t parse_result =
+      _parse_literal(_token_to_type(field_type_token), current->value);
+
+  if (parse_result.err != MCFG_OK) {
+    result.err = parse_result.err;
+    return result;
+  }
+
+  return result;
+}
+
+/**
  * @brief used by the parse_tree function to keep track of its own state.
  */
 typedef enum _parse_tree_state {
@@ -598,6 +741,10 @@ _parse_result_t parse_tree(syntax_tree_t tree, mcfg_file_t *destination_file) {
       break;
     case TK_BOOL:
       VALIDATE_PARSER_STATE(state, PTS_IN_SECTION, MCFG_STRUCTURE_ERROR);
+      result = _parse_field(TK_BOOLEAN, &current);
+      if (result.err != MCFG_OK) {
+        return result;
+      }
       break;
     case TK_I8:
       VALIDATE_PARSER_STATE(state, PTS_IN_SECTION, MCFG_STRUCTURE_ERROR);
