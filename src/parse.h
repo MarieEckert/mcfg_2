@@ -18,7 +18,7 @@
 typedef struct syntax_tree syntax_tree_t;
 
 /**
- * @param Enum for every possible token within the MCFG/2 format.
+ * @brief Enum for every possible token within the MCFG/2 format.
  */
 typedef enum token {
   /** @brief Helper value for initialising variables */
@@ -54,25 +54,25 @@ typedef enum token {
   /** @brief Corresponds to the "list" keyword */
   TK_LIST,
 
-  /** @brief Correspodns to the "bool" keyword */
+  /** @brief Corresponds to the "bool" keyword */
   TK_BOOL,
 
-  /** @brief Correspodns to the "i8" keyword */
+  /** @brief Corresponds to the "i8" keyword */
   TK_I8,
 
-  /** @brief Correspodns to the "u8" keyword */
+  /** @brief Corresponds to the "u8" keyword */
   TK_U8,
 
-  /** @brief Correspodns to the "i16" keyword */
+  /** @brief Corresponds to the "i16" keyword */
   TK_I16,
 
-  /** @brief Correspodns to the "u16" keyword */
+  /** @brief Corresponds to the "u16" keyword */
   TK_U16,
 
-  /** @brief Correspodns to the "i32" keyword */
+  /** @brief Corresponds to the "i32" keyword */
   TK_I32,
 
-  /** @brief Correspodns to the "u32" keyword */
+  /** @brief Corresponds to the "u32" keyword */
   TK_U32,
 
   /* Data Literals */
