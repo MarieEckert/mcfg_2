@@ -19,7 +19,7 @@ sector test
 
   section sect1
     bool booltest true
-    bool 2bool2test false
+    bool b2bool2test false
 
     list bool boolllist true, false, false, true,
     true
@@ -27,7 +27,7 @@ sector test
     u8 test 200
     str stest 'asdasd $(sectneg1/a)'
     str dest 'foo $(/embedding_test/sect1/foo) with someu16
-    $(booltest) $(2bool2test) $(boolllist)
+    $(booltest) $(b2bool2test) $(boolllist)
     $(/embedding_test/sect1/someu16) this should appear normal -> \$(aa) ''
     abc__<$(/list_src/sect1/somelist)>@@ a
     $(/bogus/field) $(test) $(sectneg1/test)
