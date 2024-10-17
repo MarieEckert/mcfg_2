@@ -7,3 +7,4 @@ mcfg_test
 *.a
 *.swp
 *.log
+compile_flags.txt

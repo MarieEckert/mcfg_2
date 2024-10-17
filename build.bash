@@ -65,7 +65,11 @@ if command -v mb &> /dev/null; then
 fi
 echo ""
 
-if [ "$1" = "--lib-only" ]; then
+if [ "$1" = "--compile-flags" ]; then
+ sed --posix 's/ /\n/g' <<<"${CFLAGS[@]}" > compile_flags.txt
+
+ echo "==> Generated compile_flags.txt"
+elif [ "$1" = "--lib-only" ]; then
   build_lib
 else
   build_all
