@@ -830,29 +830,17 @@ _parse_result_t parse_tree(syntax_tree_t tree, mcfg_file_t *destination_file) {
       VALIDATE_PARSER_STATE(state, PTS_IN_SECTION, MCFG_STRUCTURE_ERROR);
       break;
     case TK_BOOL:
+    case TK_I8:
+    case TK_U8:
+    case TK_I16:
+    case TK_U16:
+    case TK_I32:
+    case TK_U32:
       VALIDATE_PARSER_STATE(state, PTS_IN_SECTION, MCFG_STRUCTURE_ERROR);
-      result = _parse_field(TK_BOOL, destination_file, &current);
+      result = _parse_field(current->token, destination_file, &current);
       if (result.err != MCFG_OK) {
         return result;
       }
-      break;
-    case TK_I8:
-      VALIDATE_PARSER_STATE(state, PTS_IN_SECTION, MCFG_STRUCTURE_ERROR);
-      break;
-    case TK_U8:
-      VALIDATE_PARSER_STATE(state, PTS_IN_SECTION, MCFG_STRUCTURE_ERROR);
-      break;
-    case TK_I16:
-      VALIDATE_PARSER_STATE(state, PTS_IN_SECTION, MCFG_STRUCTURE_ERROR);
-      break;
-    case TK_U16:
-      VALIDATE_PARSER_STATE(state, PTS_IN_SECTION, MCFG_STRUCTURE_ERROR);
-      break;
-    case TK_I32:
-      VALIDATE_PARSER_STATE(state, PTS_IN_SECTION, MCFG_STRUCTURE_ERROR);
-      break;
-    case TK_U32:
-      VALIDATE_PARSER_STATE(state, PTS_IN_SECTION, MCFG_STRUCTURE_ERROR);
       break;
     case TK_NUMBER:
       /*fprintf(stderr, "syntax error 2\n");
