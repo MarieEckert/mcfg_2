@@ -77,8 +77,11 @@ typedef enum token {
 
   /* Data Literals */
 
-  /** @brief Used to represent number literals, including boolean values */
+  /** @brief Used to represent number literals */
   TK_NUMBER,
+
+  /** @brief Used to represent boolean literals */
+  TK_BOOLEAN,
 
   /** @brief Used to represent string literals */
   TK_STRING,

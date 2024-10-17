@@ -60,6 +60,8 @@ char *mcfg_token_str(token_t tk) {
     return "TK_U32";
   case TK_NUMBER:
     return "TK_NUMBER";
+  case TK_BOOLEAN:
+    return "TK_BOOLEAN";
   case TK_STRING:
     return "TK_STRING";
   }
@@ -395,10 +397,10 @@ mcfg_err_t lex_input(char *input, syntax_tree_t *tree) {
       TOKEN_CHECKED_SET(current_node, input_offs, "end", TK_END);
       goto _default_case;
     case 't': /* maybe a true literal */
-      LITERAL_TOKEN_CHECKED_SET(current_node, input_offs, "true", TK_NUMBER);
+      LITERAL_TOKEN_CHECKED_SET(current_node, input_offs, "true", TK_BOOLEAN);
       goto _default_case;
     case 'f': /* maybe a false literal */
-      LITERAL_TOKEN_CHECKED_SET(current_node, input_offs, "false", TK_NUMBER);
+      LITERAL_TOKEN_CHECKED_SET(current_node, input_offs, "false", TK_BOOLEAN);
       goto _default_case;
     case '-': /* maybe a negative number literal */
       if (!isdigit(input[ix + 1])) {
@@ -585,7 +587,9 @@ _parse_result_t parse_tree(syntax_tree_t tree, mcfg_file_t *destination_file) {
     case TK_COMMA:
       break;
     case TK_UNKNOWN:
-      break;
+      result.err = MCFG_SYNTAX_ERROR;
+      result.err_linespan = current->linespan;
+      return result;
     case TK_STR:
       VALIDATE_PARSER_STATE(state, PTS_IN_SECTION, MCFG_STRUCTURE_ERROR);
       break;
@@ -614,9 +618,17 @@ _parse_result_t parse_tree(syntax_tree_t tree, mcfg_file_t *destination_file) {
       VALIDATE_PARSER_STATE(state, PTS_IN_SECTION, MCFG_STRUCTURE_ERROR);
       break;
     case TK_NUMBER:
-      break;
+      result.err = MCFG_SYNTAX_ERROR;
+      result.err_linespan = current->linespan;
+      return result;
+    case TK_BOOLEAN:
+      result.err = MCFG_SYNTAX_ERROR;
+      result.err_linespan = current->linespan;
+      return result;
     case TK_STRING:
-      break;
+      result.err = MCFG_SYNTAX_ERROR;
+      result.err_linespan = current->linespan;
+      return result;
     }
 
     current = current->next;
