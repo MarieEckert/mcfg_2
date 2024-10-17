@@ -487,7 +487,10 @@ mcfg_err_t lex_input(char *input, syntax_tree_t *tree) {
   } while (0)
 
 /**
- * @todo document
+ * @brief Convert a data type token to a mcfg_field_type enum.
+ * @param token The token to convert.
+ * @return The appropriate field type value, TYPE_INVALID if the token does not
+ * represent a data type.
  */
 mcfg_field_type_t _token_to_type(const token_t token) {
   switch (token) {
@@ -512,6 +515,12 @@ mcfg_field_type_t _token_to_type(const token_t token) {
   }
 }
 
+/**
+ * @brief Get the matching literal type token for the given data type token.
+ * @param token The token to get the matching literal type token for.
+ * @return The matching literal type token, TK_UNASSIGNED_TOKEN if the given
+ * token is not a data type token.
+ */
 token_t _type_to_literal_type(const token_t token) {
   switch (token) {
   case TK_I8:
@@ -531,16 +540,26 @@ token_t _type_to_literal_type(const token_t token) {
 }
 
 /**
- * @todo document
+ * @brief Data structure to hold the result of an attempt to parse a literal.
  */
 typedef struct _parse_literal_result {
+  /** @brief The error that occured whilst parsing, MCFG_OK if no error occured.
+   */
   mcfg_err_t err;
+
+  /** @brief The parsed data, not guaranteed to be NULL on failure. */
   void *value;
+
+  /** @brief The size of the parsed data in bytes. */
   size_t size;
 } _parse_literal_result_t;
 
 /**
+ * @brief Used to parse string literals
  * @todo implement, document
+ * @return A _parse_literal_result_t struct
+ * @see _parse_literal
+ * @see _parse_literal_result_t
  */
 _parse_result_t _parse_string_literal(mcfg_file_t *destination_file,
                                       syntax_tree_t **current_ptr) {
@@ -556,7 +575,13 @@ _parse_result_t _parse_string_literal(mcfg_file_t *destination_file,
 }
 
 /**
- * @todo implement, document
+ * @brief Parses a number or boolean literal, strings are parsed using
+ * _parse_string_literal.
+ * @param type The type of literal to be parsed.
+ * @param value The value of the literal to be parsed.
+ * @return A _parse_literal_result_t struct
+ * @see _parse_string_literal
+ * @see _parse_literal_result_t
  */
 _parse_literal_result_t _parse_literal(const mcfg_field_type_t type,
                                        const char *const value) {
@@ -592,7 +617,13 @@ _parse_literal_result_t _parse_literal(const mcfg_field_type_t type,
 }
 
 /**
- * @todo implement, document
+ * @brief Parses a field starting from its first token (type).
+ * @param destination_file Pointer to the mcfg file struct to which the parsed
+ * field should be added to
+ * @param current_ptr Pointer to the current-node pointer. The underlying
+ * pointer will be updated to point to the last consumed token on success.
+ * @return A _parse_result_t struct
+ * @see _parse_result_t
  */
 _parse_result_t _parse_field(const token_t field_type_token,
                              mcfg_file_t *destination_file,
@@ -633,10 +664,13 @@ _parse_result_t _parse_field(const token_t field_type_token,
   *current_ptr = current;
 
   if (field_type_token == TK_STR) {
-    /* todo: correctly handle strings here */
+    /** @todo: correctly handle strings here */
     return _parse_string_literal(destination_file, current_ptr);
   }
 
+  /* literal_type refers to the type of literal needed for the field type, e.g.
+   * TK_NUMBER for TK_U8 or TK_I32
+   */
   const token_t literal_type_token = _type_to_literal_type(field_type_token);
   if (current->token != literal_type_token) {
     result.err = MCFG_INVALID_TYPE;
@@ -657,6 +691,10 @@ _parse_result_t _parse_field(const token_t field_type_token,
       &target_sector->sections[target_sector->section_count - 1];
   result.err = mcfg_add_field(target_section, _token_to_type(field_type_token),
                               name, parse_result.value, parse_result.size);
+
+  if (result.err != MCFG_OK) {
+    free(parse_result.value);
+  }
 
   return result;
 }
@@ -701,6 +739,10 @@ _parse_result_t parse_tree(syntax_tree_t tree, mcfg_file_t *destination_file) {
    *    4. Sectors and Sections must both be termianted before a new one can be
    *       opened using the TK_END token.
    *    5. A TK_END token outside of a Sector is invalid.
+   */
+
+  /* NOTE: All functions used for parsing which consume tokens are expected to
+   * set the current node to the last token it has consumed.
    */
 
   _parse_result_t result = {
