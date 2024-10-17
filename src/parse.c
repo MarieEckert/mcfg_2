@@ -29,6 +29,7 @@
 /* parser function declarations */
 
 #define _token_to_type NAMESPACED_DECL(_token_to_type)
+#define _type_to_literal_type NAMESPACED_DECL(_type_to_literal_type)
 #define _parse_string_literal NAMESPACED_DECL(_parse_string_literal)
 #define _parse_literal NAMESPACED_DECL(_parse_literal)
 #define _parse_field NAMESPACED_DECL(_parse_field)
