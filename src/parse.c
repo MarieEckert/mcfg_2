@@ -512,6 +512,24 @@ mcfg_field_type_t _token_to_type(const token_t token) {
   }
 }
 
+token_t _type_to_literal_type(const token_t token) {
+  switch (token) {
+  case TK_I8:
+  case TK_U8:
+  case TK_I16:
+  case TK_U16:
+  case TK_I32:
+  case TK_U32:
+    return TK_NUMBER;
+  case TK_BOOL:
+    return TK_BOOLEAN;
+  case TK_STR:
+    return TK_STRING;
+  default:
+    return TK_UNASSIGNED_TOKEN;
+  }
+}
+
 /**
  * @todo document
  */
@@ -598,12 +616,13 @@ _parse_result_t _parse_field(const token_t field_type_token,
   current = current->next;
   *current_ptr = current;
 
-  if (field_type_token == TK_STRING) {
+  if (field_type_token == TK_STR) {
     /* todo: correctly handle strings here */
     return _parse_string_literal(destination_file, current_ptr);
   }
 
-  if (current->token != field_type_token) {
+  const token_t literal_type_token = _type_to_literal_type(field_type_token);
+  if (current->token != literal_type_token) {
     result.err = MCFG_INVALID_TYPE;
     return result;
   }
@@ -733,9 +752,11 @@ _parse_result_t parse_tree(syntax_tree_t tree, mcfg_file_t *destination_file) {
     case TK_COMMA:
       break;
     case TK_UNKNOWN:
+      /*fprintf(stderr, "syntax error 1\n");
       result.err = MCFG_SYNTAX_ERROR;
       result.err_linespan = current->linespan;
-      return result;
+      return result; */
+      break;
     case TK_STR:
       VALIDATE_PARSER_STATE(state, PTS_IN_SECTION, MCFG_STRUCTURE_ERROR);
       break;
@@ -744,7 +765,7 @@ _parse_result_t parse_tree(syntax_tree_t tree, mcfg_file_t *destination_file) {
       break;
     case TK_BOOL:
       VALIDATE_PARSER_STATE(state, PTS_IN_SECTION, MCFG_STRUCTURE_ERROR);
-      result = _parse_field(TK_BOOLEAN, &current);
+      result = _parse_field(TK_BOOL, destination_file, &current);
       if (result.err != MCFG_OK) {
         return result;
       }
@@ -768,17 +789,21 @@ _parse_result_t parse_tree(syntax_tree_t tree, mcfg_file_t *destination_file) {
       VALIDATE_PARSER_STATE(state, PTS_IN_SECTION, MCFG_STRUCTURE_ERROR);
       break;
     case TK_NUMBER:
+      /*fprintf(stderr, "syntax error 2\n");
       result.err = MCFG_SYNTAX_ERROR;
       result.err_linespan = current->linespan;
-      return result;
+      return result;*/
+      break;
     case TK_BOOLEAN:
-      result.err = MCFG_SYNTAX_ERROR;
+      /*result.err = MCFG_SYNTAX_ERROR;
       result.err_linespan = current->linespan;
-      return result;
+      return result;*/
+      break;
     case TK_STRING:
-      result.err = MCFG_SYNTAX_ERROR;
+      /*result.err = MCFG_SYNTAX_ERROR;
       result.err_linespan = current->linespan;
-      return result;
+      return result;*/
+      break;
     }
 
     current = current->next;
