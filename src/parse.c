@@ -595,6 +595,7 @@ _parse_literal_result_t _parse_string_literal(syntax_tree_t **current_ptr) {
 
   result.value = literal_token->value;
   result.size = strlen(literal_token->value) + 1;
+  *current_ptr = current;
 
   return result;
 }
@@ -847,11 +848,10 @@ _parse_result_t parse_tree(syntax_tree_t tree, mcfg_file_t *destination_file) {
     case TK_COMMA:
       break;
     case TK_UNKNOWN:
-      /*fprintf(stderr, "syntax error 1\n");
+      fprintf(stderr, "syntax error 1\n");
       result.err = MCFG_SYNTAX_ERROR;
       result.err_linespan = current->linespan;
-      return result; */
-      break;
+      return result;
     case TK_LIST:
       VALIDATE_PARSER_STATE(state, PTS_IN_SECTION, MCFG_STRUCTURE_ERROR);
       break;
