@@ -557,20 +557,44 @@ typedef struct _parse_literal_result {
 
 /**
  * @brief Used to parse string literals
- * @todo implement, document
+ * @param current_ptr Pointer to the current-node pointer. The underlying
+ * pointer will be updated to point to the last consumed token on success.
  * @return A _parse_literal_result_t struct
  * @see _parse_literal
  * @see _parse_literal_result_t
  */
-_parse_result_t _parse_string_literal(mcfg_file_t *destination_file,
-                                      syntax_tree_t **current_ptr) {
-  _parse_result_t result = {
-      .err = MCFG_OK, .err_linespan = {.starting_line = 0, .line_count = 0}};
+_parse_literal_result_t _parse_string_literal(syntax_tree_t **current_ptr) {
+  _parse_literal_result_t result = {.err = MCFG_OK, .value = NULL, .size = 0};
 
-  if (destination_file == NULL || current_ptr == NULL || *current_ptr == NULL) {
+  if (current_ptr == NULL || *current_ptr == NULL) {
     result.err = MCFG_NULLPTR;
     return result;
   }
+
+  syntax_tree_t *current = *current_ptr;
+
+  if (current->token != TK_QUOTE) {
+    result.err = MCFG_SYNTAX_ERROR;
+    return result;
+  }
+
+  current = current->next;
+  syntax_tree_t *literal_token = current;
+
+  if (literal_token == NULL || literal_token->token != TK_STRING) {
+    result.err = MCFG_SYNTAX_ERROR;
+    return result;
+  }
+
+  current = current->next;
+
+  if (current == NULL || current->token != TK_QUOTE) {
+    result.err = MCFG_SYNTAX_ERROR;
+    return result;
+  }
+
+  result.value = literal_token->value;
+  result.size = strlen(literal_token->value) + 1;
 
   return result;
 }
@@ -655,7 +679,7 @@ _parse_result_t _parse_field(const token_t field_type_token,
   current = current->next;
 
   /* get fields literal value */
-  if (current->next == NULL || current->next->value == NULL) {
+  if (current->next == NULL) {
     result.err = MCFG_SYNTAX_ERROR;
     return result;
   }
@@ -664,22 +688,27 @@ _parse_result_t _parse_field(const token_t field_type_token,
   current = current->next;
   *current_ptr = current;
 
+  _parse_literal_result_t parse_result;
   if (field_type_token == TK_STR) {
-    /** @todo: correctly handle strings here */
-    return _parse_string_literal(destination_file, current_ptr);
-  }
+    parse_result = _parse_string_literal(current_ptr);
+  } else {
+    if (current->value == NULL) {
+      result.err = MCFG_SYNTAX_ERROR;
+      return result;
+    }
 
-  /* literal_type refers to the type of literal needed for the field type, e.g.
-   * TK_NUMBER for TK_U8 or TK_I32
-   */
-  const token_t literal_type_token = _type_to_literal_type(field_type_token);
-  if (current->token != literal_type_token) {
-    result.err = MCFG_INVALID_TYPE;
-    return result;
-  }
+    /* literal_type refers to the type of literal needed for the field type,
+     * e.g. TK_NUMBER for TK_U8 or TK_I32
+     */
+    const token_t literal_type_token = _type_to_literal_type(field_type_token);
+    if (current->token != literal_type_token) {
+      result.err = MCFG_INVALID_TYPE;
+      return result;
+    }
 
-  _parse_literal_result_t parse_result =
-      _parse_literal(_token_to_type(field_type_token), current->value);
+    parse_result =
+        _parse_literal(_token_to_type(field_type_token), current->value);
+  }
 
   if (parse_result.err != MCFG_OK) {
     result.err = parse_result.err;
@@ -823,12 +852,10 @@ _parse_result_t parse_tree(syntax_tree_t tree, mcfg_file_t *destination_file) {
       result.err_linespan = current->linespan;
       return result; */
       break;
-    case TK_STR:
-      VALIDATE_PARSER_STATE(state, PTS_IN_SECTION, MCFG_STRUCTURE_ERROR);
-      break;
     case TK_LIST:
       VALIDATE_PARSER_STATE(state, PTS_IN_SECTION, MCFG_STRUCTURE_ERROR);
       break;
+    case TK_STR:
     case TK_BOOL:
     case TK_I8:
     case TK_U8:
