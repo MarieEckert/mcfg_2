@@ -32,6 +32,7 @@
 #define _type_to_literal_type NAMESPACED_DECL(_type_to_literal_type)
 #define _parse_string_literal NAMESPACED_DECL(_parse_string_literal)
 #define _parse_literal NAMESPACED_DECL(_parse_literal)
+#define _parse_list_field NAMESPACED_DECL(_parse_list_field)
 #define _parse_field NAMESPACED_DECL(_parse_field)
 #define _parse_list NAMESPACED_DECL(_parse_list)
 
@@ -643,6 +644,127 @@ _parse_literal_result_t _parse_literal(const mcfg_field_type_t type,
 }
 
 /**
+ * @todo document
+ */
+typedef enum _parse_list_field_state {
+  PLFS_LITERAL,
+  PLFS_COMMA,
+  PLFS_DONE,
+} _parse_list_field_state_t;
+
+/**
+ * @todo document, finish implementation
+ */
+_parse_result_t _parse_list_field(mcfg_file_t *destination_file,
+                                  syntax_tree_t **current_ptr) {
+  _parse_result_t result = {
+      .err = MCFG_OK, .err_linespan = {.starting_line = 0, .line_count = 0}};
+
+  if (destination_file == NULL || current_ptr == NULL || *current_ptr == NULL) {
+    result.err = MCFG_NULLPTR;
+    return result;
+  }
+
+  syntax_tree_t *current = *current_ptr;
+  result.err_linespan = current->linespan;
+
+  /* list field type */
+  if (current->next == NULL) {
+    result.err = MCFG_SYNTAX_ERROR;
+    return result;
+  }
+
+  current = current->next;
+
+  const mcfg_field_type_t list_field_type = _token_to_type(current->token);
+  const token_t literal_type_token = _type_to_literal_type(current->token);
+
+  if (list_field_type == TYPE_INVALID) {
+    result.err = MCFG_INVALID_TYPE;
+    return result;
+  }
+
+  /* list name */
+
+  if (current->next == NULL || current->next->value == NULL ||
+      current->next->token != TK_UNKNOWN) {
+    result.err = MCFG_SYNTAX_ERROR;
+    return result;
+  }
+
+  current = current->next;
+  char *field_name = current->value;
+
+  if (current->next == NULL) {
+    result.err = MCFG_SYNTAX_ERROR;
+    return result;
+  }
+
+  /* parse values */
+
+  _parse_list_field_state_t state = PLFS_LITERAL;
+
+  current = current->next;
+  while (current != NULL) {
+    switch (state) {
+    case PLFS_LITERAL:
+      /* This is a bit ugly, but if we expect the literal value and the token
+       * does not match the literal type token we saved before we need to error.
+       * The one and only exception to this is for strings, since their literals
+       * a prefixed with a quote token.
+       */
+      if (current->token != literal_type_token &&
+          !(list_field_type == TYPE_STRING && current->token == TK_QUOTE)) {
+        result.err = MCFG_SYNTAX_ERROR;
+        result.err_linespan = current->linespan;
+        return result;
+      }
+
+      _parse_literal_result_t parse_result;
+      if (list_field_type == TYPE_STRING) {
+        parse_result = _parse_string_literal(&current);
+      } else {
+        parse_result = _parse_literal(list_field_type, current->value);
+      }
+
+      if (parse_result.err != MCFG_OK) {
+        result.err = parse_result.err;
+        result.err_linespan = current->linespan;
+        return result;
+      }
+
+      /** @todo add field value to values list */
+      state = PLFS_COMMA;
+      break;
+    case PLFS_COMMA:
+      if (current->token != TK_COMMA) {
+        state = PLFS_DONE;
+        break;
+      }
+
+      state = PLFS_LITERAL;
+      break;
+    case PLFS_DONE:
+      /* the DONE state should always be handled outside of this switch */
+      __builtin_unreachable();
+    }
+
+    if (state == PLFS_DONE) {
+      current = current->prev;
+      break;
+    }
+
+    current = current->next;
+  }
+
+  *current_ptr = current;
+
+  /** @todo write list field */
+
+  return result;
+}
+
+/**
  * @brief Parses a field starting from its first token (type).
  * @param destination_file Pointer to the mcfg file struct to which the parsed
  * field should be added to
@@ -843,17 +965,15 @@ _parse_result_t parse_tree(syntax_tree_t tree, mcfg_file_t *destination_file) {
         return result;
       }
       break;
-    case TK_QUOTE:
-      break;
-    case TK_COMMA:
-      break;
-    case TK_UNKNOWN:
-      fprintf(stderr, "syntax error 1\n");
       result.err = MCFG_SYNTAX_ERROR;
       result.err_linespan = current->linespan;
       return result;
     case TK_LIST:
       VALIDATE_PARSER_STATE(state, PTS_IN_SECTION, MCFG_STRUCTURE_ERROR);
+      result = _parse_list_field(destination_file, &current);
+      if (result.err != MCFG_OK) {
+        return result;
+      }
       break;
     case TK_STR:
     case TK_BOOL:
@@ -869,22 +989,15 @@ _parse_result_t parse_tree(syntax_tree_t tree, mcfg_file_t *destination_file) {
         return result;
       }
       break;
+    case TK_UNKNOWN:
+    case TK_QUOTE:
+    case TK_COMMA:
     case TK_NUMBER:
-      /*fprintf(stderr, "syntax error 2\n");
+    case TK_BOOLEAN:
+    case TK_STRING:
       result.err = MCFG_SYNTAX_ERROR;
       result.err_linespan = current->linespan;
-      return result;*/
-      break;
-    case TK_BOOLEAN:
-      /*result.err = MCFG_SYNTAX_ERROR;
-      result.err_linespan = current->linespan;
-      return result;*/
-      break;
-    case TK_STRING:
-      /*result.err = MCFG_SYNTAX_ERROR;
-      result.err_linespan = current->linespan;
-      return result;*/
-      break;
+      return result;
     }
 
     current = current->next;
