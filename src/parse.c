@@ -709,6 +709,8 @@ _parse_result_t _parse_list_field(mcfg_file_t *destination_file,
     return result;
   }
 
+  list->type = list_field_type;
+
   _parse_list_field_state_t state = PLFS_LITERAL;
 
   current = current->next;
