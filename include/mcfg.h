@@ -200,7 +200,7 @@ size_t mcfg_get_token_count(char *in);
  * @return The token at index. If the string is emtpy or the index invalid an
  * empty string is returned. Every return value is allocated on the heap so it
  * has to be freed.
-* @todo slated for removal in topic/new_parser
+ * @todo slated for removal in topic/new_parser
  */
 char *mcfg_get_token_raw(char *in, uint16_t index);
 
@@ -211,7 +211,7 @@ char *mcfg_get_token_raw(char *in, uint16_t index);
  * @return The mcfg_token enum value for the token at index. Returns
  * TOKEN_INVALID if index is invalid, input string is empty/NULL or no valid
  * token could be found at index.
-* @todo slated for removal in topic/new_parser
+ * @todo slated for removal in topic/new_parser
  */
 mcfg_token_t mcfg_get_token(char *in, uint16_t index);
 
