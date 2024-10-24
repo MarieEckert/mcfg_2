@@ -69,31 +69,8 @@ int main(void) {
   fprintf(stderr, "Using MCFG/2 version " MCFG_2_VERSION "\n");
 
   char *filepath = TEST_DIR "embedding_test.mcfg";
-  FILE *raw_file = fopen(filepath, "rb");
-  if (raw_file == NULL) {
-    fprintf(stderr, "failed to open file \"%s\": %s (OS Error %d)\n", filepath,
-            strerror(errno), errno);
-    exit(1);
-  }
 
-  fseek(raw_file, 0, SEEK_END);
-  size_t data_size = ftell(raw_file);
-  rewind(raw_file);
-
-  char *data = malloc(data_size);
-  if (data == NULL) {
-    fclose(raw_file);
-    exit(2);
-  }
-
-  if (fread(data, data_size, 1, raw_file) != 1) {
-    fclose(raw_file);
-    fprintf(stderr, "failed to read file into buffer\n");
-  }
-
-  fclose(raw_file);
-
-  mcfg_parse_result_t ret = mcfg_parse(data);
+  mcfg_parse_result_t ret = mcfg_parse_from_file(filepath);
   if (ret.err != MCFG_OK) {
     fprintf(stderr, "mcfg parsing failed: %s (%d)\n", mcfg_err_string(ret.err),
             ret.err);
