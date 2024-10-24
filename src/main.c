@@ -99,7 +99,7 @@ int main(void) {
             ret.err);
     fprintf(stderr, "in file \"%s\" on line %zu\n", filepath,
             ret.err_linespan.starting_line);
-    goto cleanup;
+    exit(1);
   }
 
   fprintf(stderr, "parsed you a mcfg file!\n");
@@ -123,8 +123,6 @@ int main(void) {
   free(rel.sector);
   free(rel.section);
   free(rel.field);
-
-cleanup:
-  mcfg_free_file(&file);
+  mcfg_free_file(file);
   return 0;
 }

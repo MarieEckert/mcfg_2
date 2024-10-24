@@ -726,7 +726,7 @@ _parse_result_t _parse_list_field(mcfg_file_t *destination_file,
           !(list_field_type == TYPE_STRING && current->token == TK_QUOTE)) {
         result.err = MCFG_SYNTAX_ERROR;
         result.err_linespan = current->linespan;
-        mcfg_free_list(list);
+        mcfg_free_list(*list);
         free(list);
         return result;
       }
@@ -741,7 +741,7 @@ _parse_result_t _parse_list_field(mcfg_file_t *destination_file,
       if (parse_result.err != MCFG_OK) {
         result.err = parse_result.err;
         result.err_linespan = current->linespan;
-        mcfg_free_list(list);
+        mcfg_free_list(*list);
         free(list);
         return result;
       }
@@ -780,7 +780,7 @@ _parse_result_t _parse_list_field(mcfg_file_t *destination_file,
       mcfg_add_field(target_section, TYPE_LIST, name, list, list_struct_size);
 
   if (result.err != MCFG_OK) {
-    mcfg_free_list(list);
+    mcfg_free_list(*list);
     free(list);
   }
 

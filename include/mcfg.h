@@ -231,31 +231,31 @@ mcfg_field_t *mcfg_get_field(mcfg_section_t *section, char *name);
  * @brief Free the contents of given list
  * @param list The list of which the contents should be freed
  */
-void mcfg_free_list(mcfg_list_t *list);
+void mcfg_free_list(mcfg_list_t list);
 
 /**
  * @brief Free the contents of given field
  * @param field The field of which the contents should be freed
  */
-void mcfg_free_field(mcfg_field_t *field);
+void mcfg_free_field(mcfg_field_t field);
 
 /**
  * @brief Free the contents of given section
  * @param section The section of which the contents should be freed
  */
-void mcfg_free_section(mcfg_section_t *section);
+void mcfg_free_section(mcfg_section_t section);
 
 /**
  * @brief Free the contents of given sector
  * @param sector The sector of which the contents should be freed
  */
-void mcfg_free_sector(mcfg_sector_t *sector);
+void mcfg_free_sector(mcfg_sector_t sector);
 
 /**
  * @brief Free the given file
  * @param file The file which should be freed.
  */
-void mcfg_free_file(mcfg_file_t *file);
+void mcfg_free_file(mcfg_file_t file);
 
 /* parser api */
 

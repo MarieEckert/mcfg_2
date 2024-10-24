@@ -289,102 +289,80 @@ mcfg_field_t *mcfg_get_field(mcfg_section_t *section, char *name) {
   return ret;
 }
 
-void mcfg_free_list(mcfg_list_t *list) {
-  if (list == NULL) {
-    return;
+void mcfg_free_list(mcfg_list_t list) {
+  for (size_t ix = 0; ix < list.field_count; ix++) {
+    mcfg_free_field(list.fields[ix]);
   }
 
-  for (size_t ix = 0; ix < list->field_count; ix++) {
-    mcfg_free_field(&list->fields[ix]);
-  }
-
-  free(list->fields);
+  free(list.fields);
 }
 
-void mcfg_free_field(mcfg_field_t *field) {
-  if (field == NULL) {
-    return;
+void mcfg_free_field(mcfg_field_t field) {
+  if (field.name != NULL) {
+    free(field.name);
   }
 
-  if (field->name != NULL) {
-    free(field->name);
-  }
-
-  if (field->data != NULL) {
-    if (field->type == TYPE_LIST) {
-      mcfg_free_list((mcfg_list_t *)field->data);
+  if (field.data != NULL) {
+    if (field.type == TYPE_LIST) {
+      mcfg_free_list(*(mcfg_list_t *)field.data);
     }
 
-    free(field->data);
+    free(field.data);
   }
 }
 
-void mcfg_free_section(mcfg_section_t *section) {
-  if (section == NULL) {
-    return;
-  }
-
-  if (section->field_count > 0 && section->fields != NULL) {
-    for (size_t ix = 0; ix < section->field_count; ix++) {
-      mcfg_free_field(&section->fields[ix]);
+void mcfg_free_section(mcfg_section_t section) {
+  if (section.field_count > 0 && section.fields != NULL) {
+    for (size_t ix = 0; ix < section.field_count; ix++) {
+      mcfg_free_field(section.fields[ix]);
     }
   }
 
-  if (section->fields != NULL) {
-    free(section->fields);
+  if (section.fields != NULL) {
+    free(section.fields);
   }
 
-  if (section->name != NULL) {
-    free(section->name);
+  if (section.name != NULL) {
+    free(section.name);
   }
 }
 
-void mcfg_free_sector(mcfg_sector_t *sector) {
-  if (sector == NULL) {
-    return;
-  }
-
-  if (sector->section_count > 0 && sector->sections != NULL) {
-    for (size_t ix = 0; ix < sector->section_count; ix++) {
-      mcfg_free_section(&sector->sections[ix]);
+void mcfg_free_sector(mcfg_sector_t sector) {
+  if (sector.section_count > 0 && sector.sections != NULL) {
+    for (size_t ix = 0; ix < sector.section_count; ix++) {
+      mcfg_free_section(sector.sections[ix]);
     }
   }
 
-  if (sector->sections != NULL) {
-    free(sector->sections);
+  if (sector.sections != NULL) {
+    free(sector.sections);
   }
 
-  if (sector->name != NULL) {
-    free(sector->name);
+  if (sector.name != NULL) {
+    free(sector.name);
   }
 }
 
-void mcfg_free_file(mcfg_file_t *file) {
-  if (file == NULL) {
-    return;
-  }
-
-  if (file->dynfield_count > 0 && file->dynfields != NULL) {
-    for (size_t ix = 0; ix < file->dynfield_count; ix++) {
-      mcfg_free_field(&file->dynfields[ix]);
+void mcfg_free_file(mcfg_file_t file) {
+  if (file.dynfield_count > 0 && file.dynfields != NULL) {
+    for (size_t ix = 0; ix < file.dynfield_count; ix++) {
+      mcfg_free_field(file.dynfields[ix]);
     }
   }
 
-  if (file->dynfields != NULL) {
-    free(file->dynfields);
+  if (file.dynfields != NULL) {
+    free(file.dynfields);
   }
 
-  if (file->sector_count > 0 && file->sectors != NULL) {
-    for (size_t ix = 0; ix < file->sector_count; ix++) {
-      mcfg_free_sector(&file->sectors[ix]);
+  if (file.sector_count > 0 && file.sectors != NULL) {
+    for (size_t ix = 0; ix < file.sector_count; ix++) {
+      mcfg_free_sector(file.sectors[ix]);
     }
   }
 
-  if (file->sectors != NULL) {
-    free(file->sectors);
+  if (file.sectors != NULL) {
+    free(file.sectors);
   }
-
-  free(file);
 }
 
 mcfg_parse_result_t mcfg_parse(char *input) {
@@ -406,7 +384,7 @@ mcfg_parse_result_t mcfg_parse(char *input) {
   result.err_linespan = parse_result.err_linespan;
 
   if (result.err != MCFG_OK) {
-    mcfg_free_file(&result.value);
+    mcfg_free_file(result.value);
   }
 
   return result;
