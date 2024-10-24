@@ -296,4 +296,11 @@ typedef struct mcfg_parse_result {
  */
 mcfg_parse_result_t mcfg_parse(char *input);
 
+/**
+ * @brief Parses The contents from the given file into a mcfg_file_t structure.
+ * @param path Path to the file to parse.
+ * @return mcfg_parse_result_t, mcfg_parse_result_t.err == MCFG_OK on success.
+ */
+mcfg_parse_result_t mcfg_parse_from_file(const char *path);
+
 #endif // ifndef MCFG_H

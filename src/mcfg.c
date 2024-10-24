@@ -389,3 +389,41 @@ mcfg_parse_result_t mcfg_parse(char *input) {
 
   return result;
 }
+
+mcfg_parse_result_t mcfg_parse_from_file(const char *path) {
+  mcfg_parse_result_t result = {
+      .err = MCFG_OK,
+      .err_linespan = {.starting_line = 0, .line_count = 0},
+      .value = {0},
+  };
+
+  FILE *raw_file = fopen(path, "rb");
+  if (raw_file == NULL) {
+    result.err = errno | MCFG_OS_ERROR_MASK;
+    return result;
+  }
+
+  fseek(raw_file, 0, SEEK_END);
+  const size_t data_size = ftell(raw_file);
+  rewind(raw_file);
+
+  char *data = malloc(data_size);
+  if (data == NULL) {
+    fclose(raw_file);
+
+    result.err = MCFG_MALLOC_FAIL;
+    return result;
+  }
+
+  if (fread(data, data_size, 1, raw_file) != 1) {
+    fclose(raw_file);
+
+    result.err = errno | MCFG_OS_ERROR_MASK;
+    return result;
+  }
+
+  result = mcfg_parse(data);
+  free(data);
+
+  return result;
+}
