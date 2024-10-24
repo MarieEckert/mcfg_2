@@ -15,6 +15,7 @@
 
 #include "mcfg.h"
 
+#include "parse.h"
 #include "shared.h"
 
 #include <errno.h>
@@ -384,4 +385,29 @@ void mcfg_free_file(mcfg_file_t *file) {
   }
 
   free(file);
+}
+
+mcfg_parse_result_t mcfg_parse(char *input) {
+  mcfg_parse_result_t result = {
+      .err = MCFG_OK,
+      .err_linespan = {.starting_line = 0, .line_count = 0},
+      .value = {0},
+  };
+
+  syntax_tree_t tree;
+
+  result.err = lex_input(input, &tree);
+  if (result.err != MCFG_OK) {
+    return result;
+  }
+
+  _parse_result_t parse_result = parse_tree(tree, &result.value);
+  result.err = parse_result.err;
+  result.err_linespan = parse_result.err_linespan;
+
+  if (result.err != MCFG_OK) {
+    mcfg_free_file(&result.value);
+  }
+
+  return result;
 }

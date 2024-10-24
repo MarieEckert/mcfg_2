@@ -94,21 +94,6 @@ typedef enum token {
 char *mcfg_token_str(token_t tk);
 
 /**
- * @brief Structure to keep track on which lines a node / token sits.
- */
-typedef struct linespan {
-  /** @brief The first line on which it resides */
-  size_t starting_line;
-
-  /**
-   * @brief The number of lines it resides. line_count == 1 should be taken to
-   * mean that it only lives on one single line. 0 is the default value but can
-   * also be interpreted to be a 1.
-   */
-  size_t line_count;
-} linespan_t;
-
-/**
  * @brief Struct to represent a lexed MCFG/2 file in a Double-Linked-List
  *        format.
  *
@@ -133,7 +118,7 @@ struct syntax_tree {
   char *value;
 
   /** @brief The span of lines the node in the "tree" takes up */
-  linespan_t linespan;
+  mcfg_linespan_t linespan;
 
   /** @brief The previous entry in the "tree" */
   syntax_tree_t *prev;
@@ -156,14 +141,14 @@ mcfg_err_t lex_input(char *input, syntax_tree_t *tree);
 
 typedef struct _parse_result {
   mcfg_err_t err;
-  linespan_t err_linespan;
+  mcfg_linespan_t err_linespan;
 } _parse_result_t;
 
 /**
  * @brief Parses the given syntax tree into a mcfg_file_t struct
  * @param tree The tree to be parsed
  * @param mcfg Pointer to write the result to
- * @return _parse_result_t.err == MCFG_OK on success
+ * @return mcfg_parse_result_t.err == MCFG_OK on success
  */
 _parse_result_t parse_tree(syntax_tree_t tree, mcfg_file_t *mcfg);
 

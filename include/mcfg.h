@@ -64,6 +64,18 @@ typedef enum mcfg_err {
   MCFG_OS_ERROR_MASK = 0xf000
 } mcfg_err_t;
 
+/**
+ * @brief Get the according string name/description for the input
+ * @param err The error enum value
+ * @return Matching string name/description for input; "invalid error code" if
+ * no matching string could be found. Inputs which match MCFG_OS_ERROR_MASK will
+ * return the return value of strerror and require the return value to be freed
+ * after usage.
+ */
+char *mcfg_err_string(mcfg_err_t err);
+
+/* general api */
+
 typedef enum mcfg_field_type {
   TYPE_INVALID = -1,
   TYPE_STRING,
@@ -117,16 +129,6 @@ typedef struct mcfg_file {
   size_t dynfield_count;
   mcfg_field_t *dynfields;
 } mcfg_file_t;
-
-/**
- * @brief Get the according string name/description for the input
- * @param err The error enum value
- * @return Matching string name/description for input; "invalid error code" if
- * no matching string could be found. Inputs which match MCFG_OS_ERROR_MASK will
- * return the return value of strerror and require the return value to be freed
- * after usage.
- */
-char *mcfg_err_string(mcfg_err_t err);
 
 /**
  * @brief Get the size for the given type in bytes.
@@ -254,5 +256,44 @@ void mcfg_free_sector(mcfg_sector_t *sector);
  * @param file The file which should be freed.
  */
 void mcfg_free_file(mcfg_file_t *file);
+
+/* parser api */
+
+/**
+ * @brief Structure to keep track on which lines a node / token sits.
+ */
+typedef struct mcfg_linespan {
+  /** @brief The first line on which it resides */
+  size_t starting_line;
+
+  /**
+   * @brief The number of lines it resides. line_count == 1 should be taken to
+   * mean that it only lives on one single line. 0 is the default value but can
+   * also be interpreted to be a 1.
+   */
+  size_t line_count;
+} mcfg_linespan_t;
+
+/**
+ * @brief Structure used to contain the result data of mcfg_parse
+ * @see mcfg_parse
+ */
+typedef struct mcfg_parse_result {
+  /** @brief The error that occured whilst parsing, MCFG_OK on success. */
+  mcfg_err_t err;
+
+  /** @brief The linespan in which the error occured. */
+  mcfg_linespan_t err_linespan;
+
+  /** @brief The parsed mcfg_file_t structure */
+  mcfg_file_t value;
+} mcfg_parse_result_t;
+
+/**
+ * @brief Parses the provided input into a mcfg_file_t structure.
+ * @param input The complete input data to be parsed.
+ * @return mcfg_parse_result_t, mcfg_parse_result_t.err == MCFG_OK on success.
+ */
+mcfg_parse_result_t mcfg_parse(char *input);
 
 #endif // ifndef MCFG_H
