@@ -453,6 +453,19 @@ mcfg_err_t lex_input(char *input, syntax_tree_t *tree) {
   return MCFG_OK;
 }
 
+void free_tree(syntax_tree_t *tree) {
+  syntax_tree_t *current = tree;
+
+  while (current != NULL) {
+    syntax_tree_t *tmp = current->next;
+    if (current->value != NULL) {
+      free(current->value);
+    }
+    free(current);
+    current = tmp;
+  }
+}
+
 /**
  * @brief Checks if the given error value is equal to MCFG_OK. If not, it will
  * cause the calling function to return with the `err` field being set to the
@@ -594,7 +607,7 @@ _parse_literal_result_t _parse_string_literal(syntax_tree_t **current_ptr) {
     return result;
   }
 
-  result.value = literal_token->value;
+  result.value = strdup(literal_token->value);
   result.size = strlen(literal_token->value) + 1;
   *current_ptr = current;
 
@@ -693,7 +706,7 @@ _parse_result_t _parse_list_field(mcfg_file_t *destination_file,
   }
 
   current = current->next;
-  char *name = current->value;
+  char *name = strdup(current->value);
 
   if (current->next == NULL) {
     result.err = MCFG_SYNTAX_ERROR;
@@ -710,6 +723,7 @@ _parse_result_t _parse_list_field(mcfg_file_t *destination_file,
   }
 
   list->type = list_field_type;
+  list->field_count = 0;
 
   _parse_list_field_state_t state = PLFS_LITERAL;
 
@@ -819,7 +833,7 @@ _parse_result_t _parse_field(const token_t field_type_token,
     return result;
   }
 
-  name = current->next->value;
+  name = strdup(current->next->value);
 
   /* advance current to name token */
   current = current->next;
@@ -951,7 +965,8 @@ _parse_result_t parse_tree(syntax_tree_t tree, mcfg_file_t *destination_file) {
       }
 
       PARSER_ERR_CHECK_RET(
-          mcfg_add_sector(destination_file, current->next->value), current);
+          mcfg_add_sector(destination_file, strdup(current->next->value)),
+          current);
       current = current->next;
       state = PTS_IN_SECTOR;
       break;
@@ -969,7 +984,7 @@ _parse_result_t parse_tree(syntax_tree_t tree, mcfg_file_t *destination_file) {
       PARSER_ERR_CHECK_RET(
           mcfg_add_section(
               &destination_file->sectors[destination_file->sector_count - 1],
-              current->next->value),
+              strdup(current->next->value)),
           current);
       current = current->next;
       state = PTS_IN_SECTION;

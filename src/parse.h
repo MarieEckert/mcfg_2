@@ -137,6 +137,14 @@ struct syntax_tree {
  */
 mcfg_err_t lex_input(char *input, syntax_tree_t *tree);
 
+#define free_tree NAMESPACED_DECL(free_tree)
+
+/**
+ * @brief Frees the given tree.
+ * @param tree The tree to free
+ */
+void free_tree(syntax_tree_t *tree);
+
 #define parse_tree NAMESPACED_DECL(parse_tree)
 
 typedef struct _parse_result {

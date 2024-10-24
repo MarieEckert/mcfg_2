@@ -372,20 +372,27 @@ mcfg_parse_result_t mcfg_parse(char *input) {
       .value = {0},
   };
 
-  syntax_tree_t tree;
-
-  result.err = lex_input(input, &tree);
-  if (result.err != MCFG_OK) {
+  syntax_tree_t *tree = malloc(sizeof(syntax_tree_t));
+  if (tree == NULL) {
+    result.err = MCFG_MALLOC_FAIL;
     return result;
   }
 
-  _parse_result_t parse_result = parse_tree(tree, &result.value);
+  result.err = lex_input(input, tree);
+  if (result.err != MCFG_OK) {
+    free_tree(tree);
+    return result;
+  }
+
+  _parse_result_t parse_result = parse_tree(*tree, &result.value);
   result.err = parse_result.err;
   result.err_linespan = parse_result.err_linespan;
 
   if (result.err != MCFG_OK) {
     mcfg_free_file(result.value);
   }
+
+  free_tree(tree);
 
   return result;
 }
@@ -421,6 +428,8 @@ mcfg_parse_result_t mcfg_parse_from_file(const char *path) {
     result.err = errno | MCFG_OS_ERROR_MASK;
     return result;
   }
+
+  fclose(raw_file);
 
   result = mcfg_parse(data);
   free(data);
