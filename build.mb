@@ -27,15 +27,21 @@ sector targets
   section clean
     str exec '#!/bin/bash
       set -e
-      COMMAND="rm -rf $(/config/files/obj)" 
-      printf "  \$COMMAND\\n"
-      $COMMAND
+      if [ -d "$(/config/files/obj)" ]; then
+        COMMAND="rm -rf $(/config/files/obj)"
+        printf "  \$COMMAND\\n"
+        $COMMAND
+      fi
+
       COMMAND="mkdir $(/config/files/obj)"
       printf "  \$COMMAND\\n"
       $COMMAND
-      COMMAND="rm $(/config/files/libfile)"
-      printf "  \$COMMAND\\n"
-      $COMMAND
+
+      if [ -f $(/config/files/libfile) ]; then
+        COMMAND="rm $(/config/files/libfile)"
+        printf "  \$COMMAND\\n"
+        $COMMAND
+      fi
     '
   end
 
