@@ -693,7 +693,7 @@ _parse_result_t _parse_list_field(mcfg_file_t *destination_file,
   }
 
   current = current->next;
-  char *field_name = current->value;
+  char *name = current->value;
 
   if (current->next == NULL) {
     result.err = MCFG_SYNTAX_ERROR;
@@ -701,6 +701,13 @@ _parse_result_t _parse_list_field(mcfg_file_t *destination_file,
   }
 
   /* parse values */
+
+  const size_t list_struct_size = sizeof(mcfg_list_t);
+  mcfg_list_t *list = malloc(list_struct_size);
+  if (list == NULL) {
+    result.err = MCFG_MALLOC_FAIL;
+    return result;
+  }
 
   _parse_list_field_state_t state = PLFS_LITERAL;
 
@@ -717,6 +724,8 @@ _parse_result_t _parse_list_field(mcfg_file_t *destination_file,
           !(list_field_type == TYPE_STRING && current->token == TK_QUOTE)) {
         result.err = MCFG_SYNTAX_ERROR;
         result.err_linespan = current->linespan;
+        mcfg_free_list(list);
+        free(list);
         return result;
       }
 
@@ -730,10 +739,12 @@ _parse_result_t _parse_list_field(mcfg_file_t *destination_file,
       if (parse_result.err != MCFG_OK) {
         result.err = parse_result.err;
         result.err_linespan = current->linespan;
+        mcfg_free_list(list);
+        free(list);
         return result;
       }
 
-      /** @todo add field value to values list */
+      mcfg_add_list_field(list, parse_result.size, parse_result.value);
       state = PLFS_COMMA;
       break;
     case PLFS_COMMA:
@@ -759,7 +770,17 @@ _parse_result_t _parse_list_field(mcfg_file_t *destination_file,
 
   *current_ptr = current;
 
-  /** @todo write list field */
+  mcfg_sector_t *target_sector =
+      &destination_file->sectors[destination_file->sector_count - 1];
+  mcfg_section_t *target_section =
+      &target_sector->sections[target_sector->section_count - 1];
+  result.err =
+      mcfg_add_field(target_section, TYPE_LIST, name, list, list_struct_size);
+
+  if (result.err != MCFG_OK) {
+    mcfg_free_list(list);
+    free(list);
+  }
 
   return result;
 }
