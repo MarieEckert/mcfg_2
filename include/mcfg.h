@@ -1,4 +1,4 @@
-/* mcfg.h ; marie config format parser header
+/* mcfg.h ; marie config format core header
  * for MCFG/2
  *
  * Copyright (c) 2023, Marie Eckert
