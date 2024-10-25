@@ -7,15 +7,15 @@ sector config
     str libfile 'lib$(/config/files/libname).a'
     str testfile 'mcfg_test'
 
-    list str sources 'mcfg_shared', 'mcfg_util', 'mcfg_format', 'mcfg'
+    list str sources 'parse', 'shared', 'mcfg_util', 'mcfg_format', 'mcfg'
   end
 
   section mariebuild
     u8 default_log_level 2
     str build_type 'incremental'
 
-    str cc 'clang'
-    str cflags '-gdwarf-4 -Wextra -Wall -Iinclude/ -Isrc/'
+    str cc 'clang-18'
+    str cflags '-std=c17 -gdwarf-4 -Wextra -Wall -Iinclude/ -Isrc/'
     str ldflags '-lm -L. -l$(/config/files/libname)'
 
     list str targets 'clean', 'debug', 'release'
@@ -25,7 +25,24 @@ end
 
 sector targets
   section clean
-    str exec 'rm -rf $(/config/files/obj) && mkdir $(/config/files/obj)'
+    str exec '#!/bin/bash
+      set -e
+      if [ -d "$(/config/files/obj)" ]; then
+        COMMAND="rm -rf $(/config/files/obj)"
+        printf "  \$COMMAND\\n"
+        $COMMAND
+      fi
+
+      COMMAND="mkdir $(/config/files/obj)"
+      printf "  \$COMMAND\\n"
+      $COMMAND
+
+      if [ -f $(/config/files/libfile) ]; then
+        COMMAND="rm $(/config/files/libfile)"
+        printf "  \$COMMAND\\n"
+        $COMMAND
+      fi
+    '
   end
 
   section debug
@@ -33,6 +50,7 @@ sector targets
   end
 
   section release
+    list str required_targets 'clean'
     list str c_rules 'libsources', 'linklib'
   end
 end
@@ -46,6 +64,7 @@ sector c_rules
     str output_format '$(/config/files/obj)$(%element%).o'
 
     str exec '#!/bin/bash
+    set -e
 
     COMMAND="$(/config/mariebuild/cc) $(/config/mariebuild/cflags) -c -o $(%output%) $(%input%)"
     printf "  \$COMMAND\\n"
@@ -82,6 +101,7 @@ sector c_rules
     str output_format '$(/config/files/obj)$(%element%).o'
 
     str exec '#!/bin/bash
+    set -e
 
     COMMAND="$(/config/mariebuild/cc) $(/config/mariebuild/cflags) -c -o $(%output%) $(%input%)"
     printf "  \$COMMAND\\n"
@@ -98,6 +118,7 @@ sector c_rules
     str output_format '$(/config/files/testfile)'
 
     str exec '#!/bin/bash
+    set -e
 
     COMMAND="$(/config/mariebuild/cc) $(/config/mariebuild/cflags) -o $(%output%) $(%input%) $(/config/mariebuild/ldflags)"
     printf "  \$COMMAND\\n"

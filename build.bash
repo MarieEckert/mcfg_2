@@ -7,7 +7,7 @@ OBJDIR="obj/"
 LIB_BASENAME="mcfg_2"
 LIBNAME="lib$LIB_BASENAME.a"
 
-CFLAGS="-ggdb -Iinclude/ -Isrc/"
+CFLAGS="-std=gnu17 -gdwarf-4 -Wextra -Wall -Iinclude/ -Isrc/"
 LDFLAGS="-lm -L. -l$LIB_BASENAME"
 
 TEST_BIN="mcfg_test"
@@ -29,7 +29,7 @@ function build_objs() {
 }
 
 function build_lib() {
-  OBJECTS=("mcfg mcfg_util mcfg_shared mcfg_format")
+  OBJECTS=("mcfg mcfg_util parse shared mcfg_format")
 
   echo "==> Compiling sources for \"$LIBNAME\""
   build_objs "${OBJECTS[@]}"

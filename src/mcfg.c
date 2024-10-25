@@ -10,9 +10,13 @@
  * - Edge-Case Handling (checking for null-pointer, ...)
  */
 
+#define _XOPEN_SOURCE 700
+#define _POSIX_C_SOURCE 2
+
 #include "mcfg.h"
 
-#include "mcfg_shared.h"
+#include "parse.h"
+#include "shared.h"
 
 #include <errno.h>
 #include <math.h>
@@ -39,37 +43,7 @@
     ret;                                                                       \
   })
 
-#define DATA_PARSE_ERR_CHECK(c, e)                                             \
-  ({                                                                           \
-    if (!(c))                                                                  \
-      return (mcfg_data_parse_result_t){.error = e};                           \
-  })
-
-bool _integer_bounds_check(int64_t _int, mcfg_field_type_t type) {
-  if (mcfg_sizeof(type) <= 0) {
-    return false;
-  }
-
-  switch (type) {
-  case TYPE_BOOL:
-    return _int >= BOOL_FALSE && _int <= BOOL_TRUE;
-  case TYPE_I8:
-    return _int >= INT8_MIN && _int <= INT8_MAX;
-  case TYPE_U8:
-    return _int >= 0 && _int <= UINT8_MAX;
-  case TYPE_I16:
-    return _int >= INT16_MIN && _int <= INT16_MAX;
-  case TYPE_U16:
-    return _int >= 0 && _int <= UINT16_MAX;
-  case TYPE_I32:
-    return _int >= INT32_MIN && _int <= INT32_MAX;
-  case TYPE_U32:
-    return _int >= 0 && _int <= UINT32_MAX;
-  default:
-    return false;
-  }
-}
-
+/** @deprecated in 1.0.0 */
 mcfg_boolean_t _strtobool(char *in) {
   if (is_string_empty(in)) {
     return BOOL_FALSE;
@@ -134,666 +108,6 @@ ssize_t mcfg_sizeof(mcfg_field_type_t type) {
   default:
     return -1;
   }
-}
-
-struct _mcfg_type_id {
-  char *name;
-  mcfg_field_type_t value;
-};
-
-const struct _mcfg_type_id TYPE_IDS[] = {
-    {.name = "str", .value = TYPE_STRING}, {.name = "list", .value = TYPE_LIST},
-    {.name = "bool", .value = TYPE_BOOL},  {.name = "i8", .value = TYPE_I8},
-    {.name = "u8", .value = TYPE_U8},      {.name = "i16", .value = TYPE_I16},
-    {.name = "u16", .value = TYPE_U16},    {.name = "i32", .value = TYPE_I32},
-    {.name = "u32", .value = TYPE_U32},
-};
-const size_t EXISTING_TYPE_COUNT =
-    sizeof(TYPE_IDS) / sizeof(struct _mcfg_type_id);
-
-mcfg_field_type_t mcfg_str_to_type(char *strtype) {
-  mcfg_field_type_t ret = TYPE_INVALID;
-
-  strtype = strdup(strtype);
-  remove_newline(strtype);
-
-  if (is_string_empty(strtype)) {
-    goto mcfg_get_token_exit;
-  }
-
-  for (size_t ix = 0; ix < EXISTING_TYPE_COUNT; ix++) {
-    if (strcmp(strtype, TYPE_IDS[ix].name) == 0) {
-      ret = TYPE_IDS[ix].value;
-      break;
-    }
-  }
-
-mcfg_get_token_exit:
-  free(strtype);
-  return ret;
-}
-
-struct _mcfg_token_id {
-  char *name;
-  mcfg_token_t value;
-};
-
-const struct _mcfg_token_id TOKEN_IDS[] = {
-    {.name = "sector", .value = TOKEN_SECTOR},
-    {.name = "section", .value = TOKEN_SECTION},
-    {.name = "end", .value = TOKEN_END},
-    {.name = ";", .value = TOKEN_COMMENT},
-    {.name = "comment", .value = TOKEN_COMMENT},
-    {.name = "str", .value = TOKEN_STR},
-    {.name = "list", .value = TOKEN_LIST},
-    {.name = "bool", .value = TOKEN_BOOL},
-    {.name = "i8", .value = TOKEN_I8},
-    {.name = "u8", .value = TOKEN_U8},
-    {.name = "i16", .value = TOKEN_I16},
-    {.name = "u16", .value = TOKEN_U16},
-    {.name = "i32", .value = TOKEN_I32},
-    {.name = "u32", .value = TOKEN_U32},
-};
-const size_t EXISTING_TOKEN_COUNT =
-    sizeof(TOKEN_IDS) / sizeof(struct _mcfg_token_id);
-
-size_t _token_position(char *in, uint16_t index) {
-  size_t pos = 0;
-
-  char *string_tok_ptr = NULL;
-  char *indup = strdup(in);
-  char *tok = strtok_r(indup, " ", &string_tok_ptr);
-
-  uint16_t current_index = 0;
-  while (tok != NULL) {
-    if (current_index == index) {
-      break;
-    }
-
-    tok = strtok_r(NULL, " ", &string_tok_ptr);
-    current_index++;
-  }
-
-  if (tok != NULL) {
-    pos = tok - indup;
-  }
-
-  free(indup);
-  return pos;
-}
-
-size_t mcfg_get_token_count(char *in) {
-  if (is_string_empty(in)) {
-    return 0;
-  }
-
-  size_t count = 0;
-  char *string_tok_ptr = NULL;
-  char *indup = strdup(in);
-  char *tok = strtok_r(indup, " ", &string_tok_ptr);
-
-  while (tok != NULL) {
-    count++;
-    tok = strtok_r(NULL, " ", &string_tok_ptr);
-  }
-
-  free(indup);
-  return count;
-}
-
-char *mcfg_get_token_raw(char *in, uint16_t index) {
-  if (is_string_empty(in)) {
-    return strdup("");
-  }
-
-  char *string_tok_ptr = NULL;
-  char *indup = strdup(in);
-  char *ret = strtok_r(indup, " ", &string_tok_ptr);
-
-  uint16_t current_index = 0;
-  while (ret != NULL) {
-    if (current_index == index) {
-      break;
-    }
-
-    ret = strtok_r(NULL, " ", &string_tok_ptr);
-    current_index++;
-  }
-
-  if (ret == NULL) {
-    free(ret);
-    return strdup("");
-  }
-
-  char *aret = strdup(ret);
-  free(indup);
-  return aret;
-}
-
-mcfg_token_t mcfg_get_token(char *in, uint16_t index) {
-  mcfg_token_t tok = TOKEN_INVALID;
-  in = mcfg_get_token_raw(in, index);
-
-  remove_newline(in);
-
-  if (is_string_empty(in)) {
-    tok = TOKEN_EMPTY;
-    goto mcfg_get_token_exit;
-  }
-
-  for (size_t ix = 0; ix < EXISTING_TOKEN_COUNT; ix++) {
-    if (strcmp(in, TOKEN_IDS[ix].name) == 0) {
-      tok = TOKEN_IDS[ix].value;
-      break;
-    }
-  }
-
-mcfg_get_token_exit:
-  free(in);
-  return tok;
-}
-
-mcfg_data_parse_result_t _parse_string_field(char *str) {
-  mcfg_data_parse_result_t ret = {
-      .error = MCFG_OK,
-      .multiline = false,
-      .data = NULL,
-      .size = 0,
-  };
-
-  if (strlen(str) == 0) {
-    ret.data = malloc(1);
-
-    DATA_PARSE_ERR_CHECK(ret.data != NULL, MCFG_MALLOC_FAIL);
-
-    ((char *)ret.data)[0] = 0;
-    ret.size = 1;
-    return ret;
-  }
-
-  ret.data = malloc(strlen(str) + 1);
-  DATA_PARSE_ERR_CHECK(ret.data != NULL, MCFG_MALLOC_FAIL);
-
-  size_t ix = 0;
-  size_t wix = 0;
-  for (; ix < strlen(str); ix++) {
-    if (str[ix] == '\'') {
-      // Disgusting!
-      bool prev_char_not_quote = ix == 0 || str[ix - 1] != '\'';
-      bool next_char_not_quote =
-          ix + 1 < strlen(str) ? str[ix + 1] != '\'' : true;
-      if (prev_char_not_quote && next_char_not_quote) {
-        break;
-      } else if (!prev_char_not_quote) {
-        continue;
-      }
-    }
-
-    ((char *)ret.data)[wix] = str[ix];
-
-    wix++;
-    ret.size++;
-
-    if (str[ix] == '\n') {
-      ret.multiline = true;
-      break;
-    }
-  }
-  ((char *)ret.data)[wix] = 0;
-  ret.size++;
-  ret.parse_end = str + ix;
-
-  return ret;
-}
-
-mcfg_data_parse_result_t _parse_number_type_field(mcfg_field_type_t type,
-                                                  char *str) {
-  mcfg_data_parse_result_t ret = {
-      .error = MCFG_OK, .multiline = false, .data = NULL, .size = 0};
-
-  ret.size = mcfg_sizeof(type);
-  if (ret.size <= 0) {
-    ret.error = MCFG_INVALID_TYPE;
-    goto _parse_number_type_field_ret;
-  }
-
-  ret.data = malloc(ret.size);
-
-  DATA_PARSE_ERR_CHECK(ret.data != NULL, MCFG_MALLOC_FAIL);
-
-  int64_t converted = 0;
-
-  remove_newline(str);
-  if (type == TYPE_BOOL) {
-    converted = _strtobool(str);
-  } else {
-    converted = strtol(str, NULL, 10);
-  }
-
-  if (!_integer_bounds_check(converted, type)) {
-    ret.error = MCFG_INTEGER_OUT_OF_BOUNDS;
-    goto _parse_number_type_field_ret;
-  }
-
-  memcpy(ret.data, &converted, ret.size);
-
-_parse_number_type_field_ret:
-  return ret;
-}
-
-mcfg_data_parse_result_t _parse_str_list_data(mcfg_list_t *list, char *str) {
-  mcfg_data_parse_result_t ret = {
-      .error = MCFG_OK, .multiline = false, .data = NULL, .size = 0};
-
-  mcfg_field_type_t list_type = list->type;
-
-  if (list_type != TYPE_STRING) {
-    ret.error = MCFG_INVALID_PARSER_STATE;
-    return ret;
-  }
-
-  char *parse_start = strchr(str, '\'');
-
-  while (parse_start != NULL && parse_start[0] != 0) {
-    mcfg_data_parse_result_t data_result = _parse_string_field(parse_start + 1);
-
-    if (data_result.error != MCFG_OK) {
-      ret.error = data_result.error;
-      break;
-    }
-
-    ret.error = mcfg_add_list_field(list, data_result.size, data_result.data);
-    if (ret.error != MCFG_OK) {
-      break;
-    }
-
-    parse_start = strchr(data_result.parse_end + 1, '\'');
-  }
-
-  ret.data = list;
-  ret.size = sizeof(*list);
-
-  return ret;
-}
-
-mcfg_data_parse_result_t _parse_list_data(mcfg_list_t *list, char *str) {
-  mcfg_data_parse_result_t ret = {
-      .error = MCFG_OK, .multiline = false, .data = NULL, .size = 0};
-
-  mcfg_field_type_t list_type = list->type;
-
-  if (list_type == TYPE_INVALID || list_type == TYPE_LIST) {
-    ret.error = MCFG_INVALID_TYPE;
-    return ret;
-  }
-
-  if (list_type == TYPE_STRING) {
-    return _parse_str_list_data(list, str);
-  }
-
-  bool list_end = false;
-  bool line_end = false;
-
-  size_t tok_count = mcfg_get_token_count(str);
-  size_t tok_ix = 0;
-  for (; tok_ix < tok_count; tok_ix++) {
-    char *str_value = mcfg_get_token_raw(str, tok_ix);
-
-    line_end = has_newline(str_value);
-
-    // avoid interpreting trailing spaces at line end to be list elements
-    if (line_end && is_string_empty(str_value)) {
-      free(str_value);
-      break;
-    }
-
-    remove_newline(str_value);
-    list_end = str_value[strlen(str_value) - 1] != ',';
-
-    if (!list_end) {
-      str_value[strlen(str_value) - 1] = 0;
-    }
-
-    mcfg_data_parse_result_t data_result =
-        _parse_number_type_field(list_type, str_value);
-    free(str_value);
-
-    // TODO: This might cause some problems down the line, check back later
-    if (data_result.error != MCFG_OK) {
-      return ret;
-    }
-
-    ret.error = mcfg_add_list_field(list, data_result.size, data_result.data);
-    if (ret.error != MCFG_OK) {
-      break;
-    }
-
-    if (list_end) {
-      break;
-    }
-  }
-
-  if (ret.error != MCFG_OK) {
-    return ret;
-  }
-
-  if (list_end && tok_ix < (tok_count - 1)) {
-    ret.error = MCFG_SYNTAX_ERROR;
-  }
-
-  if (!list_end && line_end) {
-    ret.multiline = true;
-  }
-
-  ret.data = list;
-  ret.size = sizeof(*list);
-
-  return ret;
-}
-
-mcfg_data_parse_result_t _parse_list_field(char *str) {
-  mcfg_data_parse_result_t ret = {
-      .error = MCFG_OK, .multiline = false, .data = NULL, .size = 0};
-
-  // 0    1           2      3        4
-  // list [list_type] [name] [value], [value] ...
-  // minimum token count = 4
-
-  size_t tok_count = mcfg_get_token_count(str);
-  if (tok_count < 4) {
-    ret.error = MCFG_SYNTAX_ERROR;
-    return ret;
-  }
-
-  char *strtype = mcfg_get_token_raw(str, 1);
-  mcfg_field_type_t list_type = mcfg_str_to_type(strtype);
-  free(strtype);
-
-  mcfg_list_t *list = malloc(sizeof(mcfg_list_t));
-  list->type = list_type;
-  list->field_count = 0;
-
-  size_t first_val_pos = _token_position(str, 3);
-  ret = _parse_list_data(list, str + first_val_pos);
-  if (ret.error != MCFG_OK) {
-    free(list);
-  }
-
-  return ret;
-}
-
-mcfg_data_parse_result_t mcfg_parse_field_data(mcfg_field_type_t type,
-                                               char *str) {
-  mcfg_data_parse_result_t ret = {
-      .error = MCFG_OK,
-      .multiline = false,
-      .data = NULL,
-      .size = 0,
-  };
-
-  if (type == TYPE_INVALID) {
-    ret.error = MCFG_INVALID_TYPE;
-    return ret;
-  }
-
-  size_t tok_count = mcfg_get_token_count(str);
-  if (tok_count < 3) {
-    ret.error = MCFG_SYNTAX_ERROR;
-    return ret;
-  }
-
-  if (type == TYPE_STRING) {
-    return _parse_string_field(strchr(str, '\'') + 1);
-  }
-
-  if (type == TYPE_LIST) {
-    return _parse_list_field(str);
-  }
-
-  char *value = mcfg_get_token_raw(str, 2);
-  ret = _parse_number_type_field(type, value);
-  free(value);
-
-  return ret;
-}
-
-mcfg_err_t _parse_outside_sector(char *line, mcfg_parser_ctxt_t *ctxt) {
-  mcfg_token_t tok = mcfg_get_token(line, 0);
-
-  if (tok == TOKEN_INVALID) {
-    return MCFG_INVALID_KEYWORD;
-  }
-
-  if (tok == TOKEN_EMPTY || tok == TOKEN_COMMENT) {
-    return MCFG_OK;
-  }
-
-  if (tok == TOKEN_END) {
-    return MCFG_END_IN_NOWHERE;
-  }
-
-  if (tok != TOKEN_SECTOR) {
-    return MCFG_STRUCTURE_ERROR;
-  }
-
-  char *name = mcfg_get_token_raw(line, 1);
-  mcfg_err_t ret = mcfg_add_sector(ctxt->target_file, name);
-
-  if (ret != MCFG_OK) {
-    free(name);
-    return ret;
-  }
-
-  ctxt->target_sector =
-      &ctxt->target_file->sectors[ctxt->target_file->sector_count - 1];
-
-  return MCFG_OK;
-}
-
-mcfg_err_t _parse_sector(char *line, mcfg_parser_ctxt_t *ctxt) {
-  mcfg_token_t tok = mcfg_get_token(line, 0);
-
-  if (tok == TOKEN_INVALID) {
-    return MCFG_INVALID_KEYWORD;
-  }
-
-  if (tok == TOKEN_EMPTY || tok == TOKEN_COMMENT) {
-    return MCFG_OK;
-  }
-
-  if (tok == TOKEN_END) {
-    ctxt->target_sector = NULL;
-    return MCFG_OK;
-  }
-
-  if (tok != TOKEN_SECTION) {
-    return MCFG_STRUCTURE_ERROR;
-  }
-
-  if (ctxt->target_sector == NULL) {
-    return MCFG_STRUCTURE_ERROR;
-  }
-
-  char *name = mcfg_get_token_raw(line, 1);
-  mcfg_err_t ret = mcfg_add_section(ctxt->target_sector, name);
-
-  if (ret != MCFG_OK) {
-    free(name);
-    return ret;
-  }
-
-  ctxt->target_section =
-      &ctxt->target_sector->sections[ctxt->target_sector->section_count - 1];
-
-  return MCFG_OK;
-}
-
-mcfg_err_t _parse_section(char *line, mcfg_parser_ctxt_t *ctxt) {
-  mcfg_token_t tok = mcfg_get_token(line, 0);
-
-  if (tok == TOKEN_INVALID) {
-    return MCFG_INVALID_KEYWORD;
-  }
-
-  if (tok == TOKEN_EMPTY || tok == TOKEN_COMMENT) {
-    return MCFG_OK;
-  }
-
-  if (tok == TOKEN_END) {
-    ctxt->target_section = NULL;
-    return MCFG_OK;
-  }
-
-  if (tok < TOKEN_STR) {
-    return MCFG_STRUCTURE_ERROR;
-  }
-
-  char *strtype = mcfg_get_token_raw(line, 0);
-  mcfg_field_type_t type = mcfg_str_to_type(strtype);
-  free(strtype);
-
-  uint16_t name_tok_offs = type == TYPE_LIST ? 1 : 0;
-  char *name = mcfg_get_token_raw(line, 1 + name_tok_offs);
-  mcfg_data_parse_result_t data_result = mcfg_parse_field_data(type, line);
-  if (data_result.error != MCFG_OK) {
-    return data_result.error;
-  }
-
-  mcfg_err_t ret = mcfg_add_field(ctxt->target_section, type, name,
-                                  data_result.data, data_result.size);
-  if (ret != MCFG_OK) {
-    free(name);
-    if (data_result.data != NULL) {
-      free(data_result.data);
-    }
-    return ret;
-  }
-
-  if (data_result.multiline) {
-    ctxt->target_field =
-        &ctxt->target_section->fields[ctxt->target_section->field_count - 1];
-  }
-
-  return MCFG_OK;
-}
-
-mcfg_err_t _parse_field(char *line, mcfg_parser_ctxt_t *ctxt) {
-  if (ctxt->target_field == NULL) {
-    return MCFG_INVALID_PARSER_STATE;
-  }
-
-  mcfg_field_t *field = ctxt->target_field;
-  if (field->type != TYPE_STRING && field->type != TYPE_LIST) {
-    return MCFG_INVALID_PARSER_STATE;
-  }
-
-  mcfg_data_parse_result_t data_result;
-  switch (field->type) {
-  case TYPE_STRING: {
-    data_result = _parse_string_field(line);
-    if (data_result.error != MCFG_OK) {
-      return data_result.error;
-    }
-
-    size_t new_size = field->size + data_result.size - 1;
-    char *new_str = XMALLOC(new_size);
-
-    // string field data is always expected to be NULL-terminated
-    memcpy(new_str, field->data, field->size - 1);
-    memcpy(new_str + field->size - 1, data_result.data, data_result.size);
-    free(field->data);
-    free(data_result.data);
-
-    field->size = new_size;
-    field->data = (void *)new_str;
-    break;
-  }
-  case TYPE_LIST: {
-    data_result = _parse_list_data((mcfg_list_t *)field->data,
-                                   line + _token_position(line, 0));
-    break;
-  }
-  default:
-    return MCFG_INVALID_PARSER_STATE;
-  }
-
-  if (!data_result.multiline) {
-    ctxt->target_field = NULL;
-  }
-
-  return MCFG_OK;
-}
-
-mcfg_err_t mcfg_parse_line(char *line, mcfg_parser_ctxt_t *ctxt) {
-  if (ctxt->target_file == NULL) {
-    return MCFG_INVALID_PARSER_STATE;
-  }
-
-  if (ctxt->target_sector == NULL) {
-    return _parse_outside_sector(line, ctxt);
-  }
-
-  if (ctxt->target_section == NULL) {
-    return _parse_sector(line, ctxt);
-  }
-
-  if (ctxt->target_field == NULL) {
-    return _parse_section(line, ctxt);
-  } else {
-    return _parse_field(line, ctxt);
-  }
-
-  return MCFG_INVALID_PARSER_STATE;
-}
-
-mcfg_err_t mcfg_parse_file_ctxto(char *path, mcfg_file_t *file,
-                                 mcfg_parser_ctxt_t **ctxt_out) {
-  FILE *in_file;
-  char *line = NULL;
-  size_t len = 0;
-  ssize_t read;
-
-  file->sector_count = 0;
-  file->dynfield_count = 0;
-
-  mcfg_parser_ctxt_t ctxt = {
-      .target_file = file,
-      .target_sector = NULL,
-      .target_section = NULL,
-      .target_field = NULL,
-      .linenum = 0,
-      .file_path = path,
-  };
-
-  if (ctxt_out != NULL) {
-    *ctxt_out = &ctxt;
-  }
-
-  errno = 0;
-  in_file = fopen(path, "r");
-  if (in_file == NULL) {
-    return MCFG_OS_ERROR_MASK | errno;
-  }
-
-  mcfg_err_t result = MCFG_OK;
-  while ((read = getline(&line, &len, in_file)) != -1) {
-    ctxt.linenum++;
-    result = mcfg_parse_line(line, &ctxt);
-    if (result != MCFG_OK) {
-      break;
-    }
-  }
-
-  fclose(in_file);
-  if (line) {
-    free(line);
-  }
-
-  return result;
-}
-
-mcfg_err_t mcfg_parse_file(char *path, mcfg_file_t *file) {
-  return mcfg_parse_file_ctxto(path, file, NULL);
 }
 
 mcfg_err_t mcfg_add_sector(mcfg_file_t *file, char *name) {
@@ -975,100 +289,150 @@ mcfg_field_t *mcfg_get_field(mcfg_section_t *section, char *name) {
   return ret;
 }
 
-void mcfg_free_list(mcfg_list_t *list) {
-  if (list == NULL) {
-    return;
+void mcfg_free_list(mcfg_list_t list) {
+  for (size_t ix = 0; ix < list.field_count; ix++) {
+    mcfg_free_field(list.fields[ix]);
   }
 
-  for (size_t ix = 0; ix < list->field_count; ix++) {
-    mcfg_free_field(&list->fields[ix]);
-  }
-
-  free(list->fields);
+  free(list.fields);
 }
 
-void mcfg_free_field(mcfg_field_t *field) {
-  if (field == NULL) {
-    return;
+void mcfg_free_field(mcfg_field_t field) {
+  if (field.name != NULL) {
+    free(field.name);
   }
 
-  if (field->name != NULL) {
-    free(field->name);
-  }
-
-  if (field->data != NULL) {
-    if (field->type == TYPE_LIST) {
-      mcfg_free_list((mcfg_list_t *)field->data);
+  if (field.data != NULL) {
+    if (field.type == TYPE_LIST) {
+      mcfg_free_list(*(mcfg_list_t *)field.data);
     }
 
-    free(field->data);
+    free(field.data);
   }
 }
 
-void mcfg_free_section(mcfg_section_t *section) {
-  if (section == NULL) {
-    return;
-  }
-
-  if (section->field_count > 0 && section->fields != NULL) {
-    for (size_t ix = 0; ix < section->field_count; ix++) {
-      mcfg_free_field(&section->fields[ix]);
+void mcfg_free_section(mcfg_section_t section) {
+  if (section.field_count > 0 && section.fields != NULL) {
+    for (size_t ix = 0; ix < section.field_count; ix++) {
+      mcfg_free_field(section.fields[ix]);
     }
   }
 
-  if (section->fields != NULL) {
-    free(section->fields);
+  if (section.fields != NULL) {
+    free(section.fields);
   }
 
-  if (section->name != NULL) {
-    free(section->name);
+  if (section.name != NULL) {
+    free(section.name);
   }
 }
 
-void mcfg_free_sector(mcfg_sector_t *sector) {
-  if (sector == NULL) {
-    return;
-  }
-
-  if (sector->section_count > 0 && sector->sections != NULL) {
-    for (size_t ix = 0; ix < sector->section_count; ix++) {
-      mcfg_free_section(&sector->sections[ix]);
+void mcfg_free_sector(mcfg_sector_t sector) {
+  if (sector.section_count > 0 && sector.sections != NULL) {
+    for (size_t ix = 0; ix < sector.section_count; ix++) {
+      mcfg_free_section(sector.sections[ix]);
     }
   }
 
-  if (sector->sections != NULL) {
-    free(sector->sections);
+  if (sector.sections != NULL) {
+    free(sector.sections);
   }
 
-  if (sector->name != NULL) {
-    free(sector->name);
+  if (sector.name != NULL) {
+    free(sector.name);
   }
 }
 
-void mcfg_free_file(mcfg_file_t *file) {
-  if (file == NULL) {
-    return;
-  }
-
-  if (file->dynfield_count > 0 && file->dynfields != NULL) {
-    for (size_t ix = 0; ix < file->dynfield_count; ix++) {
-      mcfg_free_field(&file->dynfields[ix]);
+void mcfg_free_file(mcfg_file_t file) {
+  if (file.dynfield_count > 0 && file.dynfields != NULL) {
+    for (size_t ix = 0; ix < file.dynfield_count; ix++) {
+      mcfg_free_field(file.dynfields[ix]);
     }
   }
 
-  if (file->dynfields != NULL) {
-    free(file->dynfields);
+  if (file.dynfields != NULL) {
+    free(file.dynfields);
   }
 
-  if (file->sector_count > 0 && file->sectors != NULL) {
-    for (size_t ix = 0; ix < file->sector_count; ix++) {
-      mcfg_free_sector(&file->sectors[ix]);
+  if (file.sector_count > 0 && file.sectors != NULL) {
+    for (size_t ix = 0; ix < file.sector_count; ix++) {
+      mcfg_free_sector(file.sectors[ix]);
     }
   }
 
-  if (file->sectors != NULL) {
-    free(file->sectors);
+  if (file.sectors != NULL) {
+    free(file.sectors);
+  }
+}
+
+mcfg_parse_result_t mcfg_parse(char *input) {
+  mcfg_parse_result_t result = {
+      .err = MCFG_OK,
+      .err_linespan = {.starting_line = 0, .line_count = 0},
+      .value = {0},
+  };
+
+  syntax_tree_t *tree = malloc(sizeof(syntax_tree_t));
+  if (tree == NULL) {
+    result.err = MCFG_MALLOC_FAIL;
+    return result;
   }
 
-  free(file);
+  result.err = lex_input(input, tree);
+  if (result.err != MCFG_OK) {
+    free_tree(tree);
+    return result;
+  }
+
+  _parse_result_t parse_result = parse_tree(*tree, &result.value);
+  result.err = parse_result.err;
+  result.err_linespan = parse_result.err_linespan;
+
+  if (result.err != MCFG_OK) {
+    mcfg_free_file(result.value);
+  }
+
+  free_tree(tree);
+
+  return result;
+}
+
+mcfg_parse_result_t mcfg_parse_from_file(const char *path) {
+  mcfg_parse_result_t result = {
+      .err = MCFG_OK,
+      .err_linespan = {.starting_line = 0, .line_count = 0},
+      .value = {0},
+  };
+
+  FILE *raw_file = fopen(path, "rb");
+  if (raw_file == NULL) {
+    result.err = errno | MCFG_OS_ERROR_MASK;
+    return result;
+  }
+
+  fseek(raw_file, 0, SEEK_END);
+  const size_t data_size = ftell(raw_file);
+  rewind(raw_file);
+
+  char *data = malloc(data_size);
+  if (data == NULL) {
+    fclose(raw_file);
+
+    result.err = MCFG_MALLOC_FAIL;
+    return result;
+  }
+
+  if (fread(data, data_size, 1, raw_file) != 1) {
+    fclose(raw_file);
+
+    result.err = errno | MCFG_OS_ERROR_MASK;
+    return result;
+  }
+
+  fclose(raw_file);
+
+  result = mcfg_parse(data);
+  free(data);
+
+  return result;
 }

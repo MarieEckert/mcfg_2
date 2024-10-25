@@ -5,10 +5,13 @@
  * Licensend under the BSD 3-Clause License.
  */
 
+#define _XOPEN_SOURCE 700
+#define _POSIX_C_SOURCE 2
+
 #include "mcfg_util.h"
 
 #include "mcfg.h"
-#include "mcfg_shared.h"
+#include "shared.h"
 
 #include <math.h>
 #include <stdio.h>

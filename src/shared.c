@@ -1,15 +1,25 @@
-/* mcfg_shared.c ; marie config format internal shared functions
+/* shared.c ; marie config format internal shared functions
  * for MCFG/2
  *
  * Copyright (c) 2023, Marie Eckert
  * Licensend under the BSD 3-Clause License.
  */
 
-#include "mcfg_shared.h"
+#define _XOPEN_SOURCE 700
+#define _POSIX_C_SOURCE 2
+
+#include "shared.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+char *strchrnul(const char *str, int c) {
+  for (; str[0] != '\0' && str[0] != c; str++)
+    ;
+
+  return (char *)str;
+}
 
 bool is_string_empty(char *in) {
   if (in == NULL || in[0] == 0) {
@@ -53,7 +63,7 @@ bool has_newline(char *in) {
 }
 // Copy src until delimiter char is hit
 char *strcpy_until(char *src, char delimiter) {
-  int offs = 0;
+  size_t offs = 0;
   while (offs < strlen(src)) {
     if (src[offs] == delimiter) {
       break;
