@@ -376,7 +376,8 @@ mcfg_err_t lex_input(char *input, syntax_tree_t *tree) {
         break;
       }
 
-      ix += lf_ptr - input;
+
+      ix = lf_ptr - input - 1;
       break;
     }
     case ',':
