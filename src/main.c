@@ -8,10 +8,7 @@
 #include "mcfg_util.h"
 #include "parse.h"
 
-/* TODO: lazyness hack! remove! */
-#include "../doc/tests/test.h"
-
-#define TEST_DIR "doc/tests/"
+#define TEST_DIR "tests/"
 
 void print_file(mcfg_file_t file) {
   printf("mcfg_file_t {\n");

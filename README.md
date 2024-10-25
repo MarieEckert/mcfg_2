@@ -4,10 +4,10 @@ MCFG/2 is a reworking of my original [mcfg library](https://github.com/FelixEcke
 ## Building
 MCFG/2'S recommended way of building is to use [mariebuild](https://github.com/FelixEcker/mariebuild),
 if you do not have a version of mariebuild installed which is compatible with
-the build file format you can use the provided `build.bash` script.
+the build file format you can use the provided `scripts/build.bash` script.
 
 **NOTE:** Before you can build using either of the provided methods, you should
-run the `setup.bash` script!
+run the `scripts/setup.bash` script!
 
 ## Overview
 ### Basic Library Usage
@@ -21,7 +21,7 @@ run the `setup.bash` script!
 #include "mcfg_util.h"
 
 int main(void) {
-  char path[] = "doc/tests/number_types.mcfg";
+  char path[] = "tests/number_types.mcfg";
 
   mcfg_file_t file;
   mcfg_err_t ret = mcfg_parse_file(path, &file);
@@ -59,7 +59,6 @@ end
   - i8, i16, i32
 - Strings (multiline too!)
 - Lists of the previous datatypes (multiline too!)
-  - **NOTE:** Multiline stringlists are currently not implemented
 
 ### Field Embedding
 MCFG/2 supports embedding fields within string fields using the following
@@ -77,7 +76,7 @@ end
 
 sector sec2
   section dest
-    str some_other_field 'origin: $(/sec1/origin/some_field)`
+    str some_other_field 'origin: $(/sec1/origin/some_field)'
   end
 end
 ```
@@ -86,4 +85,16 @@ Dynamically generated fields can be inserted by wrapping their name between
 percentage-signs.
 
 Example:
-`str some_field 'dynamic field value: $(%some_dynamic_field%)`
+`str some_field 'dynamic field value: $(%some_dynamic_field%)'`
+
+## Repository Structure
+
+* `src/` – Implementation Sourcecode
+* `include/` – Headers for public Library Interface
+* `misc/` – Miscellaneous things
+* `scripts/` – Different scripts
+* `tests/` – Test / Example files
+* `README.md`
+* `LICENSE`
+* `build.mb`
+* `.gitignore`
