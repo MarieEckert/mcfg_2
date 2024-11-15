@@ -414,7 +414,7 @@ mcfg_parse_result_t mcfg_parse_from_file(const char *path) {
   const size_t data_size = ftell(raw_file);
   rewind(raw_file);
 
-  char *data = malloc(data_size);
+  char *data = malloc(data_size + 1);
   if (data == NULL) {
     fclose(raw_file);
 
@@ -431,6 +431,7 @@ mcfg_parse_result_t mcfg_parse_from_file(const char *path) {
 
   fclose(raw_file);
 
+  data[data_size] = 0;
   result = mcfg_parse(data);
   free(data);
 
