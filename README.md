@@ -98,3 +98,7 @@ Example:
 * `LICENSE`
 * `build.mb`
 * `.gitignore`
+
+## Links
+
+* [radicle mirror](https://app.radicle.xyz/nodes/seed.radicle.garden/rad:z46Fd9SK3Lajw9b4u1DMvejCz7mb6)
