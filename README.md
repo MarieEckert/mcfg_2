@@ -16,6 +16,7 @@ run the `scripts/setup.bash` script!
 ```c
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "mcfg.h"
 #include "mcfg_util.h"
@@ -23,15 +24,19 @@ run the `scripts/setup.bash` script!
 int main(void) {
   char path[] = "tests/number_types.mcfg";
 
-  mcfg_file_t file;
-  mcfg_err_t ret = mcfg_parse_file(path, &file);
-
-  if (ret != MCFG_OK) {
-    fprintf(stderr, "failed to parse file: %s\n", mcfg_err_string(ret));
-    return ret;
+  mcfg_parse_result_t ret = mcfg_parse_from_file(path);
+  if (ret.err != MCFG_OK) {
+    fprintf(stderr, "mcfg parsing failed: %s (%d)\n", mcfg_err_string(ret.err),
+            ret.err);
+    fprintf(stderr, "in file \"%s\" on line %zu\n", path,
+            ret.err_linespan.starting_line);
+    return 1;
   }
 
-  mcfg_field_t *field = mcfg_get_field_by_path(&file, mcfg_parse_path("/test/numbers/u32_12312312"));
+  mcfg_file_t file = ret.value;
+
+  mcfg_field_t *field = mcfg_get_field_by_path(
+      &file, mcfg_parse_path("/test/numbers/u32_12312312"));
   printf("value = %lu\n", mcfg_data_as_u32(*field));
 
   return 0;
