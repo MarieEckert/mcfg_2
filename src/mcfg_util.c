@@ -41,7 +41,11 @@ mcfg_path_t mcfg_parse_path(char *path) {
   char **elements;
   bool absolute = path[0] == path_seperator[0];
 
-  char *strtok_saveptr;
+  /* duplicate path so that we can modify it to our hearts content and avoid
+   * crashes when this function is called with a string literal
+   */
+  path = strdup(path);
+  char *strtok_saveptr = NULL;
   char *tok = strtok_r(path, path_seperator, &strtok_saveptr);
 
   while (tok != NULL) {
@@ -49,17 +53,20 @@ mcfg_path_t mcfg_parse_path(char *path) {
       elements = malloc(sizeof(char *));
 
       if (elements == NULL) {
+        free(path);
         return (mcfg_path_t){.sector = NULL, .section = NULL, .field = NULL};
       }
     } else {
       elements = realloc(elements, sizeof(char *) * (element_count + 1));
       if (elements == NULL) {
+        free(path);
         return (mcfg_path_t){.sector = NULL, .section = NULL, .field = NULL};
       }
     }
 
     elements[element_count] = malloc(strlen(tok) + 1);
     if (elements[element_count] == NULL) {
+      free(path);
       return (mcfg_path_t){.sector = NULL, .section = NULL, .field = NULL};
     }
 
@@ -70,6 +77,7 @@ mcfg_path_t mcfg_parse_path(char *path) {
   }
 
   if (element_count == 0) {
+    free(path);
     return ret;
   }
 
@@ -114,6 +122,7 @@ mcfg_path_t mcfg_parse_path(char *path) {
 
 exit:
   free(elements);
+  free(path);
   return ret;
 }
 
