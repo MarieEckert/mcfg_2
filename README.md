@@ -92,7 +92,14 @@ percentage-signs.
 Example:
 `str some_field 'dynamic field value: $(%some_dynamic_field%)'`
 
-## Repository Structure
+## Contributing
+The coding style should be rather self-explanatory, be sure to run
+clang-format on the files you have modified before committing.
+
+Also see [the git styleguide](./GIT_STYLEGUIDE.md) and be sure to adhere to
+the message format and the branching/history rules.
+
+### Repository Structure
 
 * `src/` – Implementation Sourcecode
 * `include/` – Headers for public Library Interface
@@ -104,6 +111,6 @@ Example:
 * `build.mb`
 * `.gitignore`
 
-## Links
+### Links
 
 * [radicle mirror](https://app.radicle.xyz/nodes/seed.radicle.garden/rad:z46Fd9SK3Lajw9b4u1DMvejCz7mb6)
