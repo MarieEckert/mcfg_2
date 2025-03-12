@@ -181,6 +181,10 @@ _embeds_t _extract_embeds(char *input) {
       continue;
     }
 
+    if (input[ix] != '(') {
+      building_embed = false;
+    }
+
     switch (input[ix]) {
     case '\\':
       escaping = true;
@@ -219,6 +223,8 @@ _embeds_t _extract_embeds(char *input) {
       }
       break;
     default:
+      building_embed = false;
+
       if (!building_field_name) {
         break;
       }
