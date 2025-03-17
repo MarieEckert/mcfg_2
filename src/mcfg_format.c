@@ -24,6 +24,15 @@
 #define _extract_embeds NAMESPACED_DECL(_extract_embeds)
 #define _format NAMESPACED_DECL(_format)
 
+char *mcfg_fmt_err_string(mcfg_fmt_err_t err) {
+  switch (err) {
+  case MCFG_FMT_NOT_FOUND:
+    return "Format not found";
+  default:
+    return mcfg_err_string((mcfg_err_t)err);
+  }
+}
+
 /* This macro checks if the condition (c) is false. If c is false, it is
  * considered an error and it will construct a mcfg_fmt_res_t structure with
  * the err field set to the error (e) and cause the function it was called
