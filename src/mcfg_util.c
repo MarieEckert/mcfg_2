@@ -381,7 +381,7 @@ uint8_t mcfg_data_as_u8(mcfg_field_t field) {
     return 0;
   }
 
-  return (uint8_t) * (uint8_t *)field.data;
+  return (uint8_t)*(uint8_t *)field.data;
 }
 
 int8_t mcfg_data_as_i8(mcfg_field_t field) {
@@ -389,7 +389,7 @@ int8_t mcfg_data_as_i8(mcfg_field_t field) {
     return 0;
   }
 
-  return (int8_t) * (int8_t *)field.data;
+  return (int8_t)*(int8_t *)field.data;
 }
 
 uint16_t mcfg_data_as_u16(mcfg_field_t field) {
@@ -397,7 +397,7 @@ uint16_t mcfg_data_as_u16(mcfg_field_t field) {
     return 0;
   }
 
-  return (uint16_t) * (uint16_t *)field.data;
+  return (uint16_t)*(uint16_t *)field.data;
 }
 
 int16_t mcfg_data_as_i16(mcfg_field_t field) {
@@ -405,7 +405,7 @@ int16_t mcfg_data_as_i16(mcfg_field_t field) {
     return 0;
   }
 
-  return (int16_t) * (int16_t *)field.data;
+  return (int16_t)*(int16_t *)field.data;
 }
 
 uint32_t mcfg_data_as_u32(mcfg_field_t field) {
@@ -413,7 +413,7 @@ uint32_t mcfg_data_as_u32(mcfg_field_t field) {
     return 0;
   }
 
-  return (uint32_t) * (uint32_t *)field.data;
+  return (uint32_t)*(uint32_t *)field.data;
 }
 
 int32_t mcfg_data_as_i32(mcfg_field_t field) {
@@ -421,5 +421,5 @@ int32_t mcfg_data_as_i32(mcfg_field_t field) {
     return 0;
   }
 
-  return (int32_t) * (int32_t *)field.data;
+  return (int32_t)*(int32_t *)field.data;
 }

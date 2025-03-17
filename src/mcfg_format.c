@@ -186,8 +186,8 @@ _embeds_t _extract_embeds(char *input) {
   size_t field_pos = 0;         /* see _embed_t.pos */
   size_t field_src_end_pos = 0; /* see _embed_t.src_end_pos */
   size_t field_name_wix = 0;
-  char *field_name = malloc(input_len + 1); /* this is a bit much, but it allows
-                                             * us avoid reallocs */
+  char *field_name = malloc(input_len + 1); /* this is a bit much, but it
+                                             * allows us avoid reallocs */
   if (field_name == NULL) {
     return res;
   }
