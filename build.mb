@@ -47,11 +47,13 @@ sector targets
 
   section debug
     list str c_rules 'libsources', 'linklib', 'mcfg_test', 'link_test'
+    str target_cflags '-DMCFG_DO_ERROR_MESSAGES'
   end
 
   section release
     list str required_targets 'clean'
     list str c_rules 'libsources', 'linklib'
+    str target_cflags ''
   end
 end
 
@@ -66,7 +68,7 @@ sector c_rules
     str exec '#!/bin/bash
     set -e
 
-    COMMAND="$(/config/mariebuild/cc) $(/config/mariebuild/cflags) -c -o $(%output%) $(%input%)"
+    COMMAND="$(/config/mariebuild/cc) $(/config/mariebuild/cflags) $(%target_cflags%) -c -o $(%output%) $(%input%)"
     printf "  \$COMMAND\\n"
     $COMMAND
     '
