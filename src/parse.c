@@ -162,6 +162,7 @@ _set_node(syntax_tree_t **node, token_t token, char *value, size_t line_count)
 	new_current->token = TK_UNASSIGNED_TOKEN;
 	new_current->value = NULL;
 	new_current->prev = *node;
+	new_current->next = NULL;
 	new_current->linespan.starting_line = 0;
 	new_current->linespan.line_count = 1;
 
