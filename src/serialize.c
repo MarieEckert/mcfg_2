@@ -42,6 +42,33 @@
 		}                    \
 	})
 
+#define _make_indent NAMESPACED_DECL(_make_indent)
+
+char *
+_make_indent(mcfg_serialize_options_t options, int depth)
+{
+	if(options.tab_indentation) {
+		char *ret = malloc(depth + 1);
+		if(ret == NULL) {
+			return ret;
+		}
+
+		memset(ret, '\t', depth);
+		ret[depth] = 0;
+		return ret;
+	}
+
+	const size_t total = options.space_count * depth + 1;
+	char *ret = malloc(total);
+	if(ret == NULL) {
+		return ret;
+	}
+
+	memset(ret, ' ', total - 1);
+	ret[total] = 0;
+	return ret;
+}
+
 mcfg_serialize_result_t
 serialize_file(mcfg_file_t file, mcfg_serialize_options_t options)
 {
@@ -136,9 +163,12 @@ exit:
 mcfg_serialize_result_t
 serialize_section(mcfg_section_t section, mcfg_serialize_options_t options)
 {
+	char *indent = _make_indent(options, 1);
+
 	mcfg_serialize_result_t result = {0};
 
 	CPtrList field_strings;
+	cptrlist_init(&field_strings, 16, 16);
 
 	size_t result_size = 0;
 	for(size_t ix = 0; ix < section.field_count; ix++) {
@@ -170,29 +200,38 @@ serialize_section(mcfg_section_t section, mcfg_serialize_options_t options)
 			goto exit;
 		}
 
+		if(result.value == NULL) {
+			continue;
+		}
+
 		result_size += result.value->length;
 		cptrlist_append(&field_strings, result.value);
 	}
 
-	result.value =
-		mcfg_string_new_sized(sizeof(KEYWORD_SECTION) + sizeof(KEYWORD_END) +
-							  1 + strlen(section.name));
+	result.value = mcfg_string_new_sized(
+		result_size + strlen(indent) + sizeof(KEYWORD_SECTION) +
+		sizeof(KEYWORD_END) + 1 + strlen(section.name));
 	if(result.value == NULL) {
 		result.err = MCFG_MALLOC_FAIL;
 		goto exit;
 	}
 
-	ERR_CHECK(mcfg_string_append_cstr(&result.value, "  " KEYWORD_SECTION " "));
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, indent));
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, KEYWORD_SECTION " "));
 	ERR_CHECK(mcfg_string_append_cstr(&result.value, section.name));
 	ERR_CHECK(mcfg_string_append_cstr(&result.value, "\n"));
 
 	for(size_t ix = 0; ix < field_strings.size; ix++) {
+		mcfg_string_t *item = ((mcfg_string_t *)field_strings.items[ix]);
+		ERR_CHECK(mcfg_string_append(&result.value, item));
+
 		if(ix + 1 < section.field_count) {
 			ERR_CHECK(mcfg_string_append_cstr(&result.value, "\n"));
 		}
 	}
 
-	ERR_CHECK(mcfg_string_append_cstr(&result.value, "  " KEYWORD_END "\n"));
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, indent));
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, KEYWORD_END "\n"));
 
 exit:
 	if(result.err != MCFG_OK && result.value != NULL) {
@@ -202,7 +241,7 @@ exit:
 }
 
 mcfg_serialize_result_t
-serialize_string_field(mcfg_field_t sector, mcfg_serialize_options_t options)
+serialize_string_field(mcfg_field_t field, mcfg_serialize_options_t options)
 {
 	mcfg_serialize_result_t result = {0};
 
@@ -210,7 +249,7 @@ serialize_string_field(mcfg_field_t sector, mcfg_serialize_options_t options)
 }
 
 mcfg_serialize_result_t
-serialize_list_field(mcfg_field_t sector, mcfg_serialize_options_t options)
+serialize_list_field(mcfg_field_t field, mcfg_serialize_options_t options)
 {
 	mcfg_serialize_result_t result = {0};
 
@@ -218,7 +257,7 @@ serialize_list_field(mcfg_field_t sector, mcfg_serialize_options_t options)
 }
 
 mcfg_serialize_result_t
-serialize_bool_field(mcfg_field_t sector, mcfg_serialize_options_t options)
+serialize_bool_field(mcfg_field_t field, mcfg_serialize_options_t options)
 {
 	mcfg_serialize_result_t result = {0};
 
@@ -226,9 +265,57 @@ serialize_bool_field(mcfg_field_t sector, mcfg_serialize_options_t options)
 }
 
 mcfg_serialize_result_t
-serialize_number_field(mcfg_field_t sector, mcfg_serialize_options_t options)
+serialize_number_field(mcfg_field_t field, mcfg_serialize_options_t options)
 {
+	char *indent = _make_indent(options, 2);
+
 	mcfg_serialize_result_t result = {0};
 
+	char *string_value = mcfg_data_to_string(field);
+	char *datatype;
+	switch(field.type) {
+		case TYPE_I8:
+			datatype = "i8 ";
+			break;
+		case TYPE_U8:
+			datatype = "u8 ";
+			break;
+		case TYPE_I16:
+			datatype = "i16 ";
+			break;
+		case TYPE_U16:
+			datatype = "u16 ";
+			break;
+		case TYPE_I32:
+			datatype = "i32 ";
+			break;
+		case TYPE_U32:
+			datatype = "u32 ";
+			break;
+		default:
+			result.err = MCFG_INVALID_TYPE;
+			goto exit;
+	}
+
+	result.value =
+		mcfg_string_new_sized(strlen(indent) + strlen(datatype) +
+							  strlen(field.name) + strlen(string_value) + 3);
+	mcfg_string_append_cstr(&result.value, indent);
+	mcfg_string_append_cstr(&result.value, datatype);
+	mcfg_string_append_cstr(&result.value, field.name);
+	mcfg_string_append_cstr(&result.value, " ");
+	mcfg_string_append_cstr(&result.value, string_value);
+	mcfg_string_append_cstr(&result.value, "\n");
+
+exit:
+	if(result.err != MCFG_OK) {
+		if(string_value != NULL) {
+			free(string_value);
+		}
+
+		if(result.value != NULL) {
+			free(result.value);
+		}
+	}
 	return result;
 }

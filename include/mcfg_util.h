@@ -16,6 +16,8 @@
 #define MCFG_EMBED_OPENING				'('
 #define MCFG_EMBED_CLOSING				')'
 
+/* path utilities */
+
 typedef struct mcfg_path {
 	bool absolute;
 	bool dynfield_path;
@@ -57,6 +59,8 @@ char *mcfg_path_to_str(mcfg_path_t path);
  * NULL will be returned.
  */
 mcfg_field_t *mcfg_get_field_by_path(mcfg_file_t *file, mcfg_path_t path);
+
+/* coversion utilities */
 
 /**
  * @brief Converts the data of the given field to a string representation
