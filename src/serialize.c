@@ -325,12 +325,12 @@ serialize_number_field(mcfg_field_t field, mcfg_serialize_options_t options)
 	result.value =
 		mcfg_string_new_sized(strlen(indent) + strlen(datatype) +
 							  strlen(field.name) + strlen(string_value) + 3);
-	mcfg_string_append_cstr(&result.value, indent);
-	mcfg_string_append_cstr(&result.value, datatype);
-	mcfg_string_append_cstr(&result.value, field.name);
-	mcfg_string_append_cstr(&result.value, " ");
-	mcfg_string_append_cstr(&result.value, string_value);
-	mcfg_string_append_cstr(&result.value, "\n");
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, indent));
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, datatype));
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, field.name));
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, " "));
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, string_value));
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, "\n"));
 
 exit:
 	if(result.err != MCFG_OK) {
