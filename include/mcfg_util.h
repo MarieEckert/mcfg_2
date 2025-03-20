@@ -12,17 +12,17 @@
 
 #define MCFG_EMBED_FORMAT_RESIZE_AMOUNT 16
 
-#define MCFG_EMBED_PREFIX '$'
-#define MCFG_EMBED_OPENING '('
-#define MCFG_EMBED_CLOSING ')'
+#define MCFG_EMBED_PREFIX				'$'
+#define MCFG_EMBED_OPENING				'('
+#define MCFG_EMBED_CLOSING				')'
 
 typedef struct mcfg_path {
-  bool absolute;
-  bool dynfield_path;
+	bool absolute;
+	bool dynfield_path;
 
-  char *sector;
-  char *section;
-  char *field;
+	char *sector;
+	char *section;
+	char *field;
 } mcfg_path_t;
 
 /**
@@ -161,4 +161,4 @@ uint32_t mcfg_data_as_u32(mcfg_field_t field);
  */
 int32_t mcfg_data_as_i32(mcfg_field_t field);
 
-#endif // ifndef MCFG_UTIL_H
+#endif	// ifndef MCFG_UTIL_H

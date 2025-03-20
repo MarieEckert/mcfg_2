@@ -9,19 +9,20 @@
 #define SHARED_H
 
 #include <stdbool.h>
+
 #include <sys/types.h>
 
-#define CONCAT(a, b) a##b
+#define CONCAT(a, b)					  a##b
 
-#define _INTERNAL_PREFIX(name) CONCAT(_mcfg_internal_##name, _)
-#define INTERNAL_PREFIX(name) _INTERNAL_PREFIX(name)
+#define _INTERNAL_PREFIX(name)			  CONCAT(_mcfg_internal_##name, _)
+#define INTERNAL_PREFIX(name)			  _INTERNAL_PREFIX(name)
 
 #define _NAMESPACED_DECL(namespace, name) CONCAT(namespace, name)
-#define NAMESPACED_DECL(name) _NAMESPACED_DECL(INTERNAL_PREFIX(NAMESPACE), name)
+#define NAMESPACED_DECL(name)			  _NAMESPACED_DECL(INTERNAL_PREFIX(NAMESPACE), name)
 
-#define _SHARED_NAMESPACE shared
-#define _SHARED_NAMESPACED_DECL(name)                                          \
-  _NAMESPACED_DECL(INTERNAL_PREFIX(_SHARED_NAMESPACE), name)
+#define _SHARED_NAMESPACE				  shared
+#define _SHARED_NAMESPACED_DECL(name) \
+	_NAMESPACED_DECL(INTERNAL_PREFIX(_SHARED_NAMESPACE), name)
 
 #define strchrnul _SHARED_NAMESPACED_DECL(strchrnul)
 char *strchrnul(const char *str, int c);

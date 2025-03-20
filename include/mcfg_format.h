@@ -16,13 +16,14 @@
  * @see mcfg_err_t
  */
 typedef enum mcfg_fmt_err {
-  /** @brief everything is ok :) */
-  MCFG_FMT_OK = MCFG_OK,
-  MCFG_FMT_NULLPTR = MCFG_NULLPTR,
-  MCFG_FMT_MALLOC_FAIL = MCFG_MALLOC_FAIL, /* TODO: Move rest of impl away from
-                                              (re|m)alloc_or_die functions */
-  MCFG_FMT_INVALID_TYPE = MCFG_INVALID_TYPE,
-  MCFG_FMT_NOT_FOUND,
+	/** @brief everything is ok :) */
+	MCFG_FMT_OK = MCFG_OK,
+	MCFG_FMT_NULLPTR = MCFG_NULLPTR,
+	MCFG_FMT_MALLOC_FAIL =
+		MCFG_MALLOC_FAIL, /* TODO: Move rest of impl away from
+							 (re|m)alloc_or_die functions */
+	MCFG_FMT_INVALID_TYPE = MCFG_INVALID_TYPE,
+	MCFG_FMT_NOT_FOUND,
 } mcfg_fmt_err_t;
 
 /**
@@ -31,10 +32,10 @@ typedef enum mcfg_fmt_err {
 char *mcfg_fmt_err_string(mcfg_fmt_err_t err);
 
 typedef struct mcfg_fmt_res {
-  mcfg_fmt_err_t err;
+	mcfg_fmt_err_t err;
 
-  size_t formatted_size;
-  char *formatted;
+	size_t formatted_size;
+	char *formatted;
 } mcfg_fmt_res_t;
 
 /**
@@ -45,8 +46,9 @@ typedef struct mcfg_fmt_res {
  * @param relativity A path which should be used to complete relative paths.
  * @return A new heap allocated string containing the formatted field.
  */
-mcfg_fmt_res_t mcfg_format_field_embeds(mcfg_field_t field, mcfg_file_t file,
-                                        mcfg_path_t relativity);
+mcfg_fmt_res_t mcfg_format_field_embeds(mcfg_field_t field,
+										mcfg_file_t file,
+										mcfg_path_t relativity);
 
 /**
  * @brief Format the embeds in a string
@@ -55,7 +57,8 @@ mcfg_fmt_res_t mcfg_format_field_embeds(mcfg_field_t field, mcfg_file_t file,
  * @param relativity A path which should be used to complete relative paths.
  * @return A new heap allocated string containing the formatted input string.
  */
-mcfg_fmt_res_t mcfg_format_field_embeds_str(char *input, mcfg_file_t file,
-                                            mcfg_path_t relativity);
+mcfg_fmt_res_t mcfg_format_field_embeds_str(char *input,
+											mcfg_file_t file,
+											mcfg_path_t relativity);
 
-#endif // ifndef MCFG_FORMAT_H
+#endif	// ifndef MCFG_FORMAT_H
