@@ -34,6 +34,12 @@
 #define KEYWORD_U32		"u32"
 
 #undef ERR_CHECK
+
+/**
+ * Returns an error if the given value is not equal to MCFG_OK.
+ * Works only in functions which return a struct called "result" which has an
+ * mcfg_err_t field called err and a label called "exit" to jump to on error.
+ */
 #define ERR_CHECK(e)         \
 	({                       \
 		mcfg_err_t _e = e;   \
@@ -51,6 +57,10 @@
 #define _make_indent		   NAMESPACED_DECL(_make_indent)
 #define _serialize_string	   NAMESPACED_DECL(_serialize_string)
 
+/**
+ * @brief Build a string used for indentation which is stored on the heap.
+ * @return C-String for indentation, NULL if malloc fails.
+ */
 char *
 _make_indent(mcfg_serialize_options_t options, int depth)
 {
@@ -76,6 +86,10 @@ _make_indent(mcfg_serialize_options_t options, int depth)
 	return ret;
 }
 
+/**
+ * @brief Converts a string into a valid MCFG/2 string (including opening and
+ * closing quotes).
+ */
 mcfg_serialize_result_t
 _serialize_string(mcfg_field_t field)
 {
@@ -83,7 +97,7 @@ _serialize_string(mcfg_field_t field)
 	result.value = mcfg_string_new_sized(field.size + 2);
 	NULL_CHECK(result.value, MCFG_MALLOC_FAIL);
 
-	char *org = strdup((char *)field.data);
+	char *org = (char *)field.data;
 	NULL_CHECK(org, MCFG_MALLOC_FAIL);
 
 	ERR_CHECK(mcfg_string_append_cstr(&result.value, "'"));
@@ -92,9 +106,12 @@ _serialize_string(mcfg_field_t field)
 	do {
 		char *new_pos = strchrnul(current_pos, '\'');
 		const bool hit = *new_pos == '\'';
-		new_pos[0] = 0;
+		new_pos[0] = 0; /* set the position where strchrnul landed to NULL so
+						   that we can be sure that mcfg_string_append_cstr only
+						   appends the range we actually want to append*/
 
 		ERR_CHECK(mcfg_string_append_cstr(&result.value, current_pos));
+
 		if(hit) {
 			ERR_CHECK(mcfg_string_append_cstr(&result.value, "''"));
 		}
@@ -103,8 +120,6 @@ _serialize_string(mcfg_field_t field)
 	} while((size_t)(current_pos - org) < field.size);
 
 	ERR_CHECK(mcfg_string_append_cstr(&result.value, "'"));
-
-	free(org);
 
 exit:
 	if(result.err != MCFG_OK && result.value != NULL) {
