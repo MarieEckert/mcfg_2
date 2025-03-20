@@ -120,8 +120,7 @@ serialize_file(mcfg_file_t file, mcfg_serialize_options_t options)
 	mcfg_serialize_result_t result = {0};
 
 	CPtrList sector_strings;
-	ASSERT_OR_RETURN((cptrlist_init(&sector_strings, 16, 16)),
-					 MCFG_MALLOC_FAIL);
+	ASSERT_OR_RETURN(cptrlist_init(&sector_strings, 16, 16), MCFG_MALLOC_FAIL);
 
 	size_t result_size = 0;
 
@@ -132,14 +131,12 @@ serialize_file(mcfg_file_t file, mcfg_serialize_options_t options)
 		}
 
 		result_size += result.value->length;
-		cptrlist_append(&sector_strings, result.value);
+		ASSERT_OR_RETURN(cptrlist_append(&sector_strings, result.value) >= 0,
+						 MCFG_MALLOC_FAIL);
 	}
 
 	result.value = mcfg_string_new_sized(result_size + 1);
-	if(result.value == NULL) {
-		result.err = MCFG_MALLOC_FAIL;
-		goto exit;
-	}
+	NULL_CHECK(result.value, MCFG_MALLOC_FAIL);
 
 	size_t copy_offset = 0;
 	for(size_t ix = 0; ix < sector_strings.size; ix++) {
@@ -173,16 +170,14 @@ serialize_sector(mcfg_sector_t sector, mcfg_serialize_options_t options)
 		}
 
 		result_size += result.value->length;
-		cptrlist_append(&section_strings, result.value);
+		ASSERT_OR_RETURN(cptrlist_append(&section_strings, result.value) >= 0,
+						 MCFG_MALLOC_FAIL);
 	}
 
 	result.value =
 		mcfg_string_new_sized(result_size + sizeof(KEYWORD_SECTOR) +
 							  sizeof(KEYWORD_END) + 1 + strlen(sector.name));
-	if(result.value == NULL) {
-		result.err = MCFG_MALLOC_FAIL;
-		goto exit;
-	}
+	NULL_CHECK(result.value, MCFG_MALLOC_FAIL);
 
 	ERR_CHECK(mcfg_string_append_cstr(&result.value, KEYWORD_SECTOR " "));
 	ERR_CHECK(mcfg_string_append_cstr(&result.value, sector.name));
@@ -243,25 +238,21 @@ serialize_section(mcfg_section_t section, mcfg_serialize_options_t options)
 				goto exit;
 		}
 
-		if(result.err != MCFG_OK) {
-			goto exit;
-		}
+		ERR_CHECK(result.err);
 
 		if(result.value == NULL) {
 			continue;
 		}
 
 		result_size += result.value->length;
-		cptrlist_append(&field_strings, result.value);
+		ASSERT_OR_RETURN(cptrlist_append(&field_strings, result.value) >= 0,
+						 MCFG_MALLOC_FAIL);
 	}
 
 	result.value = mcfg_string_new_sized(
 		result_size + strlen(indent) + sizeof(KEYWORD_SECTION) +
 		sizeof(KEYWORD_END) + 1 + strlen(section.name));
-	if(result.value == NULL) {
-		result.err = MCFG_MALLOC_FAIL;
-		goto exit;
-	}
+	NULL_CHECK(result.value, MCFG_MALLOC_FAIL);
 
 	ERR_CHECK(mcfg_string_append_cstr(&result.value, indent));
 	ERR_CHECK(mcfg_string_append_cstr(&result.value, KEYWORD_SECTION " "));
@@ -303,6 +294,7 @@ serialize_string_field(mcfg_field_t field, mcfg_serialize_options_t options)
 	result.value = mcfg_string_new_sized(
 		sizeof(KEYWORD_STR) + strlen(field.name) + string_value.value->length);
 	NULL_CHECK(result.value, MCFG_MALLOC_FAIL);
+
 	ERR_CHECK(mcfg_string_append_cstr(&result.value, indent));
 	ERR_CHECK(mcfg_string_append_cstr(&result.value, KEYWORD_STR " "));
 	ERR_CHECK(mcfg_string_append_cstr(&result.value, field.name));
@@ -345,6 +337,8 @@ serialize_bool_field(mcfg_field_t field, mcfg_serialize_options_t options)
 	result.value =
 		mcfg_string_new_sized(strlen(indent) + sizeof(KEYWORD_BOOL) +
 							  strlen(field.name) + strlen(string_value));
+	NULL_CHECK(result.value, MCFG_MALLOC_FAIL);
+
 	ERR_CHECK(mcfg_string_append_cstr(&result.value, indent));
 	ERR_CHECK(mcfg_string_append_cstr(&result.value, KEYWORD_BOOL " "));
 	ERR_CHECK(mcfg_string_append_cstr(&result.value, field.name));
@@ -393,6 +387,8 @@ serialize_number_field(mcfg_field_t field, mcfg_serialize_options_t options)
 	result.value =
 		mcfg_string_new_sized(strlen(indent) + strlen(datatype) +
 							  strlen(field.name) + strlen(string_value) + 3);
+	NULL_CHECK(result.value, MCFG_MALLOC_FAIL);
+
 	ERR_CHECK(mcfg_string_append_cstr(&result.value, indent));
 	ERR_CHECK(mcfg_string_append_cstr(&result.value, datatype));
 	ERR_CHECK(mcfg_string_append_cstr(&result.value, field.name));
