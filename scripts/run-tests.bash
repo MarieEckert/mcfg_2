@@ -6,7 +6,7 @@ CC="clang"
 CFLAGS="-std=gnu17 -gdwarf-4 -Wextra -Wall -Iinclude/ -Isrc/"
 LDFLAGS="-lm -L. -lmcfg_2"
 
-TESTS=("tests/src/parse.c")
+TESTS="tests/src/parse.c tests/src/serialize.c"
 
 err() {
     printf "\x1b[1m\x1b[31m==>\x1b[0m\x1b[1m $1\x1b[0m\n"
