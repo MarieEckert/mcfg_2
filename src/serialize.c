@@ -42,7 +42,11 @@
 		}                    \
 	})
 
-#define _make_indent NAMESPACED_DECL(_make_indent)
+#define ASSERT_OR_RETURN(c, e) ERR_CHECK((c) ? MCFG_OK : e)
+
+#define NULL_CHECK(p, e)	   ASSERT_OR_RETURN(p != NULL, e)
+
+#define _make_indent		   NAMESPACED_DECL(_make_indent)
 
 char *
 _make_indent(mcfg_serialize_options_t options, int depth)
@@ -75,7 +79,8 @@ serialize_file(mcfg_file_t file, mcfg_serialize_options_t options)
 	mcfg_serialize_result_t result = {0};
 
 	CPtrList sector_strings;
-	cptrlist_init(&sector_strings, 16, 16);
+	ASSERT_OR_RETURN((cptrlist_init(&sector_strings, 16, 16)),
+					 MCFG_MALLOC_FAIL);
 
 	size_t result_size = 0;
 
@@ -116,7 +121,8 @@ serialize_sector(mcfg_sector_t sector, mcfg_serialize_options_t options)
 	mcfg_serialize_result_t result = {0};
 
 	CPtrList section_strings;
-	cptrlist_init(&section_strings, 16, 16);
+	ASSERT_OR_RETURN((cptrlist_init(&section_strings, 16, 16)),
+					 MCFG_MALLOC_FAIL);
 
 	size_t result_size = 0;
 	for(size_t ix = 0; ix < sector.section_count; ix++) {
@@ -163,12 +169,12 @@ exit:
 mcfg_serialize_result_t
 serialize_section(mcfg_section_t section, mcfg_serialize_options_t options)
 {
-	char *indent = _make_indent(options, 1);
-
 	mcfg_serialize_result_t result = {0};
-
+	char *indent = _make_indent(options, 2);
 	CPtrList field_strings;
-	cptrlist_init(&field_strings, 16, 16);
+
+	ASSERT_OR_RETURN(cptrlist_init(&field_strings, 16, 16), MCFG_MALLOC_FAIL);
+	NULL_CHECK(indent, MCFG_MALLOC_FAIL);
 
 	size_t result_size = 0;
 	for(size_t ix = 0; ix < section.field_count; ix++) {
@@ -263,18 +269,24 @@ mcfg_serialize_result_t
 serialize_bool_field(mcfg_field_t field, mcfg_serialize_options_t options)
 {
 	mcfg_serialize_result_t result = {0};
+	char *indent = _make_indent(options, 2);
+	NULL_CHECK(indent, MCFG_MALLOC_FAIL);
 
+exit:
+	free(indent);
 	return result;
 }
 
 mcfg_serialize_result_t
 serialize_number_field(mcfg_field_t field, mcfg_serialize_options_t options)
 {
-	char *indent = _make_indent(options, 2);
-
 	mcfg_serialize_result_t result = {0};
 
 	char *string_value = mcfg_data_to_string(field);
+
+	char *indent = _make_indent(options, 2);
+	NULL_CHECK(indent, MCFG_MALLOC_FAIL);
+
 	char *datatype;
 	switch(field.type) {
 		case TYPE_I8:
