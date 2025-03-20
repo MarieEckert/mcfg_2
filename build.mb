@@ -7,7 +7,14 @@ sector config
     str libfile 'lib$(/config/files/libname).a'
     str testfile 'mcfg_test'
 
-    list str sources 'parse', 'shared', 'mcfg_util', 'mcfg_format', 'mcfg'
+    list str sources
+      'cptrlist',
+      'parse',
+      'serialize',
+      'shared',
+      'mcfg_util',
+      'mcfg_format',
+      'mcfg'
   end
 
   section mariebuild

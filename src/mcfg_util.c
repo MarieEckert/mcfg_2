@@ -9,20 +9,17 @@
 #define _POSIX_C_SOURCE 2
 
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include <stdio.h>
 
 #include "mcfg.h"
 #include "mcfg_util.h"
 #include "shared.h"
 
-#define ERR_CHECK(c, e) \
-	({                  \
-		if(!(c))        \
-			return e;   \
-	})
+#ifndef MCFG_STRING_RESIZE_ALIGNMENT
+#	define MCFG_STRING_RESIZE_ALIGNMENT 64
+#endif
 
 mcfg_path_t
 mcfg_parse_path(char *path)
@@ -281,7 +278,9 @@ mcfg_format_list(mcfg_list_t list, char *prefix, char *postfix)
 	size_t base_alloc_size = strlen(prefix) + strlen(postfix) + sizeof(space);
 
 	char *seperator = malloc(base_alloc_size);
-	ERR_CHECK(seperator != NULL, NULL);
+	if(seperator != NULL) {
+		return NULL;
+	}
 
 	strcpy(seperator, postfix);
 	strcpy(seperator + strlen(postfix), space);
@@ -399,7 +398,7 @@ mcfg_data_as_bool(mcfg_field_t field)
 		return false;
 	}
 
-	return (bool) * (bool *)field.data;
+	return (bool)*(bool *)field.data;
 }
 
 uint8_t
@@ -409,7 +408,7 @@ mcfg_data_as_u8(mcfg_field_t field)
 		return 0;
 	}
 
-	return (uint8_t) * (uint8_t *)field.data;
+	return (uint8_t)*(uint8_t *)field.data;
 }
 
 int8_t
@@ -419,7 +418,7 @@ mcfg_data_as_i8(mcfg_field_t field)
 		return 0;
 	}
 
-	return (int8_t) * (int8_t *)field.data;
+	return (int8_t)*(int8_t *)field.data;
 }
 
 uint16_t
@@ -429,7 +428,7 @@ mcfg_data_as_u16(mcfg_field_t field)
 		return 0;
 	}
 
-	return (uint16_t) * (uint16_t *)field.data;
+	return (uint16_t)*(uint16_t *)field.data;
 }
 
 int16_t
@@ -439,7 +438,7 @@ mcfg_data_as_i16(mcfg_field_t field)
 		return 0;
 	}
 
-	return (int16_t) * (int16_t *)field.data;
+	return (int16_t)*(int16_t *)field.data;
 }
 
 uint32_t
@@ -449,7 +448,7 @@ mcfg_data_as_u32(mcfg_field_t field)
 		return 0;
 	}
 
-	return (uint32_t) * (uint32_t *)field.data;
+	return (uint32_t)*(uint32_t *)field.data;
 }
 
 int32_t
@@ -459,5 +458,89 @@ mcfg_data_as_i32(mcfg_field_t field)
 		return 0;
 	}
 
-	return (int32_t) * (int32_t *)field.data;
+	return (int32_t)*(int32_t *)field.data;
+}
+
+/* mcfg_string functions */
+
+#define NAMESPACE	  mcfg_util
+#define string_append NAMESPACED_DECL(string_append)
+#define string_resize NAMESPACED_DECL(string_resize)
+
+mcfg_string_t *
+mcfg_string_new_sized(size_t size)
+{
+	mcfg_string_t *result =
+		malloc(sizeof(mcfg_string_t) + sizeof(char) * size + 1);
+
+	if(result != NULL) {
+		result->capacity = size;
+		result->length = 0;
+	}
+
+	return result;
+}
+
+mcfg_string_t *
+mcfg_string_new(const char *initial)
+{
+	const size_t initial_len = strlen(initial);
+	mcfg_string_t *result = mcfg_string_new_sized(initial_len);
+	if(result == NULL) {
+		return NULL;
+	}
+
+	result->length = initial_len;
+	memcpy(result->data, initial, initial_len + 1);
+	return result;
+}
+
+mcfg_err_t
+string_resize(mcfg_string_t **a, size_t new_length)
+{
+	const size_t resize_amount =
+		(new_length + 1 + MCFG_STRING_RESIZE_ALIGNMENT) &
+		~(MCFG_STRING_RESIZE_ALIGNMENT - 1);
+
+	const size_t new_size =
+		resize_amount * sizeof(*(*a)->data) + sizeof(*(*a)) + 1;
+
+	*a = realloc((*a), new_size);
+	if(*a == NULL) {
+		return MCFG_MALLOC_FAIL;
+	}
+
+	return MCFG_OK;
+}
+
+mcfg_err_t
+string_append(mcfg_string_t **a, const char *b, size_t b_len)
+{
+	if(a == NULL || *a == NULL || b == NULL) {
+		return MCFG_NULLPTR;
+	}
+
+	const size_t new_length = (*a)->length + b_len;
+
+	if(new_length + 1 > (*a)->capacity) {
+		ERR_CHECK(string_resize(a, new_length) == MCFG_OK, MCFG_MALLOC_FAIL);
+	}
+
+	memcpy((*a)->data + (*a)->length, b, b_len);
+	(*a)->length = new_length;
+	(*a)->data[new_length] = 0;
+
+	return MCFG_OK;
+}
+
+mcfg_err_t
+mcfg_string_append(mcfg_string_t **a, mcfg_string_t *b)
+{
+	return string_append(a, b->data, b->length);
+}
+
+mcfg_err_t
+mcfg_string_append_cstr(mcfg_string_t **a, const char *b)
+{
+	return string_append(a, b, strlen(b));
 }

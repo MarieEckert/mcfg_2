@@ -8,11 +8,10 @@
 #define _XOPEN_SOURCE	700
 #define _POSIX_C_SOURCE 2
 
-#include <stdlib.h>
-#include <string.h>
-
 #include <ctype.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "parse.h"
 #include "shared.h"
@@ -78,6 +77,8 @@ mcfg_token_str(token_t tk)
 			return "TK_BOOLEAN";
 		case TK_STRING:
 			return "TK_STRING";
+		default:
+			return "INVALID_TOKEN";
 	}
 }
 
@@ -484,6 +485,12 @@ free_tree(syntax_tree_t *tree)
 	syntax_tree_t *current = tree;
 
 	while(current != NULL) {
+#ifdef MCFG_DEBUG_PRINTING
+		fprintf(stderr, "token: %s; line: %zu; value: %p\n",
+				mcfg_token_str(current->token), current->linespan.starting_line,
+				current->value);
+#endif
+
 		syntax_tree_t *tmp = current->next;
 		if(current->value != NULL) {
 			free(current->value);

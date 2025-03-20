@@ -1,8 +1,7 @@
-#include <stdlib.h>
-#include <string.h>
-
 #include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "mcfg.h"
 #include "mcfg_format.h"
@@ -101,6 +100,15 @@ main(void)
 
 	if(res.formatted != NULL)
 		free(res.formatted);
+
+	mcfg_serialize_result_t result =
+		mcfg_serialize(file, MCFG_DEFAULT_SERIALIZE_OPTIONS);
+	if(result.err != MCFG_OK) {
+		fprintf(stderr, "serialization error: %d\n", res.err);
+	} else {
+		fprintf(stderr, "result:\n%s", result.value->data);
+		free(result.value);
+	}
 
 	free(rel.sector);
 	free(rel.section);

@@ -302,4 +302,53 @@ mcfg_parse_result_t mcfg_parse(char *input);
  */
 mcfg_parse_result_t mcfg_parse_from_file(const char *path);
 
+/* serializer api */
+
+/**
+ * @brief The mcfg_string_t structure is intended to be a safer, more
+ * comfortable and efficient way to work with strings whilst also still offering
+ * compatability with the C standard library. The aim is to use mcfg_string_t
+ * wherever logical by version 1.0.0 or 2.0.0. It is currently primarily used
+ * by the serializer.
+ *
+ * Functions for creating and working with this struct can be found in
+ * mcfg_util.h and are prefixed with "mcfg_string".
+ */
+typedef struct mcfg_string {
+	/**
+	 * @brief total amount of space within data (including last-byte used as
+	 * NULL terminator)
+	 */
+	uint64_t capacity;
+
+	/**
+	 * @brief used amount of space within data (not including NULL terminator)
+	 */
+	uint64_t length;
+
+	char data[];
+} mcfg_string_t;
+
+typedef struct mcfg_serialize_result {
+	/** @brief The error that occured whilst serializing, MCFG_OK on success. */
+	mcfg_err_t err;
+
+	/** @brief The serialized data. */
+	mcfg_string_t *value;
+} mcfg_serialize_result_t;
+
+typedef struct mcfg_serialize_options {
+	bool tab_indentation;
+	int space_count;
+} mcfg_serialize_options_t;
+
+#define MCFG_DEFAULT_SERIALIZE_OPTIONS             \
+	(mcfg_serialize_options_t)                     \
+	{                                              \
+		.tab_indentation = true, .space_count = 0, \
+	}
+
+mcfg_serialize_result_t mcfg_serialize(mcfg_file_t file,
+									   mcfg_serialize_options_t options);
+
 #endif	// ifndef MCFG_H
