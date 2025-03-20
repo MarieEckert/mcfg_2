@@ -8,6 +8,7 @@
 #define _XOPEN_SOURCE	700
 #define _POSIX_C_SOURCE 2
 
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -48,6 +49,7 @@
 #define NULL_CHECK(p, e)	   ASSERT_OR_RETURN(p != NULL, e)
 
 #define _make_indent		   NAMESPACED_DECL(_make_indent)
+#define _serialize_string	   NAMESPACED_DECL(_serialize_string)
 
 char *
 _make_indent(mcfg_serialize_options_t options, int depth)
@@ -72,6 +74,44 @@ _make_indent(mcfg_serialize_options_t options, int depth)
 	memset(ret, ' ', total - 1);
 	ret[total] = 0;
 	return ret;
+}
+
+mcfg_serialize_result_t
+_serialize_string(mcfg_field_t field)
+{
+	mcfg_serialize_result_t result = {0};
+	result.value = mcfg_string_new_sized(field.size + 2);
+	NULL_CHECK(result.value, MCFG_MALLOC_FAIL);
+
+	char *org = strdup((char *)field.data);
+	NULL_CHECK(org, MCFG_MALLOC_FAIL);
+
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, "'"));
+
+	char *current_pos = org;
+	do {
+		char *new_pos = strchrnul(current_pos, '\'');
+		const bool hit = *new_pos == '\'';
+		new_pos[0] = 0;
+
+		ERR_CHECK(mcfg_string_append_cstr(&result.value, current_pos));
+		if(hit) {
+			ERR_CHECK(mcfg_string_append_cstr(&result.value, "''"));
+		}
+
+		current_pos = new_pos + 1;
+	} while((size_t)(current_pos - org) < field.size);
+
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, "'"));
+
+	free(org);
+
+exit:
+	if(result.err != MCFG_OK && result.value != NULL) {
+		free(result.value);
+	}
+
+	return result;
 }
 
 mcfg_serialize_result_t
@@ -254,6 +294,33 @@ mcfg_serialize_result_t
 serialize_string_field(mcfg_field_t field, mcfg_serialize_options_t options)
 {
 	mcfg_serialize_result_t result = {0};
+
+	char *indent = _make_indent(options, 2);
+	mcfg_serialize_result_t string_value = _serialize_string(field);
+	ERR_CHECK(string_value.err);
+	NULL_CHECK(indent, MCFG_MALLOC_FAIL);
+
+	result.value = mcfg_string_new_sized(
+		sizeof(KEYWORD_STR) + strlen(field.name) + string_value.value->length);
+	NULL_CHECK(result.value, MCFG_MALLOC_FAIL);
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, indent));
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, KEYWORD_STR " "));
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, field.name));
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, " "));
+	ERR_CHECK(mcfg_string_append(&result.value, string_value.value));
+
+exit:
+	if(result.err != MCFG_OK && result.value != NULL) {
+		free(result.value);
+	}
+
+	if(string_value.value != NULL) {
+		free(string_value.value);
+	}
+
+	if(indent != NULL) {
+		free(indent);
+	}
 
 	return result;
 }
