@@ -57,3 +57,5 @@ for test in $TESTS; do
 done
 
 printf "\n$failed tests \x1b[1m\x1b[31mfailed\x1b[0m, $passed tests \x1b[1m\x1b[32mpassed\x1b[0m\n\n"
+
+exit $failed
