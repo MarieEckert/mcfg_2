@@ -19,7 +19,7 @@ function build_objs() {
   do
     OUTNAME="$OBJDIR$i.o"
     INNAME="$SRCDIR$i.c"
-    
+
     echo "  CC $INNAME"
 
     $CC $CFLAGS -c -o $OUTNAME $INNAME || exit
@@ -29,7 +29,7 @@ function build_objs() {
 }
 
 function build_lib() {
-  OBJECTS=("mcfg mcfg_util parse shared mcfg_format")
+  OBJECTS=("mcfg mcfg_util parse serialize cptrlist shared mcfg_format")
 
   echo "==> Compiling sources for \"$LIBNAME\""
   build_objs "${OBJECTS[@]}"
