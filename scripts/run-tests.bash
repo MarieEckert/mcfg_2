@@ -32,7 +32,7 @@ ask() {
 build_test() {
     EXEC_NAME="${1%.c}.test_exec"
 
-    if [ ! "$1" -nt "$EXEC_NAME" ]; then
+    if [ ! "$1" -nt "$EXEC_NAME" ] && [ "$EXEC_NAME" -nt "./libmcfg_2.a" ]; then
         return 0;
     fi
 
