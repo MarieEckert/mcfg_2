@@ -8,3 +8,4 @@ mcfg_test
 *.swp
 *.log
 compile_flags.txt
+*.test_exec
