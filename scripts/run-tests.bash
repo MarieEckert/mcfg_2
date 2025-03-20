@@ -30,8 +30,13 @@ ask() {
 }
 
 build_test() {
-    subinfo "building..."
     EXEC_NAME="${1%.c}.test_exec"
+
+    if [ ! "$1" -nt "$EXEC_NAME" ]; then
+        return 0;
+    fi
+
+    subinfo "building..."
     $CC $CFLAGS "$1" -o "$EXEC_NAME" $LDFLAGS || err "failed to build"
 }
 
@@ -56,6 +61,6 @@ for test in $TESTS; do
     fi
 done
 
-printf "\n$failed tests \x1b[1m\x1b[31mfailed\x1b[0m, $passed tests \x1b[1m\x1b[32mpassed\x1b[0m\n\n"
+info "$failed tests \x1b[1m\x1b[31mfailed\x1b[0m, $passed tests \x1b[1m\x1b[32mpassed\x1b[0m"
 
 exit $failed

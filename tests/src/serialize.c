@@ -3,6 +3,8 @@
 
 #include "mcfg.h"
 
+#include "testing_shared.c"
+
 #define TEST_DIR "tests/"
 
 char *initial =
@@ -46,49 +48,87 @@ char *initial =
 	"  end\n"
 	"end\n";
 
-int
-main(void)
+#define TEST_STEPS 3
+
+mcfg_file_t
+test_parse_original()
 {
-	fprintf(stderr, "Using MCFG/2 version " MCFG_2_VERSION "\n");
-
-	char *filepath = TEST_DIR "embedding_test.mcfg";
-
-	fprintf(stderr, "\t* parsing initial\n");
+	BEGIN_STEP("parsing original");
 
 	mcfg_parse_result_t ret = mcfg_parse(initial);
 	if(ret.err != MCFG_OK) {
-		fprintf(stderr, "mcfg parsing failed: %s (%d)\n",
+		STEP_FAIL;
+
+		fprintf(stderr, STEP_LOG_PRIMER "mcfg parsing failed: %s (%d)\n",
 				mcfg_err_string(ret.err), ret.err);
-		fprintf(stderr, "in file \"%s\" on line %zu\n", filepath,
+		fprintf(stderr, STEP_LOG_PRIMER "on line %zu\n",
 				ret.err_linespan.starting_line);
-		exit(1);
+		exit(current_step);
 	}
 
-	fprintf(stderr, "\t* parsed initial\n\t* serializing\n");
+	STEP_SUCCESS;
+
+	return ret.value;
+}
+
+mcfg_string_t *
+test_serialize(mcfg_file_t file)
+{
+	BEGIN_STEP("serializing");
 
 	mcfg_serialize_result_t serialized_result =
-		mcfg_serialize(ret.value, MCFG_DEFAULT_SERIALIZE_OPTIONS);
+		mcfg_serialize(file, MCFG_DEFAULT_SERIALIZE_OPTIONS);
 	if(serialized_result.err != MCFG_OK) {
-		fprintf(stderr, "mcfg serialization failed: %s (%d)\n",
-				mcfg_err_string(ret.err), ret.err);
-		exit(2);
+		STEP_FAIL;
+
+		fprintf(stderr, STEP_LOG_PRIMER "mcfg serialization failed: %s (%d)\n",
+				mcfg_err_string(serialized_result.err), serialized_result.err);
+		exit(current_step);
+	}
+
+	if(serialized_result.value == NULL) {
+		STEP_FAIL;
+
+		fprintf(stderr, STEP_LOG_PRIMER
+				"mcfg_serialize returned MCFG_OK but the value is NULL!\n");
+		exit(current_step);
 	}
 
 	printf("%s\n", serialized_result.value->data);
 
-	fprintf(stderr, "\t* serialized\n\t* parsing serialized\n");
+	STEP_SUCCESS;
+	return serialized_result.value;
+}
 
-	ret = mcfg_parse(serialized_result.value->data);
+mcfg_file_t
+test_parse_serialized(mcfg_string_t *serialized)
+{
+	BEGIN_STEP("parsing serialized");
+
+	mcfg_parse_result_t ret = mcfg_parse(serialized->data);
 	if(ret.err != MCFG_OK) {
-		fprintf(stderr, "mcfg parsing failed: %s (%d)\n",
+		STEP_FAIL;
+
+		fprintf(stderr, STEP_LOG_PRIMER "mcfg parsing failed: %s (%d)\n",
 				mcfg_err_string(ret.err), ret.err);
-		fprintf(stderr, "in file \"%s\" on line %zu\n", filepath,
+		fprintf(stderr, STEP_LOG_PRIMER "on line %zu\n",
 				ret.err_linespan.starting_line);
-		exit(1);
+		exit(current_step);
 	}
 
-	fprintf(stderr, "\t* parsed serialized\n");
+	STEP_SUCCESS;
 
-	mcfg_free_file(ret.value);
+	return ret.value;
+}
+
+int
+main(void)
+{
+	TEST_INFO;
+
+	mcfg_file_t parsed = test_parse_original();
+	mcfg_string_t *serialized = test_serialize(parsed);
+	parsed = test_parse_serialized(serialized);
+
 	return 0;
 }
