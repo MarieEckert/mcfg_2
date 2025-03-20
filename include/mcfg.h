@@ -304,6 +304,16 @@ mcfg_parse_result_t mcfg_parse_from_file(const char *path);
 
 /* serializer api */
 
+/**
+ * @brief The mcfg_string_t structure is intended to be a safer, more
+ * comfortable and efficient way to work with strings whilst also still offering
+ * compatability with the C standard library. The aim is to use mcfg_string_t
+ * wherever logical by version 1.0.0 or 2.0.0. It is currently primarily used
+ * by the serializer.
+ *
+ * Functions for creating and working with this struct can be found in
+ * mcfg_util.h and are prefixed with "mcfg_string".
+ */
 typedef struct mcfg_string {
 	/**
 	 * @brief total amount of space within data (including last-byte used as
