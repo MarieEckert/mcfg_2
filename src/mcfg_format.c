@@ -35,15 +35,7 @@ mcfg_fmt_err_string(mcfg_fmt_err_t err)
 	}
 }
 
-#ifdef MCFG_DO_ERROR_MESSAGES
-#	define ERR_NOTE(e)                                        \
-		fprintf(stderr,                                        \
-				"ERR_CHECK failed at line %d in file "__FILE__ \
-				" (err: %d)\n",                                \
-				__LINE__, e)
-#else
-#	define ERR_NOTE(e)
-#endif
+#undef ERR_CHECK
 
 /* This macro checks if the condition (c) is false. If c is false, it is
  * considered an error and it will construct a mcfg_fmt_res_t structure with

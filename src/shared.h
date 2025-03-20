@@ -12,6 +12,25 @@
 
 #include <sys/types.h>
 
+#ifdef MCFG_DO_ERROR_MESSAGES
+#	include <stdio.h>
+#	define ERR_NOTE(e)                                        \
+		fprintf(stderr,                                        \
+				"ERR_CHECK failed at line %d in file "__FILE__ \
+				" (err: %d)\n",                                \
+				__LINE__, e)
+#else
+#	define ERR_NOTE(e)
+#endif
+
+#define ERR_CHECK(c, e) \
+	({                  \
+		if(!(c)) {      \
+			ERR_NOTE(e) \
+			return e;   \
+		}               \
+	})
+
 #define CONCAT(a, b)					  a##b
 
 #define _INTERNAL_PREFIX(name)			  CONCAT(_mcfg_internal_##name, _)

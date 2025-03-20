@@ -18,12 +18,6 @@
 #include "mcfg_util.h"
 #include "shared.h"
 
-#define ERR_CHECK(c, e) \
-	({                  \
-		if(!(c))        \
-			return e;   \
-	})
-
 mcfg_path_t
 mcfg_parse_path(char *path)
 {
@@ -281,7 +275,9 @@ mcfg_format_list(mcfg_list_t list, char *prefix, char *postfix)
 	size_t base_alloc_size = strlen(prefix) + strlen(postfix) + sizeof(space);
 
 	char *seperator = malloc(base_alloc_size);
-	ERR_CHECK(seperator != NULL, NULL);
+	if(seperator != NULL) {
+		return NULL;
+	}
 
 	strcpy(seperator, postfix);
 	strcpy(seperator + strlen(postfix), space);
