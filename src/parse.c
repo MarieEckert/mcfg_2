@@ -8,11 +8,10 @@
 #define _XOPEN_SOURCE	700
 #define _POSIX_C_SOURCE 2
 
-#include <stdlib.h>
-#include <string.h>
-
 #include <ctype.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "parse.h"
 #include "shared.h"

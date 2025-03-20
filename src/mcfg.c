@@ -13,13 +13,12 @@
 #define _XOPEN_SOURCE	700
 #define _POSIX_C_SOURCE 2
 
-#include <math.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include <errno.h>
+#include <math.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "mcfg.h"
 #include "shared.h"

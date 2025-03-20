@@ -9,10 +9,9 @@
 #define _POSIX_C_SOURCE 2
 
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include <stdio.h>
 
 #include "mcfg.h"
 #include "mcfg_util.h"
