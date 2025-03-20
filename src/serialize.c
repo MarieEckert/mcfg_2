@@ -38,7 +38,7 @@
 		if(_e != MCFG_OK) {  \
 			ERR_NOTE(_e);    \
 			result.err = _e; \
-			return result;   \
+			goto exit;       \
 		}                    \
 	})
 
@@ -237,6 +237,8 @@ exit:
 	if(result.err != MCFG_OK && result.value != NULL) {
 		free(result.value);
 	}
+	free(indent);
+
 	return result;
 }
 
@@ -317,5 +319,7 @@ exit:
 			free(result.value);
 		}
 	}
+	free(indent);
+
 	return result;
 }
