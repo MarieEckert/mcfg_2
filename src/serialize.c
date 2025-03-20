@@ -170,7 +170,7 @@ mcfg_serialize_result_t
 serialize_section(mcfg_section_t section, mcfg_serialize_options_t options)
 {
 	mcfg_serialize_result_t result = {0};
-	char *indent = _make_indent(options, 2);
+	char *indent = _make_indent(options, 1);
 	CPtrList field_strings;
 
 	ASSERT_OR_RETURN(cptrlist_init(&field_strings, 16, 16), MCFG_MALLOC_FAIL);
@@ -271,6 +271,16 @@ serialize_bool_field(mcfg_field_t field, mcfg_serialize_options_t options)
 	mcfg_serialize_result_t result = {0};
 	char *indent = _make_indent(options, 2);
 	NULL_CHECK(indent, MCFG_MALLOC_FAIL);
+
+	const char *string_value = mcfg_data_as_bool(field) ? " true" : " false";
+
+	result.value =
+		mcfg_string_new_sized(strlen(indent) + sizeof(KEYWORD_BOOL) +
+							  strlen(field.name) + strlen(string_value));
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, indent));
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, KEYWORD_BOOL " "));
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, field.name));
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, string_value));
 
 exit:
 	free(indent);
