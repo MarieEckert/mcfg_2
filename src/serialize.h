@@ -25,4 +25,22 @@ mcfg_serialize_result_t serialize_sector(mcfg_sector_t sector,
 mcfg_serialize_result_t serialize_section(mcfg_section_t sector,
 										  mcfg_serialize_options_t options);
 
+#define serialize_string_field NAMESPACED_DECL(serialize_string_field)
+mcfg_serialize_result_t serialize_string_field(
+	mcfg_field_t sector,
+	mcfg_serialize_options_t options);
+
+#define serialize_list_field NAMESPACED_DECL(serialize_list_field)
+mcfg_serialize_result_t serialize_list_field(mcfg_field_t sector,
+											 mcfg_serialize_options_t options);
+
+#define serialize_bool_field NAMESPACED_DECL(serialize_bool_field)
+mcfg_serialize_result_t serialize_bool_field(mcfg_field_t sector,
+											 mcfg_serialize_options_t options);
+
+#define serialize_number_field NAMESPACED_DECL(serialize_number_field)
+mcfg_serialize_result_t serialize_number_field(
+	mcfg_field_t sector,
+	mcfg_serialize_options_t options);
+
 #endif

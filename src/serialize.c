@@ -138,6 +138,42 @@ serialize_section(mcfg_section_t section, mcfg_serialize_options_t options)
 {
 	mcfg_serialize_result_t result = {0};
 
+	CPtrList field_strings;
+
+	size_t result_size = 0;
+	for(size_t ix = 0; ix < section.field_count; ix++) {
+		mcfg_field_t field = section.fields[ix];
+		switch(field.type) {
+			case TYPE_STRING:
+				result = serialize_string_field(field, options);
+				break;
+			case TYPE_LIST:
+				result = serialize_list_field(field, options);
+				break;
+			case TYPE_BOOL:
+				result = serialize_bool_field(field, options);
+				break;
+			case TYPE_I8:
+			case TYPE_U8:
+			case TYPE_I16:
+			case TYPE_U16:
+			case TYPE_I32:
+			case TYPE_U32:
+				result = serialize_number_field(field, options);
+				break;
+			case TYPE_INVALID:
+				result.err = MCFG_INVALID_TYPE;
+				goto exit;
+		}
+
+		if(result.err != MCFG_OK) {
+			goto exit;
+		}
+
+		result_size += result.value->length;
+		cptrlist_append(&field_strings, result.value);
+	}
+
 	result.value =
 		mcfg_string_new_sized(sizeof(KEYWORD_SECTION) + sizeof(KEYWORD_END) +
 							  1 + strlen(section.name));
@@ -150,7 +186,11 @@ serialize_section(mcfg_section_t section, mcfg_serialize_options_t options)
 	ERR_CHECK(mcfg_string_append_cstr(&result.value, section.name));
 	ERR_CHECK(mcfg_string_append_cstr(&result.value, "\n"));
 
-	/* fields insertion here */
+	for(size_t ix = 0; ix < field_strings.size; ix++) {
+		if(ix + 1 < section.field_count) {
+			ERR_CHECK(mcfg_string_append_cstr(&result.value, "\n"));
+		}
+	}
 
 	ERR_CHECK(mcfg_string_append_cstr(&result.value, "  " KEYWORD_END "\n"));
 
@@ -158,5 +198,37 @@ exit:
 	if(result.err != MCFG_OK && result.value != NULL) {
 		free(result.value);
 	}
+	return result;
+}
+
+mcfg_serialize_result_t
+serialize_string_field(mcfg_field_t sector, mcfg_serialize_options_t options)
+{
+	mcfg_serialize_result_t result = {0};
+
+	return result;
+}
+
+mcfg_serialize_result_t
+serialize_list_field(mcfg_field_t sector, mcfg_serialize_options_t options)
+{
+	mcfg_serialize_result_t result = {0};
+
+	return result;
+}
+
+mcfg_serialize_result_t
+serialize_bool_field(mcfg_field_t sector, mcfg_serialize_options_t options)
+{
+	mcfg_serialize_result_t result = {0};
+
+	return result;
+}
+
+mcfg_serialize_result_t
+serialize_number_field(mcfg_field_t sector, mcfg_serialize_options_t options)
+{
+	mcfg_serialize_result_t result = {0};
+
 	return result;
 }
