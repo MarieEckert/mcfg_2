@@ -409,7 +409,7 @@ mcfg_data_as_u8(mcfg_field_t field)
 		return 0;
 	}
 
-	return (uint8_t) * (uint8_t *)field.data;
+	return (uint8_t)*(uint8_t *)field.data;
 }
 
 int8_t
@@ -419,7 +419,7 @@ mcfg_data_as_i8(mcfg_field_t field)
 		return 0;
 	}
 
-	return (int8_t) * (int8_t *)field.data;
+	return (int8_t)*(int8_t *)field.data;
 }
 
 uint16_t
@@ -429,7 +429,7 @@ mcfg_data_as_u16(mcfg_field_t field)
 		return 0;
 	}
 
-	return (uint16_t) * (uint16_t *)field.data;
+	return (uint16_t)*(uint16_t *)field.data;
 }
 
 int16_t
@@ -439,7 +439,7 @@ mcfg_data_as_i16(mcfg_field_t field)
 		return 0;
 	}
 
-	return (int16_t) * (int16_t *)field.data;
+	return (int16_t)*(int16_t *)field.data;
 }
 
 uint32_t
@@ -449,7 +449,7 @@ mcfg_data_as_u32(mcfg_field_t field)
 		return 0;
 	}
 
-	return (uint32_t) * (uint32_t *)field.data;
+	return (uint32_t)*(uint32_t *)field.data;
 }
 
 int32_t
@@ -459,7 +459,7 @@ mcfg_data_as_i32(mcfg_field_t field)
 		return 0;
 	}
 
-	return (int32_t) * (int32_t *)field.data;
+	return (int32_t)*(int32_t *)field.data;
 }
 
 /* mcfg_string functions */
@@ -515,7 +515,7 @@ string_resize(mcfg_string_t **a, size_t new_length)
 }
 
 mcfg_err_t
-string_append(mcfg_string_t **a, char *b, size_t b_len)
+string_append(mcfg_string_t **a, const char *b, size_t b_len)
 {
 	if(a == NULL || *a == NULL || b == NULL) {
 		return MCFG_NULLPTR;
@@ -541,7 +541,7 @@ mcfg_string_append(mcfg_string_t **a, mcfg_string_t *b)
 }
 
 mcfg_err_t
-mcfg_string_append_cstr(mcfg_string_t **a, char *b)
+mcfg_string_append_cstr(mcfg_string_t **a, const char *b)
 {
 	return string_append(a, b, strlen(b));
 }

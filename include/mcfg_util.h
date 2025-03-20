@@ -199,6 +199,6 @@ mcfg_err_t mcfg_string_append(mcfg_string_t **a, mcfg_string_t *b);
  * @param b The C-String to be append to a.
  * @see mcfg_string_append
  */
-mcfg_err_t mcfg_string_append_cstr(mcfg_string_t **a, char *b);
+mcfg_err_t mcfg_string_append_cstr(mcfg_string_t **a, const char *b);
 
 #endif	// ifndef MCFG_UTIL_H
