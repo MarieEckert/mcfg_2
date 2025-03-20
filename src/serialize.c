@@ -50,12 +50,15 @@
 		}                    \
 	})
 
-#define ASSERT_OR_RETURN(c, e) ERR_CHECK((c) ? MCFG_OK : e)
+#define ASSERT_OR_RETURN(c, e)	   ERR_CHECK((c) ? MCFG_OK : e)
 
-#define NULL_CHECK(p, e)	   ASSERT_OR_RETURN(p != NULL, e)
+#define NULL_CHECK(p, e)		   ASSERT_OR_RETURN(p != NULL, e)
 
-#define _make_indent		   NAMESPACED_DECL(_make_indent)
-#define _serialize_string	   NAMESPACED_DECL(_serialize_string)
+#define _make_indent			   NAMESPACED_DECL(_make_indent)
+#define _serialize_string		   NAMESPACED_DECL(_serialize_string)
+#define _number_serialization_func NAMESPACED_DECL(_number_serialization_func)
+#define _bool_serialization_func   NAMESPACED_DECL(_bool_serialization_func)
+#define _string_serialization_func NAMESPACED_DECL(_string_serialization_func)
 
 /**
  * @brief Build a string used for indentation which is stored on the heap.
@@ -127,6 +130,39 @@ exit:
 	}
 
 	return result;
+}
+
+typedef mcfg_err_t(list_serialization_func_t)(mcfg_field_t field,
+											  mcfg_string_t **dest);
+
+mcfg_err_t
+_number_serialization_func(mcfg_field_t field, mcfg_string_t **dest)
+{
+	char *temp = mcfg_data_to_string(field);
+	mcfg_err_t result = mcfg_string_append_cstr(dest, temp);
+	free(temp);
+	return result;
+}
+
+mcfg_err_t
+_bool_serialization_func(mcfg_field_t field, mcfg_string_t **dest)
+{
+	return mcfg_string_append_cstr(dest,
+								   mcfg_data_as_bool(field) ? "true" : "false");
+}
+
+mcfg_err_t
+_string_serialization_func(mcfg_field_t field, mcfg_string_t **dest)
+{
+	mcfg_serialize_result_t result = _serialize_string(field);
+	ERR_CHECK(result.err);
+	ERR_CHECK(mcfg_string_append(dest, result.value));
+
+exit:
+	if(result.value != NULL) {
+		free(result.value);
+	}
+	return result.err;
 }
 
 mcfg_serialize_result_t
@@ -337,6 +373,84 @@ serialize_list_field(mcfg_field_t field, mcfg_serialize_options_t options)
 {
 	mcfg_serialize_result_t result = {0};
 
+	mcfg_list_t *list = mcfg_data_as_list(field);
+	if(list == NULL) {
+		result.err = MCFG_NULLPTR;
+		return result;
+	}
+
+	char *datatype;
+	list_serialization_func_t *serialize_func;
+
+	switch(list->type) {
+		case TYPE_I8:
+			datatype = KEYWORD_LIST " " KEYWORD_I8 " ";
+			serialize_func = &_number_serialization_func;
+			break;
+		case TYPE_U8:
+			datatype = KEYWORD_LIST " " KEYWORD_U8 " ";
+			serialize_func = &_number_serialization_func;
+			break;
+		case TYPE_I16:
+			datatype = KEYWORD_LIST " " KEYWORD_I16 " ";
+			serialize_func = &_number_serialization_func;
+			break;
+		case TYPE_U16:
+			datatype = KEYWORD_LIST " " KEYWORD_U16 " ";
+			serialize_func = &_number_serialization_func;
+			break;
+		case TYPE_I32:
+			datatype = KEYWORD_LIST " " KEYWORD_I32 " ";
+			serialize_func = &_number_serialization_func;
+			break;
+		case TYPE_U32:
+			datatype = KEYWORD_LIST " " KEYWORD_U32 " ";
+			serialize_func = &_number_serialization_func;
+			break;
+		case TYPE_BOOL:
+			datatype = KEYWORD_LIST " " KEYWORD_BOOL " ";
+			serialize_func = &_bool_serialization_func;
+			break;
+		case TYPE_STRING:
+			datatype = KEYWORD_LIST " " KEYWORD_STR " ";
+			serialize_func = &_string_serialization_func;
+			break;
+		default:
+			result.err = MCFG_INVALID_TYPE;
+			return result;
+	}
+
+	char *indent = _make_indent(options, 2);
+	result.value = mcfg_string_new_sized(strlen(indent) + strlen(datatype) +
+										 strlen(field.name) + 2);
+
+	NULL_CHECK(indent, MCFG_MALLOC_FAIL);
+	NULL_CHECK(result.value, MCFG_MALLOC_FAIL);
+
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, indent));
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, datatype));
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, field.name));
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, " "));
+
+	for(size_t ix = 0; ix < list->field_count; ix++) {
+		ERR_CHECK(serialize_func(list->fields[ix], &result.value));
+
+		if(ix + 1 < list->field_count) {
+			ERR_CHECK(mcfg_string_append_cstr(&result.value, ", "));
+		}
+	}
+
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, "\n"));
+
+exit:
+	if(result.err != MCFG_OK && result.value != NULL) {
+		free(result.value);
+	}
+
+	if(indent != NULL) {
+		free(indent);
+	}
+
 	return result;
 }
 
@@ -377,22 +491,22 @@ serialize_number_field(mcfg_field_t field, mcfg_serialize_options_t options)
 	char *datatype;
 	switch(field.type) {
 		case TYPE_I8:
-			datatype = "i8 ";
+			datatype = KEYWORD_I8 " ";
 			break;
 		case TYPE_U8:
-			datatype = "u8 ";
+			datatype = KEYWORD_U8 " ";
 			break;
 		case TYPE_I16:
-			datatype = "i16 ";
+			datatype = KEYWORD_I16 " ";
 			break;
 		case TYPE_U16:
-			datatype = "u16 ";
+			datatype = KEYWORD_U16 " ";
 			break;
 		case TYPE_I32:
-			datatype = "i32 ";
+			datatype = KEYWORD_I32 " ";
 			break;
 		case TYPE_U32:
-			datatype = "u32 ";
+			datatype = KEYWORD_U32 " ";
 			break;
 		default:
 			result.err = MCFG_INVALID_TYPE;
