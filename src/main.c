@@ -108,6 +108,7 @@ main(void)
 		fprintf(stderr, "serialization error: %d\n", res.err);
 	} else {
 		fprintf(stderr, "result:\n%s", result.value->data);
+		free(result.value);
 	}
 
 	free(rel.sector);

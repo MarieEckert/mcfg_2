@@ -234,6 +234,7 @@ serialize_section(mcfg_section_t section, mcfg_serialize_options_t options)
 	ERR_CHECK(mcfg_string_append_cstr(&result.value, KEYWORD_END "\n"));
 
 exit:
+	cptrlist_destroy(&field_strings);
 	if(result.err != MCFG_OK && result.value != NULL) {
 		free(result.value);
 	}
@@ -311,14 +312,15 @@ serialize_number_field(mcfg_field_t field, mcfg_serialize_options_t options)
 
 exit:
 	if(result.err != MCFG_OK) {
-		if(string_value != NULL) {
-			free(string_value);
-		}
-
 		if(result.value != NULL) {
 			free(result.value);
 		}
 	}
+
+	if(string_value != NULL) {
+		free(string_value);
+	}
+
 	free(indent);
 
 	return result;
