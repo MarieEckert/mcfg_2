@@ -342,7 +342,9 @@ _extract_word(syntax_tree_t **node, char *input, size_t *ix, token_t tk)
 	/* Search where the current word ends */
 	size_t search_ix = *ix + 1;
 
-	while(input[search_ix] != '\0' && !isspace(input[search_ix])) {
+	while(tk != TK_NUMBER
+			  ? input[search_ix] != '\0' && !isspace(input[search_ix])
+			  : isdigit(input[search_ix])) {
 		search_ix++;
 	}
 
