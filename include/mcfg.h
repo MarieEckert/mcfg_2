@@ -338,7 +338,13 @@ typedef struct mcfg_serialize_result {
 } mcfg_serialize_result_t;
 
 typedef struct mcfg_serialize_options {
+	/** @brief Should tabs be used for indentation? */
 	bool tab_indentation;
+
+	/**
+	 * @brief How many spaces should be used for one level of indentation?
+	 * (Only applies if tab_indentation is false)
+	 */
 	int space_count;
 } mcfg_serialize_options_t;
 
@@ -348,6 +354,12 @@ typedef struct mcfg_serialize_options {
 		.tab_indentation = true, .space_count = 0, \
 	}
 
+/**
+ * @brief Serialize the given file into text.
+ * @param file The file to serialize.
+ * @param options The serialization options.
+ * @return mcfg_serialize_result_t
+ */
 mcfg_serialize_result_t mcfg_serialize(mcfg_file_t file,
 									   mcfg_serialize_options_t options);
 
