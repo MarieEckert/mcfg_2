@@ -18,6 +18,10 @@
 #include "mcfg_util.h"
 #include "shared.h"
 
+#ifndef MCFG_STRING_RESIZE_ALIGNMENT
+#	define MCFG_STRING_RESIZE_ALIGNMENT 64
+#endif
+
 mcfg_path_t
 mcfg_parse_path(char *path)
 {
@@ -462,11 +466,20 @@ mcfg_data_as_i32(mcfg_field_t field)
 
 #define NAMESPACE	  mcfg_util
 #define string_append NAMESPACED_DECL(string_append)
+#define string_resize NAMESPACED_DECL(string_resize)
 
 mcfg_string_t *
 mcfg_string_new_sized(size_t size)
 {
-	return malloc(sizeof(mcfg_string_t) + sizeof(char) * size + 1);
+	mcfg_string_t *result =
+		malloc(sizeof(mcfg_string_t) + sizeof(char) * size + 1);
+
+	if(result != NULL) {
+		result->capacity = size;
+		result->length = 0;
+	}
+
+	return result;
 }
 
 mcfg_string_t *
@@ -484,6 +497,24 @@ mcfg_string_new(const char *initial)
 }
 
 mcfg_err_t
+string_resize(mcfg_string_t **a, size_t new_length)
+{
+	const size_t resize_amount =
+		(new_length + 1 + MCFG_STRING_RESIZE_ALIGNMENT) &
+		~(MCFG_STRING_RESIZE_ALIGNMENT - 1);
+
+	const size_t new_size =
+		resize_amount * sizeof(*(*a)->data) + sizeof(*(*a)) + 1;
+
+	*a = realloc((*a), new_size);
+	if(*a == NULL) {
+		return MCFG_MALLOC_FAIL;
+	}
+
+	return MCFG_OK;
+}
+
+mcfg_err_t
 string_append(mcfg_string_t **a, char *b, size_t b_len)
 {
 	if(a == NULL || *a == NULL || b == NULL) {
@@ -491,12 +522,9 @@ string_append(mcfg_string_t **a, char *b, size_t b_len)
 	}
 
 	const size_t new_length = (*a)->length + b_len;
-	const size_t new_size =
-		new_length * sizeof(*(*a)->data) + sizeof(*(*a)) + 1;
 
-	*a = realloc((*a), new_size);
-	if(*a == NULL) {
-		return MCFG_MALLOC_FAIL;
+	if(new_length + 1 > (*a)->capacity) {
+		ERR_CHECK(string_resize(a, new_length) == MCFG_OK, MCFG_MALLOC_FAIL);
 	}
 
 	memcpy((*a)->data + (*a)->length, b, b_len);

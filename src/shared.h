@@ -23,12 +23,12 @@
 #	define ERR_NOTE(e)
 #endif
 
-#define ERR_CHECK(c, e) \
-	({                  \
-		if(!(c)) {      \
-			ERR_NOTE(e) \
-			return e;   \
-		}               \
+#define ERR_CHECK(c, e)  \
+	({                   \
+		if(!(c)) {       \
+			ERR_NOTE(e); \
+			return e;    \
+		}                \
 	})
 
 #define CONCAT(a, b)					  a##b

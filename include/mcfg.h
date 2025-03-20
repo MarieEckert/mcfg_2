@@ -305,7 +305,17 @@ mcfg_parse_result_t mcfg_parse_from_file(const char *path);
 /* serializer api */
 
 typedef struct mcfg_string {
+	/**
+	 * @brief total amount of space within data (including last-byte used as
+	 * NULL terminator)
+	 */
+	uint64_t capacity;
+
+	/**
+	 * @brief used amount of space within data (not including NULL terminator)
+	 */
 	uint64_t length;
+
 	char data[];
 } mcfg_string_t;
 

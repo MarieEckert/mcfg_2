@@ -161,14 +161,40 @@ uint32_t mcfg_data_as_u32(mcfg_field_t field);
  */
 int32_t mcfg_data_as_i32(mcfg_field_t field);
 
+/* mcfg_string_t utilities */
+
 #define STRING(i) mcfg_string_new(i)
 
+/**
+ * @brief Create a new mcfg_string_t on the heap with a specific
+ * preallocated length for the data.
+ */
 mcfg_string_t *mcfg_string_new_sized(size_t size);
 
+/**
+ * @brief Create a new mcfg_string_t on the heap from another string.
+ * @param initial The string which is to be used for the initial value.
+ */
 mcfg_string_t *mcfg_string_new(const char *initial);
 
+/**
+ * @brief Append one mcfg_string_t (b) to another (a).
+ * A will get resized if b does not find behind a. The new size will be
+ * aligned to MCFG_STRING_RESIZE_ALIGNMENT.
+ * @param a Pointer to the destination string. Could get reallocated.
+ * @param b The source string.
+ * @see mcfg_string_append_cstr
+ */
 mcfg_err_t mcfg_string_append(mcfg_string_t **a, mcfg_string_t *b);
 
+/**
+ * @brief Append a typical C-String (b) to a mcfg_string (a).
+ * A will get resized if b does not find behind a. The new size will be
+ * aligned to MCFG_STRING_RESIZE_ALIGNMENT.
+ * @param a Pointer to the destination string. Could get reallocated.
+ * @param b The C-String to be append to a.
+ * @see mcfg_string_append
+ */
 mcfg_err_t mcfg_string_append_cstr(mcfg_string_t **a, char *b);
 
 #endif	// ifndef MCFG_UTIL_H
