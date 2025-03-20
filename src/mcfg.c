@@ -43,17 +43,6 @@
 		ret;                         \
 	})
 
-/** @deprecated in 1.0.0 */
-mcfg_boolean_t
-_strtobool(char *in)
-{
-	if(is_string_empty(in)) {
-		return BOOL_FALSE;
-	}
-
-	return strcmp(in, "true") == 0 ? BOOL_TRUE : BOOL_FALSE;
-}
-
 char *
 mcfg_err_string(mcfg_err_t err)
 {
