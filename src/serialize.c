@@ -12,10 +12,35 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "mcfg_util.h"
 #include "serialize.h"
 #include "shared.h"
 
-#define NAMESPACE serialize
+#define NAMESPACE		serialize
+
+#define KEYWORD_SECTOR	"sector"
+#define KEYWORD_SECTION "section"
+#define KEYWORD_END		"end"
+#define KEYWORD_LIST	"list"
+#define KEYWORD_STR		"str"
+#define KEYWORD_BOOL	"bool"
+#define KEYWORD_I8		"i8"
+#define KEYWORD_U8		"u8"
+#define KEYWORD_I16		"i16"
+#define KEYWORD_U16		"u16"
+#define KEYWORD_I32		"i32"
+#define KEYWORD_U32		"u32"
+
+#undef ERR_CHECK
+#define ERR_CHECK(e)         \
+	({                       \
+		mcfg_err_t _e = e;   \
+		if(_e != MCFG_OK) {  \
+			ERR_NOTE(_e);    \
+			result.err = _e; \
+			return result;   \
+		}                    \
+	})
 
 mcfg_serialize_result_t
 serialize_file(mcfg_file_t file, mcfg_serialize_options_t options)
@@ -37,8 +62,7 @@ serialize_file(mcfg_file_t file, mcfg_serialize_options_t options)
 		cptrlist_append(&sector_strings, result.value);
 	}
 
-	result.value = malloc(sizeof(*result.value) +
-						  sizeof(*result.value->data) * result_size);
+	result.value = mcfg_string_new_sized(result_size + 1);
 	if(result.value == NULL) {
 		result.err = MCFG_MALLOC_FAIL;
 		goto exit;
@@ -52,6 +76,8 @@ serialize_file(mcfg_file_t file, mcfg_serialize_options_t options)
 		copy_offset += item->length;
 	}
 
+	result.value->data[result_size] = 0;
+
 exit:
 	cptrlist_destroy(&sector_strings);
 	return result;
@@ -62,5 +88,19 @@ serialize_sector(mcfg_sector_t sector, mcfg_serialize_options_t options)
 {
 	mcfg_serialize_result_t result = {0};
 
+	result.value = STRING(KEYWORD_SECTOR);
+	if(result.value == NULL) {
+		result.err = MCFG_MALLOC_FAIL;
+		goto exit;
+	}
+
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, " "));
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, sector.name));
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, "\n"));
+
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, KEYWORD_END));
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, "\n\n"));
+
+exit:
 	return result;
 }
