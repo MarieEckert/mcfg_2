@@ -462,8 +462,30 @@ mcfg_data_as_i32(mcfg_field_t field)
 	return (int32_t) * (int32_t *)field.data;
 }
 
+/* mcfg_string functions */
+
 #define NAMESPACE	  mcfg_util
 #define string_append NAMESPACED_DECL(string_append)
+
+mcfg_string_t *
+mcfg_string_new_sized(size_t size)
+{
+	return malloc(sizeof(mcfg_string_t) + sizeof(char) * size + 1);
+}
+
+mcfg_string_t *
+mcfg_string_new(const char *initial)
+{
+	const size_t initial_len = strlen(initial);
+	mcfg_string_t *result = mcfg_string_new_sized(initial_len);
+	if(result == NULL) {
+		return NULL;
+	}
+
+	result->length = initial_len;
+	memcpy(result->data, initial, initial_len + 1);
+	return result;
+}
 
 mcfg_err_t
 string_append(mcfg_string_t **a, char *b, size_t b_len)
@@ -473,7 +495,8 @@ string_append(mcfg_string_t **a, char *b, size_t b_len)
 	}
 
 	const size_t new_length = (*a)->length + b_len;
-	const size_t new_size = new_length * sizeof(*(*a)->data) + sizeof(*(*a));
+	const size_t new_size =
+		new_length * sizeof(*(*a)->data) + sizeof(*(*a)) + 1;
 
 	*a = realloc((*a), new_size);
 	if(*a == NULL) {
@@ -482,6 +505,7 @@ string_append(mcfg_string_t **a, char *b, size_t b_len)
 
 	memcpy((*a)->data + (*a)->length, b, b_len);
 	(*a)->length = new_length;
+	(*a)->data[new_length] = 0;
 
 	return MCFG_OK;
 }

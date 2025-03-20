@@ -161,6 +161,12 @@ uint32_t mcfg_data_as_u32(mcfg_field_t field);
  */
 int32_t mcfg_data_as_i32(mcfg_field_t field);
 
+#define STRING(i) mcfg_string_new(i)
+
+mcfg_string_t *mcfg_string_new_sized(size_t size);
+
+mcfg_string_t *mcfg_string_new(const char *initial);
+
 mcfg_err_t mcfg_string_append(mcfg_string_t **a, mcfg_string_t *b);
 
 mcfg_err_t mcfg_string_append_cstr(mcfg_string_t **a, char *b);
