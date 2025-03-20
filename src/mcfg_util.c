@@ -510,6 +510,8 @@ string_resize(mcfg_string_t **a, size_t new_length)
 		return MCFG_MALLOC_FAIL;
 	}
 
+	(*a)->capacity = sizeof(char) * resize_amount;
+
 	return MCFG_OK;
 }
 
