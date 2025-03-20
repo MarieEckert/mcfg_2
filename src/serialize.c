@@ -50,9 +50,11 @@
 		}                    \
 	})
 
-#define ASSERT_OR_RETURN(c, e)	   ERR_CHECK((c) ? MCFG_OK : e)
+#define ASSERT_OR_RETURN(c, e) ERR_CHECK((c) ? MCFG_OK : e)
 
-#define NULL_CHECK(p, e)		   ASSERT_OR_RETURN(p != NULL, e)
+#define NULL_CHECK(p, e)	   ASSERT_OR_RETURN(p != NULL, e)
+
+/* internal helper functions */
 
 #define _make_indent			   NAMESPACED_DECL(_make_indent)
 #define _serialize_string		   NAMESPACED_DECL(_serialize_string)
@@ -132,9 +134,19 @@ exit:
 	return result;
 }
 
+/**
+ * @brief This type is primarly used to cleanup the logic in
+ * serialize_list_field. These functions are currently not used
+ * in any other serialize_..._field functions to avoid reallocations.
+ * @see serialize_list_field
+ */
 typedef mcfg_err_t(list_serialization_func_t)(mcfg_field_t field,
 											  mcfg_string_t **dest);
 
+/**
+ * @brief Generic serialization function for number types.
+ * @see list_serialization_func_t
+ */
 mcfg_err_t
 _number_serialization_func(mcfg_field_t field, mcfg_string_t **dest)
 {
@@ -144,6 +156,10 @@ _number_serialization_func(mcfg_field_t field, mcfg_string_t **dest)
 	return result;
 }
 
+/**
+ * @brief Generic serialization function for booleans.
+ * @see list_serialization_func_t
+ */
 mcfg_err_t
 _bool_serialization_func(mcfg_field_t field, mcfg_string_t **dest)
 {
@@ -151,6 +167,11 @@ _bool_serialization_func(mcfg_field_t field, mcfg_string_t **dest)
 								   mcfg_data_as_bool(field) ? "true" : "false");
 }
 
+/**
+ * @brief Generic serialization function for strings.
+ * @see _serialize_string
+ * @see list_serialization_func_t
+ */
 mcfg_err_t
 _string_serialization_func(mcfg_field_t field, mcfg_string_t **dest)
 {
@@ -164,6 +185,8 @@ exit:
 	}
 	return result.err;
 }
+
+/* serialize.h functions */
 
 mcfg_serialize_result_t
 serialize_file(mcfg_file_t file, mcfg_serialize_options_t options)
@@ -314,9 +337,7 @@ serialize_section(mcfg_section_t section, mcfg_serialize_options_t options)
 		mcfg_string_t *item = ((mcfg_string_t *)field_strings.items[ix]);
 		ERR_CHECK(mcfg_string_append(&result.value, item));
 
-		if(ix + 1 < section.field_count) {
-			ERR_CHECK(mcfg_string_append_cstr(&result.value, "\n"));
-		}
+		ERR_CHECK(mcfg_string_append_cstr(&result.value, "\n"));
 	}
 
 	ERR_CHECK(mcfg_string_append_cstr(&result.value, indent));
@@ -440,8 +461,6 @@ serialize_list_field(mcfg_field_t field, mcfg_serialize_options_t options)
 		}
 	}
 
-	ERR_CHECK(mcfg_string_append_cstr(&result.value, "\n"));
-
 exit:
 	if(result.err != MCFG_OK && result.value != NULL) {
 		free(result.value);
@@ -523,7 +542,6 @@ serialize_number_field(mcfg_field_t field, mcfg_serialize_options_t options)
 	ERR_CHECK(mcfg_string_append_cstr(&result.value, field.name));
 	ERR_CHECK(mcfg_string_append_cstr(&result.value, " "));
 	ERR_CHECK(mcfg_string_append_cstr(&result.value, string_value));
-	ERR_CHECK(mcfg_string_append_cstr(&result.value, "\n"));
 
 exit:
 	if(result.err != MCFG_OK) {
