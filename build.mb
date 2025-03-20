@@ -54,7 +54,7 @@ sector targets
 
   section debug
     list str c_rules 'libsources', 'linklib', 'mcfg_test', 'link_test'
-    str target_cflags '-DMCFG_DO_ERROR_MESSAGES -DMCFG_DEBUG_PRINTING'
+    str target_cflags '-DMCFG_DO_ERROR_MESSAGES'
   end
 
   section release
