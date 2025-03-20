@@ -88,19 +88,75 @@ serialize_sector(mcfg_sector_t sector, mcfg_serialize_options_t options)
 {
 	mcfg_serialize_result_t result = {0};
 
-	result.value = STRING(KEYWORD_SECTOR);
+	CPtrList section_strings;
+	cptrlist_init(&section_strings, 16, 16);
+
+	size_t result_size = 0;
+	for(size_t ix = 0; ix < sector.section_count; ix++) {
+		result = serialize_section(sector.sections[ix], options);
+		if(result.err != MCFG_OK) {
+			goto exit;
+		}
+
+		result_size += result.value->length;
+		cptrlist_append(&section_strings, result.value);
+	}
+
+	result.value =
+		mcfg_string_new_sized(result_size + sizeof(KEYWORD_SECTOR) +
+							  sizeof(KEYWORD_END) + 1 + strlen(sector.name));
 	if(result.value == NULL) {
 		result.err = MCFG_MALLOC_FAIL;
 		goto exit;
 	}
 
-	ERR_CHECK(mcfg_string_append_cstr(&result.value, " "));
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, KEYWORD_SECTOR " "));
 	ERR_CHECK(mcfg_string_append_cstr(&result.value, sector.name));
 	ERR_CHECK(mcfg_string_append_cstr(&result.value, "\n"));
 
-	ERR_CHECK(mcfg_string_append_cstr(&result.value, KEYWORD_END));
-	ERR_CHECK(mcfg_string_append_cstr(&result.value, "\n\n"));
+	for(size_t ix = 0; ix < section_strings.size; ix++) {
+		mcfg_string_t *item = ((mcfg_string_t *)section_strings.items[ix]);
+		ERR_CHECK(mcfg_string_append(&result.value, item));
+
+		if(ix + 1 < section_strings.size) {
+			ERR_CHECK(mcfg_string_append_cstr(&result.value, "\n"));
+		}
+	}
+
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, KEYWORD_END "\n\n"));
 
 exit:
+	cptrlist_destroy(&section_strings);
+	if(result.err != MCFG_OK && result.value != NULL) {
+		free(result.value);
+	}
+	return result;
+}
+
+mcfg_serialize_result_t
+serialize_section(mcfg_section_t section, mcfg_serialize_options_t options)
+{
+	mcfg_serialize_result_t result = {0};
+
+	result.value =
+		mcfg_string_new_sized(sizeof(KEYWORD_SECTION) + sizeof(KEYWORD_END) +
+							  1 + strlen(section.name));
+	if(result.value == NULL) {
+		result.err = MCFG_MALLOC_FAIL;
+		goto exit;
+	}
+
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, "  " KEYWORD_SECTION " "));
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, section.name));
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, "\n"));
+
+	/* fields insertion here */
+
+	ERR_CHECK(mcfg_string_append_cstr(&result.value, "  " KEYWORD_END "\n"));
+
+exit:
+	if(result.err != MCFG_OK && result.value != NULL) {
+		free(result.value);
+	}
 	return result;
 }
