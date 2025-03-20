@@ -399,7 +399,7 @@ mcfg_data_as_bool(mcfg_field_t field)
 		return false;
 	}
 
-	return (bool) * (bool *)field.data;
+	return (bool)*(bool *)field.data;
 }
 
 uint8_t
@@ -460,4 +460,40 @@ mcfg_data_as_i32(mcfg_field_t field)
 	}
 
 	return (int32_t) * (int32_t *)field.data;
+}
+
+#define NAMESPACE	  mcfg_util
+#define string_append NAMESPACED_DECL(string_append)
+
+mcfg_err_t
+string_append(mcfg_string_t **a, char *b, size_t b_len)
+{
+	if(a == NULL || *a == NULL || b == NULL) {
+		return MCFG_NULLPTR;
+	}
+
+	const size_t new_length = (*a)->length + b_len;
+	const size_t new_size = new_length * sizeof(*(*a)->data) + sizeof(*(*a));
+
+	*a = realloc((*a), new_size);
+	if(*a == NULL) {
+		return MCFG_MALLOC_FAIL;
+	}
+
+	memcpy((*a)->data + (*a)->length, b, b_len);
+	(*a)->length = new_length;
+
+	return MCFG_OK;
+}
+
+mcfg_err_t
+mcfg_string_append(mcfg_string_t **a, mcfg_string_t *b)
+{
+	return string_append(a, b->data, b->length);
+}
+
+mcfg_err_t
+mcfg_string_append_cstr(mcfg_string_t **a, char *b)
+{
+	return string_append(a, b, strlen(b));
 }

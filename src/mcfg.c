@@ -22,7 +22,6 @@
 #include <stdio.h>
 
 #include "mcfg.h"
-#include "parse.h"
 #include "shared.h"
 
 #define XMALLOC(s)                   \
@@ -396,6 +395,10 @@ mcfg_free_file(mcfg_file_t file)
 	}
 }
 
+/* parser api */
+
+#include "parse.h"
+
 mcfg_parse_result_t
 mcfg_parse(char *input)
 {
@@ -471,4 +474,14 @@ mcfg_parse_from_file(const char *path)
 	free(data);
 
 	return result;
+}
+
+/* serializer api */
+
+#include "serialize.h"
+
+mcfg_serialize_result_t
+mcfg_serialize(mcfg_file_t file, mcfg_serialize_options_t options)
+{
+	return serialize_file(file, options);
 }
