@@ -107,11 +107,11 @@ int mcfg_data_as_int(mcfg_field_t field);
 /**
  * @brief Get the data of the field as a boolean
  * @param field The field of which the data should be grabbed
- * The value of the fields data represented as a boolean (mcfg_boolean_t). If
+ * The value of the fields data represented as a boolean (bool). If
  * the type is not boolean or the data is a NULL-Pointer,
  * false will be returned as default.
  */
-mcfg_boolean_t mcfg_data_as_bool(mcfg_field_t field);
+bool mcfg_data_as_bool(mcfg_field_t field);
 
 /**
  * @brief Get the data of the field as an u8

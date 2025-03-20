@@ -90,14 +90,6 @@ typedef enum mcfg_field_type {
 	TYPE_U32,
 } mcfg_field_type_t;
 
-/**
- * @deprecated in 1.0.0
- */
-typedef enum mcfg_boolean {
-	BOOL_FALSE = 0,
-	BOOL_TRUE = 1,
-} mcfg_boolean_t;
-
 typedef struct mcfg_field {
 	char *name;
 	mcfg_field_type_t type;

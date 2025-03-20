@@ -392,14 +392,14 @@ mcfg_data_as_int(mcfg_field_t field)
 	return (int)*(int *)field.data;
 }
 
-mcfg_boolean_t
+bool
 mcfg_data_as_bool(mcfg_field_t field)
 {
 	if(field.type != TYPE_BOOL) {
 		return false;
 	}
 
-	return (mcfg_boolean_t) * (mcfg_boolean_t *)field.data;
+	return (bool) * (bool *)field.data;
 }
 
 uint8_t
