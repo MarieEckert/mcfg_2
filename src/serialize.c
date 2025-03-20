@@ -1,4 +1,4 @@
-/* parse.c ; marie config format internal serializer implementation
+/* serialize.c ; marie config format internal serializer implementation
  * implementation for MCFG/2
  *
  * Copyright (c) 2025, Marie Eckert
