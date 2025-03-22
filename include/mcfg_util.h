@@ -167,7 +167,11 @@ int32_t mcfg_data_as_i32(mcfg_field_t field);
 
 /* mcfg_string_t utilities */
 
-#define STRING(i) mcfg_string_new(i)
+#ifdef MCFG_DEFINE_MCFG_STRING
+#	define MCFG_STRING(i) mcfg_string_new(i)
+#else
+#	define STRING(i) mcfg_string_new(i)
+#endif
 
 /**
  * @brief Create a new mcfg_string_t on the heap with a specific
