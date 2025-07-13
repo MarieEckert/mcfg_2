@@ -9,3 +9,5 @@ mcfg_test
 *.log
 compile_flags.txt
 *.test_exec
+*.o
+*.ppu
