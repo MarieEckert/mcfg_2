@@ -1,7 +1,7 @@
 " MCFG/2 vim syntax file
 " Author: Marie Eckert
 " License: BSD 3-Clause License
-" Github: https://github.com/FelixEcker/mcfg_2
+" Github: https://git.heroin.trade/marie/mcfg_2
 
 let b:current_syntax = "mcfg"
 

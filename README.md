@@ -2,7 +2,7 @@
 MCFG/2 is a reworking of my original [mcfg library](https://github.com/FelixEcker/mcfg) and format.
 
 ## Building
-MCFG/2'S recommended way of building is to use [mariebuild](https://github.com/FelixEcker/mariebuild),
+MCFG/2'S recommended way of building is to use [mariebuild](https://git.heroin.trade/marie/mariebuild),
 if you do not have a version of mariebuild installed which is compatible with
 the build file format you can use the provided `scripts/build.bash` script.
 
